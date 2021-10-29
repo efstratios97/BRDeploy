@@ -62,7 +62,7 @@ const store = createStore({
 })
 const instance = axios.create({
     // baseURL: process.env.NODE_ENV == 'development' ? '' : ''
-    baseURL: 'http://0.0.0.0:8081',//'http://127.0.0.1:8081',
+    baseURL: 'http://it-eamtoolt-01:8081',//'http://127.0.0.1:8081',
     timeout: 60 * 4 * 1000
 });
 const app = createApp(App)
