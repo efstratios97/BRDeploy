@@ -1,0 +1,9 @@
+AthenaEnv
+ProjectAthena VS Workspace
+__pycache__
+.vscode
+workspace
+AthenaSRC\BackEnd\DataManager\__pycache__
+AthenaSRC\BackEnd\Flask\Endpoints\__pycache__
+AthenaSRC\BackEnd\UserManager\__pycache__
+AthenaSRC\BackEnd\Utils\__pycache__
