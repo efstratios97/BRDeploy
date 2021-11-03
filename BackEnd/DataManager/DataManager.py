@@ -85,10 +85,10 @@ class DataManager:
             department = self.enum_depName_depID(
                 DataManager, selected_department_name=department)
             db_utils.DataBaseUtils.execute_sql(
-                db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.
-                insert_department_dataset_access_relation_values(
-                    sql_stmt.DataBaseSQL, dataset_id=dataset.get_datasetID(), department_id=department),
-                local=local)
+                    db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.
+                    insert_department_dataset_access_relation_values(
+                        sql_stmt.DataBaseSQL, dataset_id=dataset.get_datasetID(), department_id=department),
+                    local=local)
 
     def enum_depName_depID(self, selected_department_name):
         departments = um.UserManager.get_departments(um.UserManager)

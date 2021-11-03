@@ -1,104 +1,108 @@
 <template>
   <form>
-    <ul class="form-list">
-      <li class="form-list__row">
-        <label for="DatasetName"> <b-icon-archive-fill /> Name:</label>
-        <input
-          class="input100"
-          id="DatasetName"
-          type="text"
-          v-model="name"
-          placeholder="Data Set Name"
-          required=""
-        />
-      </li>
-      <li class="form-list__row">
-        <label for="DatasetName" id="description">
-          <b-icon-pencil-fill /> Description:
-        </label>
-        <textarea
-          class="input100"
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-file"></i>
+          </span>
+          <InputText
+            placeholder="Dataset's Name"
+            v-model="name"
+            class="inputfield w-full"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <Textarea
+          placeholder="Dataset Description"
           v-model="description"
-          placeholder="Description"
-          id="description"
-        ></textarea>
-      </li>
-      <li class="form-list__row form-list__row--inline">
-        <div class="container-2">
-          <div class="row">
-            <div class="col-6">
-              <label> <b-icon-shield-lock-fill /> Users with Access</label>
-              <select v-model="selected_users" multiple>
-                <option
-                  v-for="user in users"
-                  v-bind:value="user.email"
-                  :key="user.email"
-                >
-                  {{ user.email }}
-                </option>
-              </select>
-            </div>
-            <div class="col-6">
-              <label>
-                <b-icon-shield-lock-fill /> Departments with Access
-              </label>
-              <select v-model="selected_departments" multiple>
-                <option
-                  v-for="department in departments"
-                  v-bind:value="department.name"
-                  :key="department.name"
-                >
-                  {{ department.name }}
-                </option>
-              </select>
-            </div>
-          </div>
+          :autoResize="true"
+          rows="5"
+          cols="30"
+        />
+      </div>
+    </div>
+
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-users"></i>
+          </span>
+          <MultiSelect
+            v-model="selected_users"
+            :options="users"
+            :filter="true"
+            optionLabel="user.email"
+            placeholder="Assign Users with Access (Optional)"
+            filterPlaceholder="Find Users"
+            class="multiselect-custom"
+            :showClear="true"
+          />
         </div>
-      </li>
-      <li class="form-list__row form-list__row--agree">
-        <div class="container-2">
-          <div class="row">
-            <div class="col-4">
-              <label for="cleaned">
-                <input
-                  type="checkbox"
-                  v-model="cleaned"
-                  id="cleaned"
-                  name="cleaned_ds"
-                />
-                Cleaned
-              </label>
-            </div>
-            <div class="col-6">
-              <label for="storage">
-                <input
-                  class="input200"
-                  type="checkbox"
-                  v-model="storageType"
-                  id="storage"
-                />
-                <b-icon-cloud-check-fill /> Stored in Cloud
-              </label>
-            </div>
-          </div>
+      </div>
+    </div>
+
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <b-icon-building />
+          </span>
+          <MultiSelect
+            v-model="selected_departments"
+            :options="departments"
+            :filter="true"
+            optionLabel="dep.name"
+            placeholder="Assign Departments with Access (Optional)"
+            filterPlaceholder="Find Departments"
+            class="multiselect-custom"
+            :showClear="true"
+          />
         </div>
-      </li>
-      <li class="form-list__row">
-        <label for="formFile"
-          ><b-icon-file-earmark-spreadsheet-fill /> File Input</label
-        >
-        <input class="form-control" type="file" id="formFile" ref="file" />
-      </li>
-      <li>
-        <button type="submit" class="button" @click="createDataSet">
-          Create Dataset
-        </button>
-      </li>
-      <li v-if="submitted">
-        <br />
-        <ProgressBar mode="indeterminate" v-if="submitted" />
-      </li>
-    </ul>
+      </div>
+    </div>
+
+    <div class="p-grid p-fluid">
+      <div class="p-col-3">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-sliders-h p-checkbox-icon"></i>
+            <label> Cleaned </label>
+          </span>
+        </div>
+      </div>
+      <div class="p-col-3">
+        <div class="p-field-checkbox">
+          <Checkbox v-model="cleaned" :binary="true" />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-list__row">
+      <label for="formFile"
+        ><b-icon-file-earmark-spreadsheet-fill /> File Input</label
+      >
+      <input class="form-control" type="file" id="formFile" ref="file" />
+    </div>
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <Button
+          label="Create Dataset"
+          icon="pi pi-plus-circle"
+          iconPos="center"
+          @click="createDataSet"
+        />
+      </div>
+    </div>
+    <div v-if="submitted">
+      <br />
+      <ProgressBar mode="indeterminate" v-if="submitted" />
+    </div>
   </form>
 </template>
 
@@ -122,13 +126,38 @@ export default {
   methods: {
     getUsersOptions() {
       this.$axios.get("/users").then((res) => {
-        this.users = res.data;
+        var users_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          users_tmp.push({ user: res.data[index] });
+        }
+        this.users = users_tmp;
       });
     },
     getDepartmentsOptions() {
       this.$axios.get("/departments").then((res) => {
-        this.departments = res.data;
+        var departments_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          departments_tmp.push({ dep: res.data[index] });
+        }
+        this.departments = departments_tmp;
       });
+    },
+    toString(dict_key) {
+      var key_word = "";
+      var object_input = "";
+      if (dict_key === "user") {
+        key_word = "email";
+        object_input = this.selected_users;
+      } else if (dict_key === "dep") {
+        key_word = "name";
+        object_input = this.selected_departments;
+      }
+      var updt_list = "";
+      for (let index = 0; index < object_input.length; index++) {
+        updt_list = updt_list.concat(object_input[index][dict_key][key_word]);
+        updt_list = updt_list.concat(",");
+      }
+      return updt_list.slice(0, -1);
     },
     createDataSet() {
       this.submitted = true;
@@ -141,11 +170,8 @@ export default {
         "storage_type",
         this.storageType === true ? "cloud" : "local"
       );
-      this.formData.append("access_user_list", this.selected_users);
-      this.formData.append(
-        "access_business_unit_list",
-        this.selected_departments
-      );
+      this.formData.append("access_user_list", this.toString("user"));
+      this.formData.append("access_business_unit_list", this.toString("dep"));
       this.$axios
         .post("/create_dataset?uid=" + localStorage.loggedUser, this.formData)
         .then(() => {
@@ -172,6 +198,23 @@ export default {
 </script>
 
 <style>
+label {
+  margin-top: 5px;
+  display: block;
+}
+
+.p-checkbox-icon {
+  margin: 5px;
+}
+
+.p-field-checkbox {
+  margin-top: 6px;
+}
+
+.p-grid {
+  margin-top: 15px;
+}
+
 .visuallyhidden {
   border: 0;
   clip: rect(0 0 0 0);
@@ -189,13 +232,28 @@ body {
   background-color: #f0f0f0;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5 {
-  margin: 0;
-  font-weight: 600;
+h2 {
+  color: #111;
+  font-family: "Open Sans Condensed", sans-serif;
+  font-size: 28x;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0 0 5px;
+  padding: 0 5px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+h1 {
+  color: #111;
+  font-family: "Open Sans Condensed", sans-serif;
+  font-size: 30x;
+  font-weight: 700;
+  line-height: 35px;
+  margin: 0 0 5px;
+  padding: 0 5px;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .button {
@@ -313,5 +371,18 @@ input:focus {
   background-size: 36px;
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
+}
+
+footer p {
+  margin: 10px 0;
+}
+
+footer i {
+  color: red;
+}
+
+footer a {
+  color: #3c97bf;
+  text-decoration: none;
 }
 </style>

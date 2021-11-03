@@ -1,71 +1,96 @@
 <template>
   <form>
-    <div class="mb-3">
-      <label for="firstName" class="form-label">
-        <b-icon-person-fill /> First Name:</label
-      >
-      <input
-        class="input100"
-        id="firstName"
-        type="text"
-        v-model="firstName"
-        placeholder="First Name"
-      />
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-user"></i>
+          </span>
+          <InputText
+            placeholder="First Name"
+            v-model="firstName"
+            class="inputfield w-full"
+          />
+        </div>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="lastName" class="form-label" id="lastName">
-        <b-icon-person-fill /> Last Name:
-      </label>
-      <input
-        class="input100"
-        v-model="lastName"
-        placeholder="Last Name"
-        id="lastName"
-      />
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-user"></i>
+          </span>
+          <InputText
+            placeholder="Last Name"
+            v-model="lastName"
+            class="inputfield w-full"
+          />
+        </div>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="email" class="form-label" id="email">
-        <b-icon-envelope-open-fill /> Email:
-      </label>
-      <input class="input100" v-model="email" placeholder="Email" id="email" />
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-envelope"></i>
+          </span>
+          <InputText placeholder="E-mail" v-model="email" />
+        </div>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="admin"> <b-icon-shield-lock-fill /> Admin</label>
-      <input class="input200" type="checkbox" v-model="admin" id="admin" />
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <b-icon-building />
+          </span>
+          <Dropdown
+            v-model="selectedDepartment"
+            :options="departments"
+            :filter="true"
+            optionLabel="dep.name"
+            placeholder="Assign Department"
+            filterPlaceholder="Find an Department"
+            class="multiselect-custom"
+            :showClear="true"
+          />
+        </div>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="rolemanager">
-        <b-icon-check-circle-fill /> Role Manager
-      </label>
-      <input
-        class="input200"
-        type="checkbox"
-        v-model="roleManager"
-        id="rolemanager"
-      />
+    <div class="p-grid p-fluid">
+      <div class="col-4 col-offset-1">
+        <i class="pi pi-id-card p-checkbox-icon"></i>
+        <label>Admin</label>
+      </div>
+      <div class="p-field-checkbox">
+        <Checkbox v-model="admin" :binary="true" />
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label> <b-icon-building /> Department</label>
-      <select v-model="selectedDepartment">
-        <option
-          v-for="department in departments"
-          v-bind:value="department.name"
-          :key="department.name"
-        >
-          {{ department.name }}
-        </option>
-      </select>
+    <div class="p-grid p-fluid">
+      <div class="col-4 col-offset-1">
+        <i class="pi pi-eye p-checkbox-icon"></i>
+        <label>Role Manager</label>
+      </div>
+      <div class="p-field-checkbox">
+        <Checkbox v-model="roleManager" :binary="true" />
+      </div>
     </div>
 
-    <button class="btn-form" @click="createUser">
-      <b-icon-upload />
-      <b>Create User</b>
-    </button>
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <Button
+          label="Create User"
+          icon="pi pi-user-plus"
+          iconPos="center"
+          @click="createUser"
+        />
+      </div>
+    </div>
   </form>
 </template>
 
@@ -73,6 +98,7 @@
 export default {
   data() {
     return {
+      selectedDepartment: "Select Department",
       first_name: "",
       last_name: "",
       business_unit: "",
@@ -80,7 +106,7 @@ export default {
       password: "12345",
       access_rights_pillars: "{'UserManager':1, 'DataManager':1}",
       admin: 0,
-      role_manager: 0,
+      roleManager: 0,
       user: {},
       departments: this.getDepartmentsOptions(),
       users: this.listUsers(),
@@ -94,7 +120,11 @@ export default {
     },
     getDepartmentsOptions() {
       this.$axios.get("/departments").then((res) => {
-        this.departments = res.data;
+        var departments_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          departments_tmp.push({ dep: res.data[index] });
+        }
+        this.departments = departments_tmp;
       });
     },
     createUser() {
@@ -111,7 +141,7 @@ export default {
         this.user = {
           first_name: this.firstName,
           last_name: this.lastName,
-          business_unit: this.selectedDepartment,
+          business_unit: this.selectedDepartment.dep.name,
           email: this.email,
           password: "12345",
           access_rights_pillars: "{'UserManager':1, 'DataManager':1}",
@@ -134,19 +164,6 @@ export default {
               life: 3000,
             });
             this.$emit("close");
-          })
-          .catch(() => {
-            this.$toast.add({
-              severity: "error",
-              summary: "User Creation Unsuccessful",
-              detail:
-                "The User: " +
-                this.firstName +
-                " " +
-                this.lastName +
-                " could not be created!\nIf you have no Admin rights you cannot create a new User",
-              life: 3000,
-            });
             return;
           });
       }
@@ -154,27 +171,3 @@ export default {
   },
 };
 </script>
-<style scoped>
-label {
-  display: block;
-}
-
-.btn-form {
-  color: white;
-  background: #0d6efd;
-  border: 0px solid blue;
-  border-radius: 2px;
-}
-
-select {
-  color: black;
-}
-
-input {
-  color: black;
-}
-
-textarea {
-  color: black;
-}
-</style>

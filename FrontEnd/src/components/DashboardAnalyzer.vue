@@ -39,12 +39,14 @@
             <plotter-bubble
               :selected_dataset="selected_dataset"
               :key="componentKey"
+              style="resize: both; overflow: auto"
             ></plotter-bubble>
           </div>
           <div class="col-6">
             <plotter-bubble
               :selected_dataset="selected_dataset"
               :key="componentKey"
+              style="resize: both; overflow: auto"
             ></plotter-bubble>
           </div>
         </div>
@@ -90,12 +92,14 @@
               <plotter-simple-statistics
                 :selected_dataset="selected_dataset"
                 :key="componentKey"
+                class="overflow-auto"
               ></plotter-simple-statistics>
             </div>
             <div class="col-6">
               <plotter-simple-statistics
                 :selected_dataset="selected_dataset"
                 :key="componentKey"
+                class="overflow-auto"
               ></plotter-simple-statistics>
             </div>
           </div>

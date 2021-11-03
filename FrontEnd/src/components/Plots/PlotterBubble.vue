@@ -129,7 +129,7 @@
     <br />
     <Card>
       <template v-slot:title> Heatmap Plot</template>
-      <template v-slot:subtitle> View made by Python </template>
+      <template v-slot:subtitle> View powered by Python </template>
       <template v-slot:content>
         <div class="container">
           <div class="row">

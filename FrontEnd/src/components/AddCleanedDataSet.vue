@@ -63,8 +63,36 @@
         ></Column>
       </DataTable>
     </Dialog>
+
     <form>
-      <div class="mb-3">
+      <div class="p-grid p-fluid">
+        <div class="p-col-12 p-md-12">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">
+              <i class="pi pi-search"></i>
+            </span>
+            <Dropdown
+              v-model="selected_dataset"
+              :options="datasets"
+              :filter="true"
+              optionLabel="dataset"
+              placeholder="Choose Dataset"
+              filterPlaceholder="Find an Dataset"
+              class="multiselect-custom"
+              :showClear="true"
+            />
+            <Button
+              label="Find Applicable Cleanser"
+              @click="
+                toggleShowCleanserSelector();
+                getSuitableCleansersOptions();
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="mb-3">
         <label> <b-icon-shield-lock-fill /> Choose Datasets</label>
         <select
           v-model="selected_dataset"
@@ -78,9 +106,31 @@
             {{ dataset }}
           </option>
         </select>
+      </div> -->
+
+      <div v-if="showCleanserSelector">
+        <div class="p-grid p-fluid">
+          <div class="p-col-12 p-md-12">
+            <div class="p-inputgroup">
+              <span class="p-inputgroup-addon">
+                <b-icon-shield-lock-fill />
+              </span>
+              <Dropdown
+                v-model="selected_cleanser"
+                :options="suitable_cleansers"
+                :filter="true"
+                optionLabel="cleanser.name"
+                placeholder="Choose Dataset"
+                filterPlaceholder="Find an Dataset"
+                class="multiselect-custom"
+                :showClear="true"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div v-if="selected_dataset !== ''" class="mb-3">
+      <!-- <div v-if="selected_dataset !== ''" class="mb-3">
         <label> <b-icon-shield-lock-fill /> Suitable Cleansers</label>
         <select
           v-model="selected_cleanser"
@@ -94,84 +144,93 @@
             {{ cleanser.name }}
           </option>
         </select>
-      </div>
+      </div> -->
+
       <hr />
 
       <div v-if="selected_cleanser !== ''">
-        <h1>Save cleaned Dataset</h1>
-        <hr />
-
-        <div class="mb-3">
-          <label for="DatasetName" class="form-label">
-            <b-icon-archive-fill /> Name:</label
-          >
-          <input
-            class="input100"
-            id="DatasetName"
-            type="text"
-            v-model="name"
-            placeholder="Data Set Name"
-          />
+        <h2>Save cleaned Dataset</h2>
+        <div class="p-grid p-fluid">
+          <div class="p-col-12 p-md-12">
+            <div class="p-inputgroup">
+              <span class="p-inputgroup-addon">
+                <i class="pi pi-file"></i>
+              </span>
+              <InputText
+                placeholder="Dataset's Name"
+                v-model="name"
+                class="inputfield w-full"
+              />
+            </div>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label for="description" class="form-label" id="description">
-            <b-icon-pencil-fill /> Description:
-          </label>
-          <textarea
-            class="input100"
-            v-model="description"
-            placeholder="Description"
-            id="description"
-          ></textarea>
+        <div class="p-grid p-fluid">
+          <div class="p-col-12 p-md-12">
+            <Textarea
+              placeholder="Dataset Description"
+              v-model="description"
+              :autoResize="true"
+              rows="5"
+              cols="30"
+            />
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label for="storage">
-            <b-icon-cloud-check-fill /> Stored in Cloud
-          </label>
-          <input
-            class="input200"
-            type="checkbox"
-            v-model="storageType"
-            id="storage"
-          />
+        <div class="p-grid p-fluid">
+          <div class="p-col-12 p-md-12">
+            <div class="p-inputgroup">
+              <span class="p-inputgroup-addon">
+                <i class="pi pi-users"></i>
+              </span>
+              <MultiSelect
+                v-model="selected_users"
+                :options="users"
+                :filter="true"
+                optionLabel="user.email"
+                placeholder="Assign Users with Access (Optional)"
+                filterPlaceholder="Find Users"
+                class="multiselect-custom"
+                :showClear="true"
+              />
+            </div>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label> <b-icon-shield-lock-fill /> Users with Access</label>
-          <select v-model="selected_users" multiple>
-            <option
-              v-for="user in users"
-              v-bind:value="user.email"
-              :key="user.email"
-            >
-              {{ user.email }}
-            </option>
-          </select>
+        <div class="p-grid p-fluid">
+          <div class="p-col-12 p-md-12">
+            <div class="p-inputgroup">
+              <span class="p-inputgroup-addon">
+                <b-icon-building />
+              </span>
+              <MultiSelect
+                v-model="selected_departments"
+                :options="departments"
+                :filter="true"
+                optionLabel="dep.name"
+                placeholder="Assign Departments with Access (Optional)"
+                filterPlaceholder="Find Departments"
+                class="multiselect-custom"
+                :showClear="true"
+              />
+            </div>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label> <b-icon-shield-lock-fill /> Departments with Access</label>
-          <select v-model="selected_departments" multiple>
-            <option
-              v-for="department in departments"
-              v-bind:value="department.name"
-              :key="department.name"
-            >
-              {{ department.name }}
-            </option>
-          </select>
+        <div class="p-grid p-fluid">
+          <div class="p-col-12 p-md-12">
+            <Button
+              label="Save Cleaned Dataset"
+              icon="pi pi-plus-circle"
+              iconPos="center"
+              @click="createCleanedDataSet"
+            />
+          </div>
         </div>
-        <button class="btn-form" @click="createCleanedDataSet">
-          <b-icon-upload />
-          <b> Apply Cleanser & Save cleaned Dataset</b>
-        </button>
-        <span v-if="submitted">
-          <br />
+        <div v-if="submitted">
           <br />
           <ProgressBar mode="indeterminate" v-if="submitted" />
-        </span>
+        </div>
       </div>
     </form>
   </div>
@@ -184,7 +243,7 @@ export default {
       name: "",
       cleaned: "",
       description: "",
-      storageType: "",
+      storageType: true,
       file: "",
       users: this.getUsersOptions(),
       departments: this.getDepartmentsOptions(),
@@ -200,22 +259,68 @@ export default {
       selectedCleanedRows: "",
       cleaned_rows: "",
       columns: "",
+      showCleanserSelector: false,
     };
   },
   methods: {
+    toggleShowCleanserSelector() {
+      this.showCleanserSelector = !this.showCleanserSelector;
+    },
     getUsersOptions() {
-      this.users = this.$axios.get("/users").then((res) => {
-        this.users = res.data;
+      this.$axios.get("/users").then((res) => {
+        var users_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          users_tmp.push({ user: res.data[index] });
+        }
+        this.users = users_tmp;
       });
     },
     getDepartmentsOptions() {
-      this.users = this.$axios.get("/departments").then((res) => {
-        this.departments = res.data;
+      this.$axios.get("/departments").then((res) => {
+        var departments_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          departments_tmp.push({ dep: res.data[index] });
+        }
+        this.departments = departments_tmp;
       });
+    },
+    toString(dict_key) {
+      var key_word = "";
+      var object_input = "";
+      if (dict_key === "user") {
+        key_word = "email";
+        object_input = this.selected_users;
+      } else if (dict_key === "dep") {
+        key_word = "name";
+        object_input = this.selected_departments;
+      } else if (dict_key === "dataset") {
+        object_input = this.selected_datasets;
+      } else if (dict_key === "cleanser") {
+        object_input = this.suitable_cleansers;
+      }
+      var updt_list = "";
+      if (dict_key === "user" || dict_key === "dep") {
+        for (let index = 0; index < object_input.length; index++) {
+          updt_list = updt_list.concat(object_input[index][dict_key][key_word]);
+          updt_list = updt_list.concat(",");
+        }
+      } else if (dict_key === "dataset" || dict_key === "cleanser") {
+        for (let index = 0; index < object_input.length; index++) {
+          var temp_elem = object_input[index][dict_key];
+          if (dict_key === "dataset") {
+            temp_elem = object_input[index][dict_key].split("ID: ")[1];
+          }
+          updt_list = updt_list.concat(temp_elem);
+          updt_list = updt_list.concat(",");
+        }
+      }
+      return updt_list.slice(0, -1);
     },
     createCleanedDataSet() {
       this.$axios
-        .get("/get_cleanser_by_id/" + this.selected_cleanser)
+        .get(
+          "/get_cleanser_by_id/" + this.selected_cleanser.cleanser.cleanser_id
+        )
         .then((res) => {
           this.submitted = true;
           this.$toast.add({
@@ -237,17 +342,17 @@ export default {
             "storage_type",
             this.storageType === true ? "cloud" : "local"
           );
-          this.formData.append("access_user_list", this.selected_users);
+          this.formData.append("access_user_list", this.toString("user"));
           this.formData.append(
             "access_business_unit_list",
-            this.selected_departments
+            this.toString("dep")
           );
           this.$axios
             .post(
               "/create_cleaned_dataset/" +
                 this.selected_cleanser.cleanser_id +
                 "/" +
-                this.selected_dataset.split("ID: ")[1] +
+                this.selected_dataset["dataset"].split("ID: ")[1] +
                 "/" +
                 localStorage.loggedUser,
               this.formData
@@ -281,27 +386,35 @@ export default {
         .then((res) => {
           var datasets_tmp = [];
           for (let index = 0; index < res.data.data.length; index++) {
-            datasets_tmp.push(
-              "NAME: " +
+            datasets_tmp.push({
+              dataset:
+                "NAME: " +
                 res.data.data[index]["name"] +
                 "   |   " +
                 "ID: " +
-                res.data.data[index]["dataset_id"]
-            );
+                res.data.data[index]["dataset_id"],
+            });
           }
           this.datasets = datasets_tmp;
         });
     },
     getSuitableCleansersOptions() {
-      if (this.selected_dataset === undefined) {
-        this.selected_dataset = " ";
-      }
+      // if (this.selected_dataset === undefined) {
+      //   this.selected_dataset = " ";
+      // }
       this.$axios
         .get(
-          "/get_suitable_cleansers/" + this.selected_dataset.split("ID: ")[1]
+          "/get_suitable_cleansers/" +
+            this.selected_dataset["dataset"].split("ID: ")[1]
         )
         .then((res) => {
-          this.suitable_cleansers = res.data.data;
+          var cleanser_tmp = [];
+          for (let index = 0; index < res.data.data.length; index++) {
+            cleanser_tmp.push({
+              cleanser: res.data.data[index],
+            });
+          }
+          this.suitable_cleansers = cleanser_tmp;
         })
         .catch(() => {
           this.$toast.add({

@@ -1,20 +1,30 @@
 <template>
   <form>
-    <div class="mb-3">
-      <label for="name" class="form-label"> <b-icon-building /> Name:</label>
-      <input
-        class="input100"
-        id="name"
-        type="text"
-        v-model="name"
-        placeholder="BU Name"
-      />
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <b-icon-building />
+          </span>
+          <InputText
+            placeholder="Department's Name"
+            v-model="name"
+            class="inputfield w-full"
+          />
+        </div>
+      </div>
     </div>
 
-    <button class="btn-form" @click="createBU">
-      <b-icon-upload />
-      <b>Create BU</b>
-    </button>
+    <div class="p-grid p-fluid">
+      <div class="p-col-12 p-md-12">
+        <Button
+          label="Create Department"
+          icon="pi pi-plus-circle"
+          iconPos="center"
+          @click="createBU"
+        />
+      </div>
+    </div>
   </form>
 </template>
 

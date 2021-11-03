@@ -138,7 +138,14 @@ class DataCleanser:
                                                                             condition=st.TB_CLEANSER_COL_CLEANSER_ID,
                                                                             condition_operator='=', condition_value=cleanser.get_cleanserID()),
                                                                local=local)
-                            self.insert_cleanser_dataset_compatibility_relation_db(DataCleanser,
+                            existent_datasets = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                                               sql_statement=sql_stmt.DataBaseSQL.select_object_by_condition 
+                                                               (sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER_DATASET_COMPATIBILITY,
+                                                                            condition=st.TB_CLEANSER_COL_CLEANSER_ID,
+                                                                            condition_operator='=', condition_value=cleanser.get_cleanserID()),
+                                                               local=local, fetchall=True)
+                            if not dataset_id in existent_datasets:
+                                self.insert_cleanser_dataset_compatibility_relation_db(DataCleanser,
                                                                                    cleanser, dataset_id)
 
     def define_operations(self):

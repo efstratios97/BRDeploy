@@ -14,7 +14,9 @@
         <div class="container">
           <div class="row">
             <div
-              class="col-xs-12 col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8"
+              class="
+                col-xs-12 col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8
+              "
             >
               <div class="page-title home text-center">
                 <span class="heading-page">
@@ -255,6 +257,16 @@
         </div>
       </div>
     </div>
+    <footer>
+      <p>
+        Created by LTEP Technologies. Copyright 2021 ©
+        <a
+          target="_blank"
+          href="https://de.linkedin.com/in/leo-thieroff-a5b965161"
+          >More</a
+        >.
+      </p>
+    </footer>
   </main>
 </template>
 
@@ -288,7 +300,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 @import url("https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
 body {
   font-family: "Libre Baskerville", serif;
@@ -1000,5 +1012,16 @@ label {
     -o-transform: rotate(30deg) translate(0px, 0px);
     transform: rotate(30deg) translate(0px, 0px);
   }
+}
+footer {
+  background-color: #222;
+  color: #fff;
+  font-size: 14px;
+  bottom: 0;
+  position: fixed;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 999;
 }
 </style>

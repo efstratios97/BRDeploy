@@ -28,6 +28,10 @@ import Password from 'primevue/password';
 import Divider from 'primevue/divider';
 import Dialog from 'primevue/dialog';
 import Tooltip from 'primevue/tooltip';
+import ScrollPanel from 'primevue/scrollpanel';
+import Textarea from 'primevue/textarea';
+import Checkbox from 'primevue/checkbox';
+import FileUpload from 'primevue/fileupload';
 import 'primeflex/primeflex.css';
 import 'primevue/resources/primevue.min.css'
 import 'primevue/resources/themes/bootstrap4-light-blue/theme.css';
@@ -62,7 +66,7 @@ const store = createStore({
 })
 const instance = axios.create({
     // baseURL: process.env.NODE_ENV == 'development' ? '' : ''
-    baseURL: 'http://it-eamtoolt-01:8081',//'http://127.0.0.1:8081',
+    baseURL: 'http://it-eamtoolt-01:8081',// 'http://10.20.20.132:8081'
     timeout: 60 * 4 * 1000
 });
 const app = createApp(App)
@@ -87,6 +91,10 @@ app.component("MultiSelect", MultiSelect);
 app.component('Password', Password);
 app.component('Divider', Divider);
 app.component('Dialog', Dialog);
+app.component('ScrollPanel', ScrollPanel);
+app.component('Textarea', Textarea);
+app.component('Checkbox', Checkbox);
+app.component('FileUpload', FileUpload);
 app.directive('tooltip', Tooltip);
 app.use(VueApexCharts);
 app.use(store)

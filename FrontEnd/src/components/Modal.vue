@@ -31,10 +31,10 @@
           class="modal__product"
         />
       </div>
-      <div class="modal__content">
-        <h2 style="color: grey"><slot name="header"></slot></h2>
+      <div class="modal__content overflow-auto">
+        <h2><slot name="header"></slot></h2>
         <br />
-        <slot name="body"></slot>
+        <slot name="body" class="overflow-auto"></slot>
       </div>
       <!-- END: .modal__content -->
     </div>
@@ -69,15 +69,6 @@ body {
   font-family: "Open Sans", sans-serif;
   color: #1a1a1a;
   background-color: #f0f0f0;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5 {
-  margin: 0;
-  font-weight: 600;
 }
 
 .button {
