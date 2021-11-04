@@ -64,12 +64,8 @@ def post_cleanser():
 @blueprint.route('/update_cleansers/<user_id>', methods=['POST', 'OPTIONS'])
 def update_cleanser(user_id):
     result = {}
-    try:
-        dc.DataCleanser.update_all_cleansers(dc.DataCleanser, user_id)
-        return fl.jsonify(result), 200
-    except:
-        DataCleanserEndpoints.endpoints_exception(DataCleanserEndpoints,
-                                                  code=400, msg="Update Unsuccesful")
+    dc.DataCleanser.update_all_cleansers(dc.DataCleanser, user_id)
+    return fl.jsonify(result), 200
 
 
 @blueprint.route('/delete_cleanser/<cleanser_id>', methods=['DELETE', 'OPTIONS'])
@@ -115,6 +111,7 @@ def post_cleaned_dataset(cleanser_id, dataset_id, uid):
                                              access_user_list=access_user_list, access_business_unit_list=access_business_unit_list,
                                              description=description, storage_type=storage_type)
 
+    df_out = df_out.astype(str)
     df_out_dict = df_out.to_dict(orient='records')
     result = json.dumps(df_out_dict, sort_keys=False)
     if result == '[]':

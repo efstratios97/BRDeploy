@@ -92,36 +92,20 @@
         </div>
       </div>
 
-      <!-- <div class="mb-3">
-        <label> <b-icon-shield-lock-fill /> Choose Datasets</label>
-        <select
-          v-model="selected_dataset"
-          @click="getSuitableCleansersOptions()"
-        >
-          <option
-            v-for="dataset in datasets"
-            v-bind:value="dataset"
-            :key="dataset"
-          >
-            {{ dataset }}
-          </option>
-        </select>
-      </div> -->
-
       <div v-if="showCleanserSelector">
         <div class="p-grid p-fluid">
           <div class="p-col-12 p-md-12">
             <div class="p-inputgroup">
               <span class="p-inputgroup-addon">
-                <b-icon-shield-lock-fill />
+                <i class="pi pi-cog"></i>
               </span>
               <Dropdown
                 v-model="selected_cleanser"
                 :options="suitable_cleansers"
                 :filter="true"
                 optionLabel="cleanser.name"
-                placeholder="Choose Dataset"
-                filterPlaceholder="Find an Dataset"
+                placeholder="Choose Cleanser"
+                filterPlaceholder="Find a Cleanser"
                 class="multiselect-custom"
                 :showClear="true"
               />
@@ -129,22 +113,6 @@
           </div>
         </div>
       </div>
-
-      <!-- <div v-if="selected_dataset !== ''" class="mb-3">
-        <label> <b-icon-shield-lock-fill /> Suitable Cleansers</label>
-        <select
-          v-model="selected_cleanser"
-          @click="getSuitableCleansersOptions()"
-        >
-          <option
-            v-for="cleanser in suitable_cleansers"
-            v-bind:value="cleanser.cleanser_id"
-            :key="cleanser.cleanser_id"
-          >
-            {{ cleanser.name }}
-          </option>
-        </select>
-      </div> -->
 
       <hr />
 
@@ -415,6 +383,14 @@ export default {
             });
           }
           this.suitable_cleansers = cleanser_tmp;
+          if (cleanser_tmp.length === 0) {
+            this.$toast.add({
+              severity: "error",
+              summary: "No suitable Cleansers available",
+              detail: "The Dataset has no suitable cleanser",
+              life: 3000,
+            });
+          }
         })
         .catch(() => {
           this.$toast.add({

@@ -196,6 +196,15 @@ export default {
             let t = document.createTextNode(response.data.script);
             bokehRunScript.appendChild(t);
             document.body.appendChild(bokehRunScript);
+          })
+          .catch(() => {
+            this.$toast.add({
+              severity: "error",
+              summary: "Not suitable Dataset",
+              detail:
+                "The chosen Dataset is not suitable for this data analysis",
+              life: 5000,
+            });
           });
       };
     },

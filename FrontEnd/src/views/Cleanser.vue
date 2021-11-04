@@ -169,6 +169,13 @@ export default {
       this.$axios
         .post("/update_cleansers/" + localStorage.loggedUser)
         .then(() => {
+          this.$toast.add({
+            severity: "success",
+            summary: "Updating Cleansers Successful",
+            detail:
+              "All your Cleanser are updated!\nSuitable datasets were assigned to the applicable Cleansers",
+            life: 8000,
+          });
           this.refreshData();
         });
     },

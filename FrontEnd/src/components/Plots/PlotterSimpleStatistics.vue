@@ -185,6 +185,15 @@ export default {
             document.body.appendChild(bokehRunScript);
             // Close the wait screen after the drawing code is executed
             // _this.loading = false;
+          })
+          .catch(() => {
+            this.$toast.add({
+              severity: "error",
+              summary: "Not suitable Dataset",
+              detail:
+                "The chosen Dataset is not suitable for this data analysis",
+              life: 5000,
+            });
           });
       };
     },

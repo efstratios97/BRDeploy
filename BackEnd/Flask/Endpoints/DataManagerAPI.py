@@ -58,6 +58,8 @@ def post_dataset():
         data = pd.read_excel(data, engine='openpyxl')
     # Adds to the user_access_list the owner/creator of the dataset by default
     access_user_list_ids = ""
+    if access_business_unit_list == "":
+        access_business_unit_list = st.DEPARTMENT_GENESIS
     if access_user_list == "":
         access_user_list = owner
     else:

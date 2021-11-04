@@ -11,14 +11,14 @@ import hashlib
 import pandas as pd
 import functools
 
-ATHENA_CLOUD_DB_HOST = 'localhost'
-ATHENA_CLOUD_DB_USER = 'br'
-ATHENA_CLOUD_DB_PW = 'BRApp12345!'
-ATHENA_CLOUD_DB_DBNAME = 'BRArchitectureManager'
-# ATHENA_CLOUD_DB_HOST = 'mysql.efspah.dreamhosters.com'
-# ATHENA_CLOUD_DB_USER = 'efspahdreamhoste'
-# ATHENA_CLOUD_DB_PW = 'hiathena'
-# ATHENA_CLOUD_DB_DBNAME = 'projectathena'
+# ATHENA_CLOUD_DB_HOST = 'localhost'
+# ATHENA_CLOUD_DB_USER = 'br'
+# ATHENA_CLOUD_DB_PW = 'BRApp12345!'
+# ATHENA_CLOUD_DB_DBNAME = 'BRArchitectureManager'
+ATHENA_CLOUD_DB_HOST = 'mysql.efspah.dreamhosters.com'
+ATHENA_CLOUD_DB_USER = 'efspahdreamhoste'
+ATHENA_CLOUD_DB_PW = 'hiathena'
+ATHENA_CLOUD_DB_DBNAME = 'projectathena'
 
 # Table names
 TABLE_DATASET = 'datasets'
@@ -98,6 +98,9 @@ TB_PLOTS_COL_DESCRIPTION = "PLOT_DESCRIPTION"
 TB_PLOTS_COL_TYPE = "PLOT_TYPE"
 TB_PLOTS_COL_PARAMETERS = "EXECUTIVE_DASHBOARD_PARAMETERS"
 TB_PLOTS_COL_CREATED_AT = "CREATED_AT"
+
+# Other Global variables
+DEPARTMENT_GENESIS = "DEPARTMENT_GENESIS_6aba48df0cb55992803d864977c3aa204520d659"
 
 
 def get_filename_of_occured_error():

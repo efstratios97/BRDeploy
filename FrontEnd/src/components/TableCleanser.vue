@@ -30,7 +30,7 @@
     <template #loading>
       Loading Cleansers. Please wait. <ProgressBar mode="indeterminate" />
     </template>
-    <Column selectionMode="single" style="min-width: 3rem"></Column>
+    <Column selectionMode="multiple" style="min-width: 3rem"></Column>
     <Column field="cleanser_id" header="ID" sortable style="min-width: auto">
     </Column>
     <Column field="name" header="Name" sortable style="min-width: auto">
@@ -73,7 +73,7 @@
       <template #body>
         <div class="btn-align-td">
           <button
-            v-on:click="deleteCleanser(this.selected_cleanser.cleanser_id)"
+            v-on:click="deleteSelected()"
             class="btn btn-secondary"
             v-tooltip="'Select Cleanser first'"
           >
@@ -110,6 +110,11 @@ export default {
             this.cleansers[index][key] = this.cleansers[index][key].split(",");
           }
         }
+      }
+    },
+    deleteSelected() {
+      for (let index = 0; index < this.selected_cleanser.length; index++) {
+        this.deleteCleanser(this.selected_cleanser[index].cleanser_id);
       }
     },
     deleteCleanser(cleanser_id) {

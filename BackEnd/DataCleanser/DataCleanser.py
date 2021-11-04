@@ -104,54 +104,59 @@ class DataCleanser:
         return header_list
 
     def update_all_cleansers(self, user_id, local=False):
-        cleansers = self.get_all_cleansers(DataCleanser)
-        datasets = dm.DataManager.get_all_datasets_only_id(
-            dm.DataManager, user_id)
-        for cleanser in cleansers:
-            datasets_suitable = []
-            updated_header_list = []
-            for dataset_id in datasets:
-                if not datasets_suitable:
-                    datasets_suitable = cleanser.get_datasets().split(',')
-                if not dataset_id in datasets_suitable:
-                    updated_header_list = self.update_header_list(DataCleanser,
-                                                                  dataset_id, cleanser.get_header_list())
-                    if not updated_header_list == cleanser.get_header_list():
-                        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                           sql_statement=sql_stmt.DataBaseSQL.
-                                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
-                                                                        column=st.TB_CLEANSER_COL_HEADER_LIST, value=updated_header_list,
-                                                                        condition=st.TB_CLEANSER_COL_CLEANSER_ID,
-                                                                        condition_operator='=', condition_value=cleanser.get_cleanserID()),
-                                                           local=local)
-                    suitable_cleansers = [val.get_cleanserID()
-                                          for val in self.get_all_suitable_cleansers_by_header(DataCleanser, user_id)]
-                    for suitable_cleanser in suitable_cleansers:
-                        if cleanser.get_cleanserID() in suitable_cleansers:
-                            if not dataset_id in datasets_suitable:
-                                datasets_suitable.append(
-                                    dataset_id)
+        try:
+            cleansers = self.get_all_cleansers(DataCleanser)
+            datasets = dm.DataManager.get_all_datasets_only_id(
+                dm.DataManager, user_id)
+            for cleanser in cleansers:
+                datasets_suitable = []
+                updated_header_list = []
+                for dataset_id in datasets:
+                    if not datasets_suitable:
+                        datasets_suitable = cleanser.get_datasets().split(',')
+                    if not dataset_id in datasets_suitable:
+                        updated_header_list = self.update_header_list(DataCleanser,
+                                                                    dataset_id, cleanser.get_header_list())
+                        if not updated_header_list == cleanser.get_header_list():
                             db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                               sql_statement=sql_stmt.DataBaseSQL.
-                                                               update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
-                                                                            column=st.TB_CLEANSER_COL_DATASETIDS, value=datasets_suitable,
+                                                            sql_statement=sql_stmt.DataBaseSQL.
+                                                            update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
+                                                                            column=st.TB_CLEANSER_COL_HEADER_LIST, value=updated_header_list,
                                                                             condition=st.TB_CLEANSER_COL_CLEANSER_ID,
                                                                             condition_operator='=', condition_value=cleanser.get_cleanserID()),
-                                                               local=local)
-                            existent_datasets = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                               sql_statement=sql_stmt.DataBaseSQL.select_object_by_condition 
-                                                               (sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER_DATASET_COMPATIBILITY,
-                                                                            condition=st.TB_CLEANSER_COL_CLEANSER_ID,
-                                                                            condition_operator='=', condition_value=cleanser.get_cleanserID()),
-                                                               local=local, fetchall=True)
-                            if not dataset_id in existent_datasets:
-                                self.insert_cleanser_dataset_compatibility_relation_db(DataCleanser,
-                                                                                   cleanser, dataset_id)
+                                                            local=local)
+                        suitable_cleansers = [val.get_cleanserID()
+                                            for val in self.get_all_suitable_cleansers_by_header(DataCleanser, user_id)]
+                        for suitable_cleanser in suitable_cleansers:
+                            if cleanser.get_cleanserID() in suitable_cleansers:
+                                if not dataset_id in datasets_suitable:
+                                    datasets_suitable.append(
+                                        dataset_id)
+                                db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                                                sql_statement=sql_stmt.DataBaseSQL.
+                                                                update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
+                                                                                column=st.TB_CLEANSER_COL_DATASETIDS, value=datasets_suitable,
+                                                                                condition=st.TB_CLEANSER_COL_CLEANSER_ID,
+                                                                                condition_operator='=', condition_value=cleanser.get_cleanserID()),
+                                                                local=local)
+                                existent_datasets = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                                                sql_statement=sql_stmt.DataBaseSQL.select_object_by_condition 
+                                                                (sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER_DATASET_COMPATIBILITY,
+                                                                                condition=st.TB_CLEANSER_COL_CLEANSER_ID,
+                                                                                condition_operator='=', condition_value=cleanser.get_cleanserID()),
+                                                                local=local, fetchall=True)
+                                if not dataset_id in existent_datasets:
+                                    self.insert_cleanser_dataset_compatibility_relation_db(DataCleanser,
+                                                                                    cleanser, dataset_id)
+        except:
+            print('not compatible headers.. continueing')
+            self.update_all_cleansers(DataCleanser, user_id)
 
     def define_operations(self):
         self.cleanser_operation_types = {
+            "Remove Accidentally Created Applications": cca.BRCleanserAlgorithms.remove_accidental_appications,
             "Remove Dummy Applications": cca.BRCleanserAlgorithms.remove_dummy_appications,
-            "Identify & Remove Duplicate Applications": cca.BRCleanserAlgorithms.remove_duplicate_appications,
+            "Remove Duplicate Applications": cca.BRCleanserAlgorithms.remove_duplicate_appications,
             "Remove Test Applications": cca.BRCleanserAlgorithms.remove_test_appications
         }
 
