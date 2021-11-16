@@ -1,10 +1,3 @@
-import pandas as pd
-import Utils.DataBaseSQL as sql_stmt
-import Utils.DataBaseUtils as db_utils
-import Utils.Settings as st
-import ExecutiveDashboardManager.ExecutiveDashboardManager as edm
-import ExecutiveDashboardManager.ExecutiveDashboard as ed
-
 # Project Athena
 '''
 Owner: Efstratios Pahis
@@ -12,21 +5,28 @@ Contributors:
 Description: Implements main functionality of the Executive Dashboard Manager
 '''
 
+import pandas as pd
+import Utils.DataBaseSQL as sql_stmt
+import Utils.DataBaseUtils as db_utils
+import Utils.Settings as st
+import ExecutiveDashboardManager.ExecutiveDashboard as ed
+import DataPlotManager.DataPlotManager as dpm
+
 
 class ExecutiveDashboardManager:
 
-    def create_executive_dashboard(self, name, description, access_user_list, access_business_unit_list, components, dataset, local=False):
+    def create_executive_dashboard(self, name, description, access_user_list, access_business_unit_list, plots, dataset, local=False):
         executive_dashboard_id = "executive_dashboard_" + st.create_id()
 
         executive_dashboard = ed.ExecutiveDashboard(executive_dashboard_id=executive_dashboard_id, name=name, description=description,
                                                     access_user_list=access_user_list,
                                                     access_business_unit_list=access_business_unit_list,
-                                                    components=components, dataset=dataset)
+                                                    plots=plots, dataset=dataset)
         self.insert_executive_dashboard_db(
             ExecutiveDashboardManager, executive_dashboard=executive_dashboard, local=local)
         return dataset
 
-    def insert_executive_dashboard_db(self, executive_dashboard: ed.ExecutiveDashboard, local: bool):
+    def insert_executive_dashboard_db(self, executive_dashboard: ed.ExecutiveDashboard, local=False):
         # Creates Table
         db_utils.DataBaseUtils.execute_sql(
             db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.
@@ -39,161 +39,67 @@ class ExecutiveDashboardManager:
                                                                              executive_dashboard_description=executive_dashboard.get_description(),
                                                                              access_user_list=executive_dashboard.get_access_user_list(),
                                                                              access_business_unit_list=executive_dashboard.get_access_business_unit_list(),
-                                                                             executive_dashboard_components=executive_dashboard.get_components(),
+                                                                             executive_dashboard_plots=executive_dashboard.get_plots(),
                                                                              dataset_id=executive_dashboard.get_dataset()), local=local)
 
-    def insert_executive_dashboard_plot_relation_db(self, cleanser: cl.Cleanser, dataset_id, local=False):
-        # Creates Table
-        db_utils.DataBaseUtils.execute_sql(
-            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.
-            create_ExecutiveDashboard_Plot_relation_table_sql(sql_stmt.DataBaseSQL), local=local)
-        # Inserts data
-        db_utils.DataBaseUtils.execute_sql(
-            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.
-            insert_cleanser_dataset_compatability_relation_values(
-                sql_stmt.DataBaseSQL, cleanser_id=cleanser.get_cleanserID(), dataset_id=dataset_id),
-            local=local)
-
-    def get_all_suitable_cleansers_by_dataset(self, dataset_id, local=False):
-        data = []
-        result = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                    sql_statement=sql_stmt.DataBaseSQL.
-                                                    select_all_from_column(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER_DATASET_COMPATIBILITY,
-                                                                           condition=st.TB_DATASET_COL_DATASET_ID,
-                                                                           condition_operator='=', condition_value=dataset_id),
-                                                    fetchall=True, local=local)
-        for row in result:
-            cleanser = self.get_cleanser_by_id(DataCleanser, row[1])
-            data.append(cleanser)
-        return data
-
-    def get_all_suitable_cleansers_by_header(self, user_id):
-        suitable_cleaners = []
-        cleansers = self.get_all_cleansers(DataCleanser)
-        datasets = dm.DataManager.get_all_datasets_only_id(
-            dm.DataManager, user_id)
-        for cleanser in cleansers:
-            for dataset_id in datasets:
-                dataset_header = dm.DataManager.get_dataset_table_headers(
-                    dm.DataManager, dataset_id=dataset_id, local=False)
-                if cleanser.get_header_list() == st.make_list_to_str(dataset_header):
-                    suitable_cleaners.append(cleanser)
-                elif all(x in cleanser.get_header_list() for x in dataset_header):
-                    suitable_cleaners.append(cleanser)
-        return list(set(suitable_cleaners))
-
-    def update_header_list(self, dataset_id, header_list):
-        if isinstance(header_list, list):
-            header_list = st.make_list_to_str(header_list)
-        if isinstance(header_list, str):
-            header_list = header_list.split(',')
-        header_list_tmp = dm.DataManager.get_dataset_table_headers(
-            dm.DataManager, dataset_id=dataset_id, local=False)
-        if not st.check_list_identical(header_list, header_list_tmp):
-            if header_list[0] == '' and len(header_list) == 1:
-                header_list = header_list_tmp
-            elif not all(x in header_list for x in header_list_tmp):
-                [header_list.append(
-                    val) for val in header_list_tmp if not val in header_list]
-        header_list = st.make_list_to_str(header_list)
-        return header_list
-
-    def update_all_cleansers(self, user_id, local=False):
-        cleansers = self.get_all_cleansers(DataCleanser)
-        datasets = dm.DataManager.get_all_datasets_only_id(
-            dm.DataManager, user_id)
-        for cleanser in cleansers:
-            datasets_suitable = []
-            updated_header_list = []
-            for dataset_id in datasets:
-                if not datasets_suitable:
-                    datasets_suitable = cleanser.get_datasets().split(',')
-                if not dataset_id in datasets_suitable:
-                    updated_header_list = self.update_header_list(DataCleanser,
-                                                                  dataset_id, cleanser.get_header_list())
-                    if not updated_header_list == cleanser.get_header_list():
-                        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                           sql_statement=sql_stmt.DataBaseSQL.
-                                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
-                                                                        column=st.TB_CLEANSER_COL_HEADER_LIST, value=updated_header_list,
-                                                                        condition=st.TB_CLEANSER_COL_CLEANSER_ID,
-                                                                        condition_operator='=', condition_value=cleanser.get_cleanserID()),
-                                                           local=local)
-                    suitable_cleansers = [val.get_cleanserID()
-                                          for val in self.get_all_suitable_cleansers_by_header(DataCleanser, user_id)]
-                    for suitable_cleanser in suitable_cleansers:
-                        if cleanser.get_cleanserID() in suitable_cleansers:
-                            if not dataset_id in datasets_suitable:
-                                datasets_suitable.append(
-                                    dataset_id)
-                            db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                               sql_statement=sql_stmt.DataBaseSQL.
-                                                               update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
-                                                                            column=st.TB_CLEANSER_COL_DATASETIDS, value=datasets_suitable,
-                                                                            condition=st.TB_CLEANSER_COL_CLEANSER_ID,
-                                                                            condition_operator='=', condition_value=cleanser.get_cleanserID()),
-                                                               local=local)
-                            self.insert_cleanser_dataset_compatibility_relation_db(DataCleanser,
-                                                                                   cleanser, dataset_id)
-
-    def define_operations(self):
-        self.cleanser_operation_types = {
-            "Remove Dummy Applications": cca.BRCleanserAlgorithms.remove_dummy_appications,
-            "Identify & Remove Duplicate Applications": cca.BRCleanserAlgorithms.remove_duplicate_appications,
-            "Remove Test Applications": cca.BRCleanserAlgorithms.remove_test_appications
-        }
-
-    def apply_cleanser(self, cleanser_id, dataset_id, cleanser_operation_types, local=False):
-        self.define_operations(DataCleanser)
-        df = dm.DataManager.get_table_as_df(
-            dm.DataManager, table=dataset_id, local=local)
-        df_out = pd.DataFrame(columns=df.columns.to_list())
-        for cleanser_operation in cleanser_operation_types:
-            df, df_out = self.cleanser_operation_types[cleanser_operation](
-                cca.BRCleanserAlgorithms, df, df_out)
-        return df, df_out
-
-    def get_all_cleanser_operation_types(self):
-        self.define_operations(DataCleanser)
-        return list(self.cleanser_operation_types.keys())
-
-    def get_all_cleansers(self):
+    def get_all_executive_dashboards(self):
         data = []
         result = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
                                                     sql_stmt.DataBaseSQL.select_all_data_from_table(
-                                                        sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER),
+                                                        sql_stmt.DataBaseSQL, table=st.TABLE_EXECUTIVE_DASHBOARDS),
                                                     fetchall=True, local=False)
         if result:
             for row in result:
-                cleanser = self.__parse_cleanser_obj(DataCleanser, row)
-                data.append(cleanser)
+                executive_dashboard = self.__parse_executive_dashboard_obj(
+                    ExecutiveDashboardManager, row)
+                data.append(executive_dashboard)
         return data
 
-    def get_cleanser_by_id(self, cleanser_id, local=False):
+    def get_plots_from_executive_dashboard(self, executive_dashboard_id, local=False):
+        result = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                                    sql_statement=sql_stmt.DataBaseSQL.
+                                                    select_all_from_column(sql_stmt.DataBaseSQL, table=st.TABLE_EXECUTIVE_DASHBOARDS_PLOTS_RELATION,
+                                                                           condition=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
+                                                                           condition_operator='=', condition_value=executive_dashboard_id),
+                                                    fetchall=True, local=local)
+        # TODO FIX
+        plots = []
+        data = []
+        for row in result:
+            # if not row[0] in plots:
+            plot = dpm.DataPlotManager.get_plot_by_id(
+                dpm.DataPlotManager, row[1])
+            data.append(plot)
+            # plots.append(plot)
+        return data
+
+    def get_executive_dashboard_by_id(self, executive_dashboard_id, local=False):
         result = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
                                                     sql_statement=sql_stmt.DataBaseSQL.select_object_by_condition(
-                                                        sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
-                                                        condition=st.TB_CLEANSER_COL_CLEANSER_ID, condition_value=cleanser_id),
+                                                        sql_stmt.DataBaseSQL, table=st.TABLE_EXECUTIVE_DASHBOARDS,
+                                                        condition=st.TB_EXECUTIVE_DASHBOARDS_COL_ID, condition_value=executive_dashboard_id),
                                                     local=local, fetchone=True)
-        cleanser = self.__parse_cleanser_obj(DataCleanser, db_row=result)
-        return cleanser
+        executive_dashboard = self.__parse_executive_dashboard_obj(
+            ExecutiveDashboardManager, db_row=result)
+        return executive_dashboard
 
-    def delete_cleanser(self, cleanser_id, condition_operator='=', local=False):
+    def delete_executive_dashboard(self, executive_dashboard_id, condition_operator='=', local=False):
         db_utils.DataBaseUtils.execute_sql(
             db_utils.DataBaseUtils,
             sql_statement=sql_stmt.DataBaseSQL.delete_row_from_table(
-                sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER, condition=st.TB_CLEANSER_COL_CLEANSER_ID,
-                condition_value=cleanser_id, condition_operator=condition_operator), local=local)
+                sql_stmt.DataBaseSQL, table=st.TABLE_EXECUTIVE_DASHBOARDS, condition=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
+                condition_value=executive_dashboard_id, condition_operator=condition_operator), local=local)
 
-    def __parse_cleanser_obj(self, db_row):
+    def __parse_executive_dashboard_obj(self, db_row):
         if db_row:
-            cleanser_id = db_row[0]
+            executive_dashboard_id = db_row[0]
             name = db_row[1]
             description = db_row[2]
-            header_list = db_row[3]
-            datasets = db_row[4]
-            cleanser_operation_types = db_row[5]
-            cleanser = cl.Cleanser(cleanser_id=cleanser_id, name=name, description=description,
-                                   header_list=header_list, datasets=datasets, cleanser_operation_types=cleanser_operation_types)
-            return cleanser
+            access_user_list = db_row[3]
+            access_business_unit_list = db_row[4]
+            plots = db_row[5]
+            executive_dashboard = ed.ExecutiveDashboard(executive_dashboard_id=executive_dashboard_id, name=name, description=description,
+                                                        access_user_list=access_user_list,
+                                                        access_business_unit_list=access_business_unit_list, plots=plots)
+            return executive_dashboard
         pass

@@ -75,7 +75,7 @@
 import TableArchitectureViews from "../TableArchitectureViews.vue";
 
 export default {
-  props: ["selected_dataset"],
+  props: ["selected_dataset_id", "selected_dataset_label"],
   components: { "table-architecture-views": TableArchitectureViews },
   data() {
     return {
@@ -105,8 +105,9 @@ export default {
         index < this.selected_architecture_view_components.length;
         index++
       ) {
-        components_string += this.selected_architecture_view_components[index]
-          .architecture_view_component;
+        components_string +=
+          this.selected_architecture_view_components[index]
+            .architecture_view_component;
         if (index < this.selected_architecture_view_components.length - 1) {
           components_string += ",";
         }
@@ -148,7 +149,7 @@ export default {
     },
     getDepartmentsFromDataset() {
       this.$axios
-        .get("/get_departments_from_dataset/" + this.selected_dataset)
+        .get("/get_departments_from_dataset/" + this.selected_dataset_id)
         .then((res) => {
           var data_tmp = [{ dep: "All" }];
           for (let index = 0; index < res.data.data.length; index++) {
@@ -161,7 +162,7 @@ export default {
     },
     getComponents() {
       this.$axios
-        .get("/get_components/" + this.selected_dataset)
+        .get("/get_components/" + this.selected_dataset_id)
         .then((res) => {
           var data_tmp = [];
           for (let index = 0; index < res.data.data.length; index++) {

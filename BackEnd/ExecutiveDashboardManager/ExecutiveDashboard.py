@@ -6,18 +6,22 @@ Description: Defines a ExecutiveDashboard Object
 '''
 
 import Utils.Settings as st
+from datetime import datetime
 
 
 class ExecutiveDashboard:
 
-    def __init__(self, executive_dashboard_id, name, description, access_user_list, access_business_unit_list, components, dataset):
+    def __init__(self, executive_dashboard_id, name, description,
+                 access_user_list, access_business_unit_list, plots, dataset="",
+                 creation_date=datetime.utcnow()):
         self.__executive_dashboard_id = executive_dashboard_id
         self.__name = name
         self.__description = description
         self.__access_user_list = access_user_list
         self.__access_business_unit_list = access_business_unit_list
-        self.__components = components
+        self.__plots = plots
         self.__dataset = dataset
+        self.__creation_date = creation_date
 
     # Definition of get Methods for Cleaner Objects
     def get_executive_dashboardID(self):
@@ -35,8 +39,16 @@ class ExecutiveDashboard:
     def get_access_business_unit_list(self):
         return self.__access_business_unit_list
 
-    def get_components(self):
-        return self.__components
+    def get_plots(self):
+        return self.__plots
 
     def get_dataset(self):
         return self.__dataset
+
+    def get_creation_date(self):
+        return self.__creation_date
+
+    # Set functions for Executive Dashboard
+
+    def set_plots(self, plots):
+        self.__plots = plots

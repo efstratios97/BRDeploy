@@ -9,7 +9,7 @@ import pandas as pd
 
 
 class BRCleanserAlgorithms:
-    
+        
     def remove_accidental_appications(self, df, df_out):
         TO_REMOVE_LABEL = 'TO_REMOVE'
         self.df_out = df_out

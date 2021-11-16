@@ -32,6 +32,9 @@ import ScrollPanel from 'primevue/scrollpanel';
 import Textarea from 'primevue/textarea';
 import Checkbox from 'primevue/checkbox';
 import FileUpload from 'primevue/fileupload';
+import ToggleButton from 'primevue/togglebutton';
+import InputSwitch from 'primevue/inputswitch';
+import CascadeSelect from 'primevue/cascadeselect';
 import 'primeflex/primeflex.css';
 import 'primevue/resources/primevue.min.css'
 import 'primevue/resources/themes/bootstrap4-light-blue/theme.css';
@@ -66,7 +69,7 @@ const store = createStore({
 })
 const instance = axios.create({
     // baseURL: process.env.NODE_ENV == 'development' ? '' : ''
-    baseURL: 'http://it-eamtoolt-01:8081',// 'http://it-eamtoolt-01:8081''http://10.20.20.133:5000'
+    baseURL: 'http://it-eamtoolt-01:8081',// 'http://it-eamtoolt-01:8081''http://10.20.20.133:5000' https://br-eam-backend.herokuapp.com/user/auth?email=tetet&passwd=tete4
     timeout: 60 * 4 * 1000
 });
 const app = createApp(App)
@@ -95,6 +98,9 @@ app.component('ScrollPanel', ScrollPanel);
 app.component('Textarea', Textarea);
 app.component('Checkbox', Checkbox);
 app.component('FileUpload', FileUpload);
+app.component('ToggleButton', ToggleButton);
+app.component('InputSwitch', InputSwitch)
+app.component('CascadeSelect', CascadeSelect)
 app.directive('tooltip', Tooltip);
 app.use(VueApexCharts);
 app.use(store)

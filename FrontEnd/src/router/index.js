@@ -6,10 +6,14 @@ import Cleanser from '../views/Cleanser.vue'
 import DataAnalyzer from '../views/DataAnalyzer.vue'
 import DataHealthManager from '../views/DataHealthManager.vue'
 import GoToMenuBack from '../components/GoToMenuBack.vue'
-import DashboardDataHealth from '../components/DashboardDataHealth.vue'
-import DashboardAnalyzer from '../components/DashboardAnalyzer.vue'
+import DashboardDataHealth from '../components/Dashboards/DashboardDataHealth.vue'
+import DashboardAnalyzer from '../components/Dashboards/DashboardAnalyzer.vue'
 import SelectorDataset from '../components/SelectorDataset.vue'
 import Login from '../views/Login.vue'
+import ExecutiveDashboard from '../views/ExecutiveDashboard.vue'
+import DashboardExecutiveDashboard from '../components/Dashboards/DashboardExecutiveDashboard.vue'
+
+
 
 const routes = [
   {
@@ -70,9 +74,25 @@ const routes = [
       components: { default: SelectorDataset, header: GoToMenuBack },
 
     }, {
-      path: '/DataHealthManager/dashboard',
+      path: '/datahealthmanager/dashboard',
       name: 'DataHealthDashboard',
       components: { default: DashboardDataHealth, header: GoToMenuBack },
+    }]
+  },
+
+  {
+    path: '/executivedashboard',
+    name: 'ExecutiveDashboard',
+    components: { default: ExecutiveDashboard, header: GoToMenuBack }
+  },
+  {
+    path: '/executivedashboard/',
+    name: 'SelectorDatasetE',
+    components: { default: ExecutiveDashboard, header: GoToMenuBack },
+    children: [{
+      path: '',
+      name: 'ExecutiveDashboardDashboard',
+      components: { default: DashboardExecutiveDashboard, header: GoToMenuBack },
     }]
   },
 ]

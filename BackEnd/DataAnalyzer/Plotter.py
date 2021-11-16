@@ -123,8 +123,18 @@ class Plotter:
                     by=input_values[self.bubble_size_axis], inplace=True, ascending=False)
             if not input_values[self.top] == 'All':
                 df = df.head(int(input_values[self.top]))
+            df[input_values[self.bubble_size_axis]
+               ] = df[input_values[self.bubble_size_axis]].astype(int)
+            df[input_values[self.bubble_y_axis]
+               ] = df[input_values[self.bubble_y_axis]].astype(int)
             colors = np.array([[r, g, 150]
-                               for r, g in zip(50 + 2 * df[input_values[self.bubble_size_axis]], 30 + 2*df[input_values[self.bubble_y_axis]])], dtype="uint8")
+                               for r, g in zip(50 + 2 * df[input_values[self.bubble_size_axis]], 30 + 2*df[input_values[self.bubble_y_axis]].astype(int))], dtype="uint8")
+
+            def add_amount_to_x_value(x):
+                x['Name'] = x['Name'] + " #" + \
+                    str(x[input_values[self.bubble_size_axis]])
+                return x
+            df = df.apply(lambda x: add_amount_to_x_value(x), axis=1)
             p = figure(x_range=df['Name'],  plot_height=500, title="Heatmap Analysis",
                        tools=TOOLS, toolbar_location="below", y_axis_label=input_values[self.bubble_y_axis],
                        x_axis_label=input_values[self.bubble_size_axis], x_minor_ticks=-10)
@@ -192,9 +202,17 @@ class Plotter:
                     by=input_values[self.bubble_y_axis], inplace=True, ascending=False)
             if not input_values[self.top] == 'All':
                 df = df.head(int(input_values[self.top]))
+            df[input_values[self.bubble_y_axis]
+               ] = df[input_values[self.bubble_y_axis]].astype(int)
             colors = np.array([[r, g, 150]
                                for r, g in zip(50 + 2 * df[input_values[self.bubble_y_axis]], 30 + 2*df[input_values[self.bubble_y_axis]])], dtype="uint8")
-            p = figure(x_range=df['Name'],  plot_height=500, title="Heatmap Analysis",
+
+            def add_amount_to_x_value(x):
+                x['Name'] = x['Name'] + " #" + \
+                    str(x[input_values[self.bubble_y_axis]])
+                return x
+            df = df.apply(lambda x: add_amount_to_x_value(x), axis=1)
+            p = figure(x_range=df['Name'],  plot_height=500, title="Statistics Analysis",
                        tools=TOOLS, toolbar_location="below", y_axis_label=input_values[self.bubble_y_axis],
                        x_minor_ticks=-10)
             p.circle(x=df['Name'], y=df[input_values[self.bubble_y_axis]], fill_alpha=0.6, size=15,

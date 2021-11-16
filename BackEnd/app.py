@@ -13,14 +13,18 @@ import Flask.Endpoints.DataCleanserAPI as api_dc
 import Flask.Endpoints.DataAnalyzerAPI as api_da
 import Flask.Endpoints.DataHealthAPI as api_dh
 import Flask.Endpoints.ArchitectureViewAPI as api_av
+import Flask.Endpoints.ExecutiveDashboardAPI as api_ed
+import Flask.Endpoints.DataPlotManagerApi as api_dpm
 
 
 BRapp = Flask(__name__)
 CORS(BRapp)
 
+
 @BRapp.route("/")
 def helloWorld():
     return "<html>Hello says Project Athena</html>"
+
 
 BRapp.register_blueprint(api_dm.blueprint)
 BRapp.register_blueprint(api_um.blueprint)
@@ -28,8 +32,8 @@ BRapp.register_blueprint(api_dc.blueprint)
 BRapp.register_blueprint(api_da.blueprint)
 BRapp.register_blueprint(api_dh.blueprint)
 BRapp.register_blueprint(api_av.blueprint)
-    
-
+BRapp.register_blueprint(api_ed.blueprint)
+BRapp.register_blueprint(api_dpm.blueprint)
 
 if __name__ == "__main__":
     BRapp.run(host='0.0.0.0')

@@ -145,9 +145,11 @@
 
 <script>
 export default {
-  props: ["selected_dataset"],
+  props: ["selected_dataset_id", "selected_dataset_label"],
   data() {
     return {
+      // selected_dataset_id: "",
+      // selected_dataset_label: "",
       business_units_options: [],
       business_units: [],
       business_capabilities: [],
@@ -165,6 +167,10 @@ export default {
     };
   },
   methods: {
+    // normalize_selected_dataset() {
+    //   this.selected_dataset_id = this.selected_dataset.dataset_id;
+    //   this.selected_dataset_label = this.selected_dataset.dataset_label;
+    // },
     show_graph() {
       const bokehVersion = "2.3.1";
       let link = document.createElement("link");
@@ -187,8 +193,9 @@ export default {
 
       // cdn js is loaded after requesting bokeh parameters
       script.onload = () => {
+        console.log(this.selected_dataset_id);
         this.$axios
-          .get("/show_plotter/" + this.selected_dataset + "/bubble_plotter")
+          .get("/show_plotter/" + this.selected_dataset_id + "/bubble_plotter")
           .then((response) => {
             this.html = response.data.div;
             let bokehRunScript = document.createElement("SCRIPT");
@@ -209,7 +216,7 @@ export default {
       };
     },
     get_params() {
-      this.$axios.get("/get_params/" + this.selected_dataset).then((res) => {
+      this.$axios.get("/get_params/" + this.selected_dataset_id).then((res) => {
         this.params = res.data;
         for (let index = 0; index < res.data.list_bu.length; index++) {
           this.business_units_options.push({ bu: res.data.list_bu[index] });
@@ -261,7 +268,7 @@ export default {
       const jsonString = JSON.stringify(user_input);
       this.$axios
         .post(
-          "/post_inputs/" + this.selected_dataset + "/bubble_plotter",
+          "/post_inputs/" + this.selected_dataset_id + "/bubble_plotter",
           jsonString
         )
         .then((response) => {

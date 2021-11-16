@@ -3,7 +3,7 @@
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
-        <h1 style="text-align: left; font-size: 38px">DataCleanser</h1>
+        <h1 style="text-align: left; font-size: 38px">Data Cleanser</h1>
         <br />
         <br />
         <TabView class="tabview-custom" ref="tabview4">

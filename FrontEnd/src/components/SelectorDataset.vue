@@ -8,14 +8,14 @@
       <div class="p-fluid">
         <div class="p-field"></div>
       </div>
-      <Dropdown
-        v-model="selected_dataset"
-        :options="datasets"
-        optionLabel="dataset"
+      <CascadeSelect
+        v-model="selected_dataset_v2"
+        :options="datasets_v2"
+        optionLabel="dataset_desc"
+        optionGroupLabel="label"
+        :optionGroupChildren="['dataset']"
+        style="minwidth: 14rem"
         placeholder="Select a Dataset"
-        :filter="true"
-        filterPlaceholder="Find a Dataset"
-        :showClear="true"
       />
     </template>
     <template v-slot:footer>
@@ -36,18 +36,20 @@
 export default {
   data() {
     return {
-      datasets: this.getDatasetOptions(),
-      selected_dataset: "",
+      selected_dataset_v2: "",
+      datasets_v2: this.getDatasetOptions_v2(),
+      label_desc: "",
     };
   },
   methods: {
     nextPage() {
-      if (this.selected_dataset !== "") {
-        this.selected_dataset.dataset = this.selected_dataset.dataset.split(
-          "ID: "
-        )[1];
+      if (this.selected_dataset_v2 !== "") {
+        var selected_dataset_selector = {};
+        selected_dataset_selector["dataset_id"] =
+          this.selected_dataset_v2.dataset_desc.split("ID: ")[1];
+        selected_dataset_selector["dataset_label"] = this.label_desc;
         this.$emit("next-page", {
-          selected_dataset: this.selected_dataset.dataset,
+          selected_dataset: selected_dataset_selector,
           pageIndex: 0,
         });
       } else {
@@ -59,22 +61,60 @@ export default {
         });
       }
     },
-    getDatasetOptions() {
+    getDatasetOptions_v2() {
       this.$axios
         .get("/get_datasets_only_name/" + localStorage.loggedUser)
         .then((res) => {
           var datasets_tmp = [];
+          var datasets_tmp_plain_list = [];
+          const label_prefix = "Dataset Category: ";
           for (let index = 0; index < res.data.data.length; index++) {
-            datasets_tmp.push({
-              dataset:
-                "NAME: " +
-                res.data.data[index]["name"] +
-                "   |   " +
-                "ID: " +
-                res.data.data[index]["dataset_id"],
-            });
+            if (
+              datasets_tmp_plain_list.indexOf(
+                label_prefix + res.data.data[index]["label"]
+              ) < 0
+            ) {
+              datasets_tmp.push({
+                label: label_prefix + res.data.data[index]["label"],
+                dataset: [],
+              });
+              datasets_tmp_plain_list.push(
+                label_prefix + res.data.data[index]["label"]
+              );
+            }
           }
-          this.datasets = datasets_tmp;
+          for (let index = 0; index < res.data.data.length; index++) {
+            var index_dataset_tmp = datasets_tmp_plain_list.indexOf(
+              label_prefix + res.data.data[index]["label"]
+            );
+            if (index === 0) {
+              datasets_tmp[index_dataset_tmp]["dataset"].push({
+                dataset_desc:
+                  "Dataset: " +
+                  res.data.data[index]["name"] +
+                  "   |   " +
+                  "NEWEST" +
+                  "   |   " +
+                  "ID: " +
+                  res.data.data[index]["dataset_id"],
+              });
+              this.label_desc = res.data.data[index]["label"];
+            } else {
+              datasets_tmp[index_dataset_tmp]["dataset"].push({
+                dataset_desc:
+                  "Dataset: " +
+                  res.data.data[index]["name"] +
+                  "   |   " +
+                  "Created: " +
+                  res.data.data[index]["creation_date"].split(",")[1] +
+                  "   |   " +
+                  "ID: " +
+                  res.data.data[index]["dataset_id"],
+              });
+              this.label_desc = res.data.data[index]["label"];
+            }
+          }
+          this.datasets_v2 = datasets_tmp;
         });
     },
   },

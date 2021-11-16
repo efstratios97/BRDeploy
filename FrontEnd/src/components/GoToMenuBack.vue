@@ -8,20 +8,18 @@
       </router-link>
     </template>
     <template #end>
-      <div class="container p-menubar">
-        <div class="row">
-          <div class="col">
-            <p class="p-menuitem-text" style="white-space: nowrap">
-              Hello {{ user }}
-            </p>
-          </div>
-          <div class="col">
-            <Button
-              icon="pi pi-fw pi-power-off"
-              class="p-button-rounded p-button-secondary"
-              @click="logout"
-            />
-          </div>
+      <div class="p-grid p-menubar">
+        <div class="p-col">
+          <p class="p-menuitem-text" style="white-space: nowrap">
+            Hello {{ user }}
+          </p>
+        </div>
+        <div class="p-col">
+          <Button
+            icon="pi pi-fw pi-power-off"
+            class="p-button-rounded p-button-secondary"
+            @click="logout"
+          />
         </div>
       </div>
     </template>
@@ -57,6 +55,11 @@ export default {
           label: "DataHealth",
           icon: "pi pi-compass",
           to: "/datahealthmanager",
+        },
+        {
+          label: "ExecutiveDashboard",
+          icon: "pi pi-globe",
+          to: "/executivedashboard",
         },
       ],
     };
@@ -106,7 +109,7 @@ export default {
   },
 };
 </script>
-<style >
+<style>
 .p-menubar {
   background-color: white;
 }
@@ -115,5 +118,11 @@ export default {
 }
 .p-menuitem-text {
   font-size: 18px !important;
+}
+.p-grid {
+  margin: 0px;
+}
+.p-col {
+  margin: 0px;
 }
 </style>

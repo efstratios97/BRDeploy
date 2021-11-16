@@ -14,12 +14,14 @@ import pandas as pd
 
 class DataHealthManager:
 
-    def treemap_ranking_by_applications(self, dataset_id):
+    def count_applications_by_department(self, dataset_id):
         data_included = []
         data = []
         df = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
+        # df['Verantwortliche Organisationseinheit'] = df['Verantwortliche Organisationseinheit'].apply(
+        #     lambda x: 'NICHT EINGEPFLEGT' if not isinstance(x, str) else x)
         df['Verantwortliche Organisationseinheit'] = df['Verantwortliche Organisationseinheit'].apply(
-            lambda x: 'NICHT EINGEPFLEGT' if not isinstance(x, str) else x)
+            lambda x: 'NICHT EINGEPFLEGT' if x == '' else x)  # Because change of how read datasets --> None replaced with ""
         df['Verantwortliche Organisationseinheit'] = df['Verantwortliche Organisationseinheit'].apply(
             lambda x: x.replace(" (Organisationseinheit)", ""))
 

@@ -1,66 +1,99 @@
 <template>
   <div>
-    <div v-if="this.excecutive_dashboard !== undefined">
-      <span v-if="alreadyRendered === false">
-        {{ this.getDeparmtentApplicationRankingData() }}
-      </span>
-      <div class="p-fluid">
-        <div id="chart-bar">
-          <apexchart
-            type="bar"
-            height="350"
-            :options="chartOptionsInternal"
-            :series="deparmtentApplicationRankingDataInternal"
-          ></apexchart>
-        </div>
+    <span v-if="alreadyRendered === false">
+      {{ this.getDeparmtentApplicationRankingData() }}
+    </span>
+    <div class="p-fluid">
+      <div>
+        <apexchart
+          :type="this.chart_type"
+          :options="this.chartOptions"
+          :series="this.data_chart"
+        ></apexchart>
       </div>
     </div>
-    <div v-else>
-      <div class="p-fluid">
-        <div id="chart-bar">
-          <apexchart
-            type="bar"
-            height="350"
-            :options="chartOptions"
-            :series="deparmtentApplicationRankingData"
-          ></apexchart>
-        </div>
-      </div>
-    </div>
+    <br />
   </div>
 </template>
 <script>
 export default {
-  props: [
-    "selected_dataset",
-    "deparmtentApplicationRankingData",
-    "chartOptions",
-    "excecutive_dashboard",
-  ],
+  props: ["selected_dataset_id", "selected_dataset_label"],
   data() {
     return {
       alreadyRendered: false,
-      deparmtentApplicationRankingDataInternal: [
+      title_chart: "Departments by # of Applications",
+      subtitle_chart: "",
+      legend_show_chart: false,
+      data_for_chart: [{ x: "Initiating...", y: 1 }],
+      chart_type: "bar",
+      chart_width: "100%",
+      chart_height: "100%",
+      xaxis_categories: [],
+      input_fields_id: "",
+      input_fields: true,
+      data_chart: [
         {
-          data: [{ x: "Initiating...", y: 1 }],
+          data: this.data_for_chart,
         },
       ],
-      chartOptionsInternal: {
+      chartOptions: {
+        chart: {
+          type: this.chart_type,
+          width: this.chart_width,
+          height: this.chart_height,
+        },
         legend: {
-          show: false,
+          show: this.legend_show_chart,
         },
-        title: {
-          text: "Departments by # of Applications",
+        xaxis: {
+          categories: this.xaxis_categories,
+          tickPlacement: "between",
         },
+        labels: [],
       },
     };
   },
   methods: {
+    create_plot_and_save_to_executive_dashboard() {
+      var formData = {};
+      formData["title"] = this.title_chart;
+      formData["subtitle"] = this.subtitle_chart;
+      formData["legend_show"] = this.legend_show_chart;
+      formData["dataset_id_for_chart"] = this.selected_dataset_id;
+      formData["dataset_label"] = this.selected_dataset_label;
+      formData["chart_type"] = this.chart_type;
+      formData["chart_width"] = this.chart_width;
+      formData["chart_height"] = this.chart_height;
+      formData["xaxis_categories"] = this.xaxis_categories;
+      formData["input_fields"] = this.input_fields;
+      formData["input_fields_id"] = this.input_fields_id;
+      console.log(formData);
+      this.$emit("plotDataAsForm", formData);
+    },
+    updateChartOptions() {
+      this.chartOptions = {
+        ...this.chartOptions,
+        ...{
+          chart: {
+            type: this.chart_type,
+            width: this.chart_width,
+            height: this.chart_height,
+          },
+          legend: {
+            show: this.legend_show_chart,
+          },
+          xaxis: {
+            categories: this.xaxis_categories,
+          },
+        },
+      };
+      this.alreadyRendered = true;
+    },
     getDeparmtentApplicationRankingData() {
       this.$axios
-        .get("/get_data_for_app_dep_ranking/" + this.selected_dataset)
+        .get("/get_data_for_app_dep_ranking/" + this.selected_dataset_id)
         .then((res) => {
-          this.deparmtentApplicationRankingDataInternal = [{ data: res.data }];
+          this.data_chart = [{ data: res.data }];
           this.$toast.add({
             severity: "success",
             summary: "Departments by # of Application Analysis Successful",
@@ -68,7 +101,7 @@ export default {
               "The Departments by # of Application Analysis was successful",
             life: 3000,
           });
-          this.alreadyRendered = true;
+          this.updateChartOptions();
         })
         .catch(() => {
           this.$toast.add({

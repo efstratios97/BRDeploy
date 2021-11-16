@@ -65,6 +65,7 @@
                 <apexchart
                   type="bar"
                   height="400"
+                  width="100%"
                   :options="chartOptionsArchitectureView"
                   :series="architecture_view_bar_data"
                 ></apexchart>
@@ -79,7 +80,7 @@
 </template>
 <script>
 export default {
-  props: ["selected_dataset"],
+  props: ["selected_dataset_id", "selected_dataset_label"],
   data() {
     return {
       deps_from_dataset: this.getDepartmentsFromDataset(),
@@ -109,7 +110,7 @@ export default {
         dataLabels: {
           enabled: true,
           formatter: function (val) {
-            return val + "%";
+            return Math.round(val) + "%";
           },
           offsetY: -20,
           style: {
@@ -122,6 +123,9 @@ export default {
           width: 10,
         },
         xaxis: {
+          labels: {
+            show: false,
+          },
           categories: ["Initiating..."],
           position: "bottom",
           axisBorder: {
@@ -181,14 +185,14 @@ export default {
           this.architecture_views_all[index].name ===
           this.selected_architecture_view.architecture_view
         ) {
-          selected_architecture_view = this.architecture_views_all[index]
-            .architecture_view_id;
+          selected_architecture_view =
+            this.architecture_views_all[index].architecture_view_id;
         }
       }
       this.$axios
         .post(
           "/analyze_applicability/" +
-            this.selected_dataset +
+            this.selected_dataset_id +
             "/" +
             selected_architecture_view +
             "/" +
@@ -238,11 +242,11 @@ export default {
     },
     getDepartmentsFromDataset() {
       this.$axios
-        .get("/get_departments_from_dataset/" + this.selected_dataset)
+        .get("/get_departments_from_dataset/" + this.selected_dataset_id)
         .then((res) => {
           var data_tmp = [{ dep: "All" }];
           for (let index = 0; index < res.data.data.length; index++) {
-            if (res.data.data[index] !== null) {
+            if (res.data.data[index] !== "") {
               data_tmp.push({ dep: res.data.data[index] });
             }
           }

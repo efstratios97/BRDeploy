@@ -11,7 +11,13 @@ import Utils.Settings as st
 class DataBaseSQL:
 
     # Returns SQL statement for creating the DataSet Table
-    def create_DataSet_table_sql(self):
+    def create_DataSet_table_sql(self, archive=False):
+        if archive:
+            table_name = st.TABLE_DATASET_ARCHIVE
+            col_dataset_id = st.ARCHIVE_ID_PREFIX + st.TB_DATASET_COL_DATASET_ID
+        else:
+            table_name = st.TABLE_DATASET
+            col_dataset_id = st.TB_DATASET_COL_DATASET_ID
         sql = ('CREATE TABLE IF NOT EXISTS {table} ('
                + '{col_DATASET_ID} VARCHAR(255) NOT NULL PRIMARY KEY,'
                + '{col_NAME} VARCHAR(255) NOT NULL,'
@@ -22,13 +28,14 @@ class DataBaseSQL:
                + '{col_ACCESS_USER_LIST} TEXT(65535) NOT NULL,'
                + '{col_ACCESS_BUSINESS_UNIT_LIST} TEXT(65535) NOT NULL,'
                + '{col_STORAGE_TYPE} VARCHAR(45) NOT NULL,'
+               + '{col_LABEL} VARCHAR(255),'
                + '{col_DESCRIPTION} TEXT(65535),'
                + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
-        sql = sql.format(table=st.TABLE_DATASET, col_DATASET_ID=st.TB_DATASET_COL_DATASET_ID, col_NAME=st.TB_DATASET_COL_NAME,
+        sql = sql.format(table=table_name, col_DATASET_ID=col_dataset_id, col_NAME=st.TB_DATASET_COL_NAME,
                          col_OWNER=st.TB_DATASET_COL_OWNER, col_HASH_OF_DATASET=st.TB_DATASET_COL_HASH_OF_DATASET,
                          col_CLEANED=st.TB_DATASET_COL_CLEANED, col_SIZE=st.TB_DATASET_COL_SIZE,
                          col_ACCESS_USER_LIST=st.TB_DATASET_COL_ACCESS_USER_LIST, col_ACCESS_BUSINESS_UNIT_LIST=st.TB_DATASET_COL_ACCESS_BUSINESS_UNIT_LIST,
-                         col_STORAGE_TYPE=st.TB_DATASET_COL_STORAGE_TYPE, col_DESCRIPTION=st.TB_DATASET_COL_DESCRIPTION,
+                         col_STORAGE_TYPE=st.TB_DATASET_COL_STORAGE_TYPE, col_LABEL=st.TB_DATASET_COL_LABEL, col_DESCRIPTION=st.TB_DATASET_COL_DESCRIPTION,
                          col_CREATED_AT=st.TB_DATASET_COL_CREATED_AT)
         return sql
 
@@ -104,7 +111,7 @@ class DataBaseSQL:
                + '{col_DESCRIPTION} TEXT(65535),'
                + '{col_ACCESS_USER_LIST} TEXT(65535) NOT NULL,'
                + '{col_ACCESS_BUSINESS_UNIT_LIST} TEXT(65535) NOT NULL,'
-               + '{col_COMPONENTS} TEXT(65535) NOT NULL,'
+               + '{col_PLOTS} TEXT(65535) NOT NULL,'
                + '{col_DATASET} VARCHAR(255) NOT NULL,'
                + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
         sql = sql.format(table=st.TABLE_EXECUTIVE_DASHBOARDS, col_EXECUTIVE_DASHBOARD_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
@@ -112,7 +119,7 @@ class DataBaseSQL:
                          col_DESCRIPTION=st.TB_EXECUTIVE_DASHBOARDS_COL_DESCRIPTION,
                          col_ACCESS_USER_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_USER_LIST,
                          col_ACCESS_BUSINESS_UNIT_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_BUSINESS_UNIT_LIST,
-                         col_COMPONENTS=st.TB_EXECUTIVE_DASHBOARDS_COL_COMPONENTS, col_DATASET=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET,
+                         col_PLOTS=st.TB_EXECUTIVE_DASHBOARDS_COL_PLOTS, col_DATASET=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET,
                          col_CREATED_AT=st.TB_EXECUTIVE_DASHBOARDS_COL_CREATED_AT)
         return sql
 
@@ -120,16 +127,49 @@ class DataBaseSQL:
     def create_Plots_table_sql(self):
         sql = ('CREATE TABLE IF NOT EXISTS {table} ('
                + '{col_PLOT_ID} VARCHAR(255) PRIMARY KEY,'
-               + '{col_NAME} VARCHAR(255) NOT NULL,'
-               + '{col_DESCRIPTION} TEXT(65535),'
-               + '{col_TYPE} VARCHAR(255) NOT NULL,'
-               + '{col_PARAMS} TEXT(65535) NOT NULL,'
+               + '{col_TITLE} VARCHAR(512) NOT NULL,'
+               + '{col_SUBTITLE} TEXT(65535),'
+               + '{col_LEGEND_SHOW} INT NOT NULL DEFAULT 0,'
+               + '{col_DATASET_ID_FOR_CHART} VARCHAR(255) NOT NULL,'
+               + '{col_CHART_LABEL} VARCHAR(255) NOT NULL,'
+               + '{col_CHART_TYPE} VARCHAR(255) NOT NULL,'
+               + '{col_CHART_WIDTH} VARCHAR(255) NOT NULL DEFAULT "150%",'
+               + '{col_CHART_HEIGHT} VARCHAR(255) NOT NULL DEFAULT "150%",'
+               + '{col_XAXIS_CATEGORIES} TEXT(65535),'
+               + '{col_INPUT_FIELDS} INT NOT NULL DEFAULT 0,'
+               + '{col_INPUT_FIELDS_ID} VARCHAR(255) NOT NULL,'
+               + '{col_EMPTY_FIELD} VARCHAR(255),'
+               + '{col_EMPTY_FIELD_2} VARCHAR(255),'
                + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
         sql = sql.format(table=st.TABLE_PLOTS, col_PLOT_ID=st.TB_PLOTS_COL_ID,
-                         col_NAME=st.TB_PLOTS_COL_NAME,
-                         col_DESCRIPTION=st.TB_PLOTS_COL_DESCRIPTION,
-                         col_TYPE=st.TB_PLOTS_COL_TYPE, col_PARAMS=st.TB_PLOTS_COL_PARAMETERS,
+                         col_TITLE=st.TB_PLOTS_COL_TITLE,
+                         col_SUBTITLE=st.TB_PLOTS_COL_SUBTITLE,
+                         col_LEGEND_SHOW=st.TB_PLOTS_COL_LEGEND_SHOW,
+                         col_DATASET_ID_FOR_CHART=st.TB_PLOTS_COL_DATASET_ID_FOR_CHART,
+                         col_CHART_LABEL=st.TB_PLOTS_COL_DATASET_LABEL,
+                         col_CHART_TYPE=st.TB_PLOTS_COL_CHART_TYPE,
+                         col_CHART_WIDTH=st.TB_PLOTS_COL_CHART_WIDTH,
+                         col_CHART_HEIGHT=st.TB_PLOTS_COL_CHART_HEIGHT,
+                         col_XAXIS_CATEGORIES=st.TB_PLOTS_COL_XAXIS_CATEGORIES,
+                         col_INPUT_FIELDS=st.TB_PLOTS_COL_INPUT_FIELDS,
+                         col_INPUT_FIELDS_ID=st.TB_PLOTS_COL_INPUT_FIELDS_ID,
+                         col_EMPTY_FIELD=st.TB_PLOTS_COL_EMPTY_FIELD,
+                         col_EMPTY_FIELD_2=st.TB_PLOTS_COL_EMPTY_FIELD_2,
                          col_CREATED_AT=st.TB_PLOTS_COL_CREATED_AT)
+        return sql
+
+    # Returns SQL statement for creating the Category Table
+
+    def create_label_table_sql(self):
+        sql = ('CREATE TABLE IF NOT EXISTS {table} ('
+               + '{col_LABEL_ID} VARCHAR(255) NOT NULL PRIMARY KEY,'
+               + '{col_NAME} VARCHAR(255) NOT NULL UNIQUE,'
+               + '{col_HEADER_LIST} TEXT(4294967295), '
+               + '{col_OPERATIONS_LIST} TEXT(4294967295), '
+               + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL);')
+        sql = sql.format(table=st.TABLE_LABEL, col_LABEL_ID=st.TB_LABEL_COL_ID,
+                         col_NAME=st.TB_LABEL_COL_NAME, col_HEADER_LIST=st.TB_LABEL_COL_HEADER,
+                         col_OPERATIONS_LIST=st.TB_LABEL_COL_OPERATIONS_CLEANSER, col_CREATED_AT=st.TB_LABEL_COL_CREATED_AT)
         return sql
 
     # Returns SQL statement for creating a many-to-may relation table
@@ -255,6 +295,15 @@ class DataBaseSQL:
                          DATASET_ID=dataset_id, CLEANSER_ID=cleanser_id)
         return sql
 
+    def insert_executive_dashboard_plots_relation_values(self, executive_dashboard_id, plot_id):
+        sql = ('INSERT INTO {table} ({col_EXECUTIVE_DASHBOARD_ID}, {col_PLOT_ID}) '
+               + 'VALUES ("{EXECUTIVE_DASHBOARD_ID}", "{PLOT_ID}");')
+        sql = sql.format(table=st.TABLE_EXECUTIVE_DASHBOARDS_PLOTS_RELATION,
+                         col_EXECUTIVE_DASHBOARD_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
+                         col_PLOT_ID=st.TB_PLOTS_COL_ID,
+                         EXECUTIVE_DASHBOARD_ID=executive_dashboard_id, PLOT_ID=plot_id)
+        return sql
+
     # Returns SQL statement for inserting a architecture_view in architecture_view table
     def insert_architecture_view_values(self, architecture_viewID, architecture_view_name,
                                         architecture_view_description, architecture_view_components):
@@ -271,57 +320,82 @@ class DataBaseSQL:
     # Returns SQL statement for inserting a executive_dashboard in executive_dashboard table
     def insert_executive_dashboard_values(self, executive_dashboard_id, executive_dashboard_name,
                                           executive_dashboard_description, access_user_list, access_business_unit_list,
-                                          executive_dashboard_components, dataset_id):
-        # sql = ('INSERT INTO {table} ({col_ID}, {col_NAME}, {col_DESCRIPTION}, {col_ACCESS_USER_LIST},'
-        #        + '{col_ACCESS_BUSINESS_UNIT_LIST}, {col_COMPONENTS}, {col_DATASET}) '
-        #        + 'VALUES ("{EXECUTIVE_DASHBOARD_ID}", "{NAME}", "{DESCRIPTION}", "{ACCESS_USER_LIST}",'
-        #        + '"{ACCESS_BUSINESS_UNIT_LIST}" , "{EXECUTIVE_DASHBOARD_COMPONENTS}", "{EXECUTIVE_DASHBOARD_DATASET}");')
-        # sql = sql.format(table=st.TABLE_EXECUTIVE_DASHBOARDS, col_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
-        #                  col_NAME=st.TB_EXECUTIVE_DASHBOARDS_COL_NAME,
-        #                  col_DESCRIPTION=st.TB_EXECUTIVE_DASHBOARDS_COL_DESCRIPTION,
-        #                  col_ACCESS_USER_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_USER_LIST,
-        #                  col_ACCESS_BUSINESS_UNIT_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_BUSINESS_UNIT_LIST,
-        #                  col_COMPONENTS=st.TB_EXECUTIVE_DASHBOARDS_COL_COMPONENTS,
-        #                  col_DATASET=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET,
-        #                  EXECUTIVE_DASHBOARD_ID=executive_dashboard_id, NAME=executive_dashboard_name,
-        #                  DESCRIPTION=executive_dashboard_description, ACCESS_USER_LIST=access_user_list,
-        #                  ACCESS_BUSINESS_UNIT_LIST=access_business_unit_list, EXECUTIVE_DASHBOARD_COMPONENTS=executive_dashboard_components
-        #                  EXECUTIVE_DASHBOARD_DATASET=dataset_id)
+                                          executive_dashboard_plots, dataset_id):
+        sql = ('INSERT INTO {table} ({col_ID}, {col_NAME}, {col_DESCRIPTION}, {col_ACCESS_USER_LIST},'
+               + '{col_ACCESS_BUSINESS_UNIT_LIST}, {col_PLOTS}, {col_DATASET}) '
+               + 'VALUES ("{EXECUTIVE_DASHBOARD_ID}", "{NAME}", "{DESCRIPTION}", "{ACCESS_USER_LIST}",'
+               + '"{ACCESS_BUSINESS_UNIT_LIST}" , "{EXECUTIVE_DASHBOARD_COMPONENTS}", "{EXECUTIVE_DASHBOARD_DATASET}");')
+        sql = sql.format(table=st.TABLE_EXECUTIVE_DASHBOARDS, col_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
+                         col_NAME=st.TB_EXECUTIVE_DASHBOARDS_COL_NAME,
+                         col_DESCRIPTION=st.TB_EXECUTIVE_DASHBOARDS_COL_DESCRIPTION,
+                         col_ACCESS_USER_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_USER_LIST,
+                         col_ACCESS_BUSINESS_UNIT_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_BUSINESS_UNIT_LIST,
+                         col_PLOTS=st.TB_EXECUTIVE_DASHBOARDS_COL_PLOTS,
+                         col_DATASET=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET,
+                         EXECUTIVE_DASHBOARD_ID=executive_dashboard_id, NAME=executive_dashboard_name,
+                         DESCRIPTION=executive_dashboard_description, ACCESS_USER_LIST=access_user_list,
+                         ACCESS_BUSINESS_UNIT_LIST=access_business_unit_list,
+                         EXECUTIVE_DASHBOARD_COMPONENTS=executive_dashboard_plots,
+                         EXECUTIVE_DASHBOARD_DATASET=dataset_id)
         return sql
 
     # Returns SQL statement for inserting a executive_dashboard in executive_dashboard table
-    def insert_plots_values(self, plot_id, plot_name,
-                            plot_description,
-                            plot_type, plot_params):
-        sql = ('INSERT INTO {table} ({col_ID}, {col_NAME}, {col_DESCRIPTION}, {col_TYPE}, {col_PARAMS}) '
-               + 'VALUES ("{PLOT_ID}", "{NAME}", "{DESCRIPTION}",'
-               + '"{TYPE}", "{PARAMS}");')
+    def insert_plots_values(self, plot_id, plot_title, plot_subtitle,
+                            plot_show_legend, plot_dataset_id_for_chart,
+                            plot_dataset_label, plot_chart_type, plot_chart_width,
+                            plot_chart_height, plot_xaxis_categories, plot_input_fields,
+                            plot_input_fields_id, plot_empty_field="", plot_empty_field_2=""):
+        sql = ('INSERT INTO {table} ({col_ID}, {COL_TITLE}, {COL_SUBTITLE}, {COL_LEGEND_SHOW},'
+               + '{COL_DATASET_ID_FOR_CHART}, {COL_DATASET_LABEL}, {COL_CHART_TYPE},'
+               + '{COL_CHART_WIDTH}, {COL_CHART_HEIGHT}, {COL_XAXIS_CATEGORIES}, '
+               + '{COL_INPUT_FIELDS}, {COL_INPUT_FIELDS_ID}, {COL_EMPTY_FIELD}, {COL_EMPTY_FIELD_2}) '
+               + 'VALUES ("{PLOT_ID}", "{TITLE}", "{SUBTITLE}","{LEGENG_SHOW}", "{DATASET_ID_FOR_CHART}", "{DATASET_LABEL}","{CHART_TYPE}",'
+               + ' "{CHART_WIDTH}", "{CHART_HEIGHT}","{XAXIS_CATEGORIES}", "{INPUT_FIELDS}", "{INPUT_FIELDS_ID}", "{EMPTY_FIELD}", "{EMPTY_FIELD_2}");')
         sql = sql.format(table=st.TABLE_PLOTS, col_ID=st.TB_PLOTS_COL_ID,
-                         col_NAME=st.TB_PLOTS_COL_NAME,
-                         col_DESCRIPTION=st.TB_PLOTS_COL_DESCRIPTION,
-                         col_TYPE=st.TB_PLOTS_COL_TYPE,
-                         col_PARAMS=st.TB_PLOTS_COL_PARAMETERS,
-                         PLOT_ID=plot_id, NAME=plot_name,
-                         DESCRIPTION=plot_description, TYPE=plot_type,
-                         PARAMS=plot_params)
+                         COL_TITLE=st.TB_PLOTS_COL_TITLE,
+                         COL_SUBTITLE=st.TB_PLOTS_COL_SUBTITLE,
+                         COL_LEGEND_SHOW=st.TB_PLOTS_COL_LEGEND_SHOW,
+                         COL_DATASET_ID_FOR_CHART=st.TB_PLOTS_COL_DATASET_ID_FOR_CHART,
+                         COL_DATASET_LABEL=st.TB_PLOTS_COL_DATASET_LABEL,
+                         COL_CHART_TYPE=st.TB_PLOTS_COL_CHART_TYPE,
+                         COL_CHART_WIDTH=st.TB_PLOTS_COL_CHART_WIDTH,
+                         COL_CHART_HEIGHT=st.TB_PLOTS_COL_CHART_HEIGHT,
+                         COL_XAXIS_CATEGORIES=st.TB_PLOTS_COL_XAXIS_CATEGORIES,
+                         COL_INPUT_FIELDS=st.TB_PLOTS_COL_INPUT_FIELDS,
+                         COL_INPUT_FIELDS_ID=st.TB_PLOTS_COL_INPUT_FIELDS_ID,
+                         COL_EMPTY_FIELD=st.TB_PLOTS_COL_EMPTY_FIELD,
+                         COL_EMPTY_FIELD_2=st.TB_PLOTS_COL_EMPTY_FIELD_2,
+                         PLOT_ID=plot_id, TITLE=plot_title,
+                         SUBTITLE=plot_subtitle, LEGENG_SHOW=plot_show_legend,
+                         DATASET_ID_FOR_CHART=plot_dataset_id_for_chart, DATASET_LABEL=plot_dataset_label,
+                         CHART_TYPE=plot_chart_type, CHART_WIDTH=plot_chart_width,
+                         CHART_HEIGHT=plot_chart_height, XAXIS_CATEGORIES=plot_xaxis_categories,
+                         INPUT_FIELDS=plot_input_fields, INPUT_FIELDS_ID=plot_input_fields_id,
+                         EMPTY_FIELD=plot_empty_field, EMPTY_FIELD_2=plot_empty_field_2)
         return sql
 
     # Returns SQL statement for inserting a datasets in dataset table
     def insert_datasets_values(self, dataset_id, name, owner, hash_of_dataset, size,
-                               cleaned, access_user_list, access_business_unit_list, description, storage_type):
+                               cleaned, access_user_list, access_business_unit_list, description, storage_type, label, archive=False):
+        if archive:
+            table_name = st.TABLE_DATASET_ARCHIVE
+            col_dataset_id = st.ARCHIVE_ID_PREFIX + st.TB_DATASET_COL_DATASET_ID
+        else:
+            table_name = st.TABLE_DATASET
+            col_dataset_id = st.TB_DATASET_COL_DATASET_ID
         sql = ('INSERT INTO {table} ({col_DATASET_ID}, {col_NAME}, {col_OWNER}, {col_HASH_OF_DATASET}, {col_CLEANED},'
-               + '{col_SIZE}, {col_ACCESS_USER_LIST}, {col_ACCESS_BUSINESS_UNIT_LIST}, {col_STORAGE_TYPE}, {col_DESCRIPTION}) '
+               + '{col_SIZE}, {col_ACCESS_USER_LIST}, {col_ACCESS_BUSINESS_UNIT_LIST}, {col_STORAGE_TYPE}, {col_DESCRIPTION}, {col_LABEL}) '
                + 'VALUES ("{DATASET_ID}", "{NAME}", "{OWNER}", "{HASH_OF_DATASET}", {CLEANED},'
-               + '{SIZE}, "{ACCESS_USER_LIST}", "{ACCESS_BUSINESS_UNIT_LIST}", "{STORAGE_TYPE}", "{DESCRIPTION}");')
-        sql = sql.format(table=st.TABLE_DATASET, col_DATASET_ID=st.TB_DATASET_COL_DATASET_ID, col_NAME=st.TB_DATASET_COL_NAME,
+               + '{SIZE}, "{ACCESS_USER_LIST}", "{ACCESS_BUSINESS_UNIT_LIST}", "{STORAGE_TYPE}", "{DESCRIPTION}", "{LABEL}");')
+        sql = sql.format(table=table_name, col_DATASET_ID=col_dataset_id, col_NAME=st.TB_DATASET_COL_NAME,
                          col_OWNER=st.TB_DATASET_COL_OWNER, col_HASH_OF_DATASET=st.TB_DATASET_COL_HASH_OF_DATASET,
                          col_CLEANED=st.TB_DATASET_COL_CLEANED, col_SIZE=st.TB_DATASET_COL_SIZE,
                          col_ACCESS_USER_LIST=st.TB_DATASET_COL_ACCESS_USER_LIST, col_ACCESS_BUSINESS_UNIT_LIST=st.TB_DATASET_COL_ACCESS_BUSINESS_UNIT_LIST,
-                         col_STORAGE_TYPE=st.TB_DATASET_COL_STORAGE_TYPE, col_DESCRIPTION=st.TB_DATASET_COL_DESCRIPTION,
+                         col_STORAGE_TYPE=st.TB_DATASET_COL_STORAGE_TYPE, col_DESCRIPTION=st.TB_DATASET_COL_DESCRIPTION, col_LABEL=st.TB_DATASET_COL_LABEL,
                          DATASET_ID=dataset_id, NAME=name, OWNER=owner, HASH_OF_DATASET=hash_of_dataset,
                          SIZE=size, ACCESS_USER_LIST=access_user_list,
                          ACCESS_BUSINESS_UNIT_LIST=access_business_unit_list, STORAGE_TYPE=storage_type,
-                         CLEANED=cleaned, DESCRIPTION=description)
+                         CLEANED=cleaned, DESCRIPTION=description, LABEL=label)
         return sql
 
     # Returns SQL statement for inserting a user in users table
@@ -349,6 +423,14 @@ class DataBaseSQL:
                + 'VALUES ("{DEPARTMENT_ID}", "{NAME}");')
         sql = sql.format(table=st.TABLE_DEPARTMENTS, col_DEPARTMENT_ID=st.TB_DEPARTMENTS_COL_DEPARTMENT_ID, col_NAME=st.TB_DEPARTMENTS_COL_NAME,
                          DEPARTMENT_ID=departmentID, NAME=department_name)
+        return sql
+
+    def insert_label_values(self, label_id, label_name, dataset_header_list, operations_cleanser):
+        sql = ('INSERT INTO {table} ({col_LABEL_ID}, {col_NAME}, {col_HEADER_LIST}, {col_OPERATIONS_LIST}) '
+               + 'VALUES ("{LABEL_ID}", "{NAME}", "{HEADER_LIST}", "{OPERATION_LIST}");')
+        sql = sql.format(table=st.TABLE_LABEL, col_LABEL_ID=st.TB_LABEL_COL_ID, col_NAME=st.TB_LABEL_COL_NAME,
+                         col_HEADER_LIST=st.TB_LABEL_COL_HEADER, col_OPERATIONS_LIST=st.TB_LABEL_COL_OPERATIONS_CLEANSER,
+                         LABEL_ID=label_id, NAME=label_name, HEADER_LIST=dataset_header_list, OPERATION_LIST=operations_cleanser)
         return sql
 
     # Returns SQL statement for inserting a cleanser in cleansers table

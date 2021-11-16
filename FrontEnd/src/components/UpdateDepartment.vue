@@ -1,7 +1,7 @@
 <template>
   <div>
     <form>
-      <div class="p-field p-grid">
+      <div class="p-grid p-fluid">
         <div class="p-col-12">
           <label for="old_pw">
             <b-icon-person-fill /> Please select User to change
@@ -35,14 +35,17 @@
             filterPlaceholder="Find a Department"
             :showClear="true"
           />
+          <br />
+        </div>
+        <div class="p-col-12">
+          <Button
+            label="Submit"
+            icon="pi pi-check"
+            iconPos="right"
+            @click="updateDepartment"
+          />
         </div>
       </div>
-      <Button
-        label="Submit"
-        icon="pi pi-check"
-        iconPos="right"
-        @click="updateDepartment"
-      />
     </form>
   </div>
 </template>

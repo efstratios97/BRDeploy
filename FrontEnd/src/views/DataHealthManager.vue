@@ -3,12 +3,13 @@
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
-        <h1 style="text-align: left; font-size: 38px">DataHealth</h1>
+        <h1 style="text-align: left; font-size: 38px">Data Health</h1>
         <div class="component-card">
           <Steps :model="items" :readonly="true" />
           <router-view
             v-slot="{ Component }"
-            :selected_dataset="selected_dataset"
+            :selected_dataset_id="selected_dataset_id"
+            :selected_dataset_label="selected_dataset_label"
             @prev-page="prevPage($event)"
             @next-page="nextPage($event)"
           >
@@ -43,7 +44,8 @@ export default {
   },
   methods: {
     nextPage(event) {
-      this.selected_dataset = event.selected_dataset;
+      this.selected_dataset_id = event.selected_dataset.dataset_id;
+      this.selected_dataset_label = event.selected_dataset.dataset_label;
       this.$router.push(this.items[event.pageIndex + 1].to);
     },
     prevPage(event) {
@@ -93,6 +95,7 @@ export default {
   background-color: #fff;
   background-clip: border-box;
   border-radius: 0.25rem;
+  /* min-width: 100%; */
 }
 </style>
       

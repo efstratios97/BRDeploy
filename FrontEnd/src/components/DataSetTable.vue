@@ -10,6 +10,7 @@
     :rowsPerPageOptions="[10, 25, 50]"
     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
     responsiveLayout="scroll"
+    sortMode="multiple"
   >
     <template #header>
       <div class="p-d-flex p-jc-between p-ai-center">
@@ -46,12 +47,7 @@
     </Column>
     <Column field="owner" header="Owner" sortable style="min-width: auto">
     </Column>
-    <Column
-      field="storage_type"
-      header="Storage Location"
-      sortable
-      style="min-width: auto"
-    >
+    <Column field="label" header="Label" sortable style="min-width: auto">
     </Column>
     <Column
       field="access_user_list"
@@ -85,6 +81,13 @@
       style="min-width: auto"
     >
     </Column> -->
+    <Column
+      field="creation_date"
+      header="Timestamp"
+      sortable
+      style="min-width: auto"
+    >
+    </Column>
     <Column header="Ad hoc Operations" style="min-width: auto">
       <template #body>
         <div class="btn-align-td">

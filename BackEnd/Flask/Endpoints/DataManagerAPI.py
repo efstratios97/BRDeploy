@@ -9,8 +9,10 @@ import flask as fl
 import pandas as pd
 import DataManager.DataManager as dm
 import DataManager.DataSet as ds
+import DataManager.Label as lab
 import UserManager.UserManager as um
 import Utils.Settings as st
+from datetime import datetime
 
 
 class DataManagerEndpoints:
@@ -35,6 +37,24 @@ class DataManagerEndpoints:
             dict_formatted['description'] = dataset.get_description()
             dict_formatted['data'] = data_path
             dict_formatted['storage_type'] = dataset.get_storage_type()
+            dict_formatted['label'] = dataset.get_label()
+            if isinstance(dataset.get_creation_date(), datetime):
+                dict_formatted['creation_date'] = dataset.get_creation_date().strftime(
+                    "%Y/%m/%d, %H:%M:%S")
+            elif isinstance(dataset.get_creation_date(), str):
+                dict_formatted['creation_date'] = datetime.strptime(dataset.get_creation_date(),
+                                                                    '%Y-%m-%d %H:%M:%S')
+        return dict_formatted
+
+    def label_to_dict(self, label: lab):
+        dict_formatted = {}
+        if label:
+            dict_formatted['label_id'] = label.get_datasetID()
+            dict_formatted['name'] = label.get_name()
+            dict_formatted['header_list'] = st.make_str_to_list(
+                label.get_header_list())
+            dict_formatted['operation_list'] = st.make_str_to_list(
+                label.get_operation_list())
         return dict_formatted
 
 
@@ -72,8 +92,10 @@ def post_dataset():
     dataset = dm.DataManager.create_data_set(dm.DataManager, name=name, owner=owner, data=data, cleaned=cleaned,
                                              access_user_list=access_user_list, access_business_unit_list=access_business_unit_list,
                                              description=description, storage_type=storage_type)
-    result = DataManagerEndpoints.data_set_to_dict(
-        DataManagerEndpoints, dataset=dataset)
+    result.update({"cleaned_dataset": DataManagerEndpoints.data_set_to_dict(
+        DataManagerEndpoints, dataset=dataset)})
+    # result = DataManagerEndpoints.data_set_to_dict(
+    #     DataManagerEndpoints, dataset=dataset)
     return fl.jsonify(result), 200
 
 
@@ -145,8 +167,12 @@ def get_dataset(dataset_id, storage_type):
 def get_datasets(user_id):
     result = {}
     result['data'] = []
-    datasets = dm.DataManager.get_all_datasets(
-        dm.DataManager, user_id=user_id)
+    try:
+        datasets = dm.DataManager.get_all_datasets(
+            dm.DataManager, user_id=user_id)
+    except:
+        datasets = dm.DataManager.get_all_datasets(
+            dm.DataManager, user_id=user_id)
     for dataset in datasets:
         result['data'].append(DataManagerEndpoints.data_set_to_dict(
             DataManagerEndpoints, dataset=dataset))
@@ -178,4 +204,28 @@ def get_table_df(dataset_id, storage_type):
     result = dm.DataManager.get_table_as_df(
         dm.DataManager, table=dataset_id, local=st.
         enum_storage_type_bool(storage_type=storage_type)).to_json()
+    return fl.jsonify(result), 200
+
+
+@blueprint.route('/assign_label/<dataset_id>/<label>', methods=['POST', 'OPTIONS'])
+def assign_label_to_dataset(dataset_id, label):
+    result = {}
+    dataset = dm.DataManager.get_dataset_by_id(
+        dm.DataManager, dataset_id=dataset_id, local=False)
+    dm.DataManager.create_label(
+        dm.DataManager, name=label, header_list=dataset.get_data().columns.values.tolist())
+    dm.DataManager.update_dataset_label(
+        dm.DataManager, label=label, dataset_id=dataset_id, local=False)
+    return fl.jsonify(result), 200
+
+
+@blueprint.route('/get_all_labels', methods=['GET', 'OPTIONS'])
+def get_labels():
+    result = {}
+    result['data'] = []
+    labels = dm.DataManager.get_all_labels(
+        dm.DataManager)
+    for label in labels:
+        result['data'].append(DataManagerEndpoints.label_to_dict(
+            DataManagerEndpoints, label=label))
     return fl.jsonify(result), 200

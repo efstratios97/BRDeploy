@@ -1,6 +1,6 @@
 <template>
   <span v-if="retrievingGraph == false">
-    <form>
+    <form class="overflow-auto">
       <MultiSelect
         v-model="selected_apps"
         :options="apps"
@@ -20,10 +20,10 @@
       />
     </form>
     <div class="p-fluid">
-      <div id="chart">
+      <div>
         <apexchart
-          type="radar"
-          width="350%"
+          :type="radar"
+          width="1200"
           :options="chartOptionsRadarMultiple"
           :series="radarDataMultiple"
         ></apexchart>
@@ -36,44 +36,20 @@
 </template>
 <script>
 export default {
-  props: ["selected_dataset"],
+  props: ["selected_dataset_id", "selected_dataset_label"],
   data() {
     this.getApps();
     return {
       retrievingGraph: false,
       selected_apps: "",
       apps: "",
-      radarData: [{ data: [1, 1, 1] }],
-      chartOptionsRadar: {
-        chart: {
-          type: "radar",
-        },
-        title: {},
-        xaxis: {
-          categories: ["Initiating...", "Initiating...", "Initiating..."],
-        },
-      },
       radarDataMultiple: [{ data: [1, 1, 1] }],
       chartOptionsRadarMultiple: {
         chart: {
           type: "radar",
-          dropShadow: {
-            enabled: true,
-            blur: 1,
-            left: 1,
-            top: 1,
-          },
+          width: "250%",
         },
-        title: {},
-        stroke: {
-          width: 2,
-        },
-        fill: {
-          opacity: 0.1,
-        },
-        markers: {
-          size: 0,
-        },
+        title: { text: "" },
         xaxis: {
           categories: ["Initiating...", "Initiating...", "Initiating..."],
         },
@@ -89,7 +65,7 @@ export default {
         this.$axios
           .get(
             "/get_data_for_radar_app/" +
-              this.selected_dataset +
+              this.selected_dataset_id +
               "/" +
               selected_app
           )
@@ -133,7 +109,7 @@ export default {
     },
     getApps() {
       this.$axios
-        .get("/get_applications/" + this.selected_dataset)
+        .get("/get_applications/" + this.selected_dataset_id)
         .then((res) => {
           var apps_tmp = [];
           for (let index = 0; index < res.data.length; index++) {
