@@ -57,21 +57,6 @@ def get_architecture_views():
     return fl.jsonify(result), 200
 
 
-@blueprint.route('/get_departments_from_dataset/<dataset_id>', methods=['GET', 'OPTIONS'])
-def get_departments_from_dataset(dataset_id):
-    result = {}
-    result['data'] = []
-    departments = avm.ArchitectureViewManager.get_departments(
-        avm.ArchitectureViewManager, dataset_id)
-    for department in departments:
-        result['data'].append(department)
-    return fl.jsonify(result), 200
-    if not result:
-        ArchitectureViewManagerEndpoints.endpoints_exception(ArchitectureViewManagerEndpoints,
-                                                             404, "DEPARTMENTS_NOT_FOUND")
-    return fl.jsonify(result), 200
-
-
 @blueprint.route('/get_components/<dataset_id>', methods=['GET', 'OPTIONS'])
 def get_components(dataset_id):
     result = {}

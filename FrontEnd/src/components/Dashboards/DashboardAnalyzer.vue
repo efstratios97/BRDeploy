@@ -165,7 +165,7 @@ export default {
 
 <style scoped>
 .bg-img {
-  background-image: url("~@/assets/DataAnalyzerWallpaper2.png");
+  background-image: url("~@/assets/DATAANALYZER_BACKGROUND.png");
 }
 .bokeh-graph {
   resize: both;

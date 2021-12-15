@@ -9,7 +9,7 @@
             <div class="p-grid">
               <div class="p-col inline-block">
                 <img
-                  src="~@/assets/BR_LOGO.png"
+                  src="~@/assets/CLIENT_LOGO.png"
                   alt="My image"
                   style="width: 80px; height: 70px; margin-top: -50px"
                 />
@@ -103,7 +103,7 @@
             <div class="p-grid">
               <div class="p-col inline-block">
                 <img
-                  src="~@/assets/BR_LOGO.png"
+                  src="~@/assets/CLIENT_LOGO.png"
                   alt="My image"
                   style="width: 80px; height: 70px"
                 />
@@ -478,7 +478,7 @@ footer a {
   bottom: -40px;
   width: auto;
   height: auto;
-  background-image: url(https://www.br.de/unternehmen/br-logo-hochhaus-100~_v-img__16__9__xl_-d31c35f8186ebeb80b0cd843a7c267a0e0c81647.jpg?version=3513b);
+  background-image: url(~@/assets/LOGIN_BACKGROUND.jpg);
   background-attachment: fixed;
   background-position: center center;
   background-size: cover;

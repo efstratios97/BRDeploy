@@ -79,12 +79,6 @@ class ArchitectureViewManager:
             dm.DataManager, dataset_id, local)
         return components
 
-    def get_departments(self, dataset_id, local=False):
-        dataset = dm.DataManager.get_table_as_df(dm.DataManager, dataset_id)
-        departments = list(
-            set(dataset['Verantwortliche Organisationseinheit'].to_list()))
-        return departments
-
     def __parse_architecture_view_obj(self, db_row):
         if db_row:
             architecture_view_id = db_row[0]
@@ -99,15 +93,22 @@ class ArchitectureViewManager:
     def analyze_applicability(self, dataset_id, department, architecture_view: av.ArchitectureView):
         data = dm.DataManager.get_table_as_df(
             dm.DataManager, table=dataset_id)
-        if not department == "All":
+        if department == st.NO_ENTRY_INPUT_FIELD:
+            data = data[data['Verantwortliche Organisationseinheit']
+                        == ""]
+        elif not department == st.ALL_VALUES_INPUT_FIELD:
             data = data[data['Verantwortliche Organisationseinheit']
                         == department]
         architecture_view_components = architecture_view.get_components().split(",")
         series = []
         labels = []
         for component in architecture_view_components:
-            data[component] = data[component].apply(
-                lambda x: np.nan if x == "" else x)
+            if "Anzahl" in component:
+                data[component] = data[component].apply(
+                    lambda x: np.nan if x == 0 or x == "0" else x)
+            else:
+                data[component] = data[component].apply(
+                    lambda x: np.nan if x == "" or x == "Kein Eintrag" else x)
             series.append(
                 {"data": [(1 - (data[component].isna().sum() / len(data[component])))*100],
                  "name": component})

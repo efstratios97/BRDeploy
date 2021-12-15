@@ -149,7 +149,12 @@ export default {
     },
     getDepartmentsFromDataset() {
       this.$axios
-        .get("/get_departments_from_dataset/" + this.selected_dataset_id)
+        .get(
+          "/get_departments_from_dataset/" +
+            this.selected_dataset_id +
+            "/" +
+            this.selected_dataset_label
+        )
         .then((res) => {
           var data_tmp = [{ dep: "All" }];
           for (let index = 0; index < res.data.data.length; index++) {

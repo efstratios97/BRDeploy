@@ -5,15 +5,15 @@ import UserManager from '../views/UserManager.vue'
 import Cleanser from '../views/Cleanser.vue'
 import DataAnalyzer from '../views/DataAnalyzer.vue'
 import DataHealthManager from '../views/DataHealthManager.vue'
+import KPIManager from '../views/KPIManager.vue'
+import ExecutiveDashboard from '../views/ExecutiveDashboard.vue'
 import GoToMenuBack from '../components/GoToMenuBack.vue'
 import DashboardDataHealth from '../components/Dashboards/DashboardDataHealth.vue'
 import DashboardAnalyzer from '../components/Dashboards/DashboardAnalyzer.vue'
+import DashboardKPI from '../components/Dashboards/DashboardKPI.vue'
+import DashboardExecutiveDashboard from '../components/Dashboards/DashboardExecutiveDashboard.vue'
 import SelectorDataset from '../components/SelectorDataset.vue'
 import Login from '../views/Login.vue'
-import ExecutiveDashboard from '../views/ExecutiveDashboard.vue'
-import DashboardExecutiveDashboard from '../components/Dashboards/DashboardExecutiveDashboard.vue'
-
-
 
 const routes = [
   {
@@ -24,7 +24,7 @@ const routes = [
   {
     path: '/mainmenu',
     name: 'Home',
-    components: { default: Home }
+    components: { default: Home, header: GoToMenuBack }
   },
   {
     path: '/datamanager',
@@ -77,6 +77,26 @@ const routes = [
       path: '/datahealthmanager/dashboard',
       name: 'DataHealthDashboard',
       components: { default: DashboardDataHealth, header: GoToMenuBack },
+    }]
+  },
+
+  {
+    path: '/kpimanager',
+    name: 'KPIManager',
+    components: { default: KPIManager, header: GoToMenuBack }
+  },
+  {
+    path: '/kpimanager/',
+    name: 'SelectorDatasetK',
+    components: { default: KPIManager, header: GoToMenuBack },
+    children: [{
+      path: '',
+      components: { default: SelectorDataset, header: GoToMenuBack },
+
+    }, {
+      path: '/kpimanager/dashboard',
+      name: 'KPIDashboard',
+      components: { default: DashboardKPI, header: GoToMenuBack },
     }]
   },
 

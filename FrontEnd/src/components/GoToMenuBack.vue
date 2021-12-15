@@ -2,9 +2,8 @@
   <Menubar :model="items">
     <template #start>
       <router-link to="/mainmenu">
-        <img alt="logo"
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/BR_Dachmarke.svg/2000px-BR_Dachmarke.svg.png"
-        height="40" class="p-mr-2" to=/mainmenu />
+        <img alt="logo" src="~@/assets/CLIENT_LOGO.png" height="40"
+        class="p-mr-2" to=/mainmenu />
       </router-link>
     </template>
     <template #end>
@@ -55,6 +54,11 @@ export default {
           label: "DataHealth",
           icon: "pi pi-compass",
           to: "/datahealthmanager",
+        },
+        {
+          label: "KPIManager",
+          icon: "pi pi-eye",
+          to: "/kpimanager",
         },
         {
           label: "ExecutiveDashboard",

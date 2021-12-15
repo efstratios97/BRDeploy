@@ -26,15 +26,12 @@
           <span class="visuallyhidden">Return to Product Page</span>
         </button>
         <div class="modal__circle"></div>
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/BR_Dachmarke.svg/2000px-BR_Dachmarke.svg.png"
-          class="modal__product"
-        />
+        <img src="~@/assets/MODAL_LOGO.png" class="modal__product" />
       </div>
       <div class="modal__content overflow-auto">
         <h2><slot name="header"></slot></h2>
         <br />
-        <slot name="body" class="overflow-auto"></slot>
+        <slot name="body" style="overflow-auto; resize-both"></slot>
       </div>
       <!-- END: .modal__content -->
     </div>
@@ -172,7 +169,7 @@ body {
   left: -5px;
   height: 130%;
   width: 100%;
-  background-image: url("https://www.climaplan.de/wp-content/uploads/2020/02/BR-Format.jpg");
+  background-image: url(~@/assets/MODAL_BACKGROUND.jpg);
   background-size: auto;
   border-radius: 50%;
   /* -ms-transform: translateX(-50%) translateY(-25%); */

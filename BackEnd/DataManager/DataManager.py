@@ -7,11 +7,12 @@ Description: Implements main functionality of the DataManager
 
 import DataManager.DataSet as ds
 import DataManager.Label as lab
+import DataCleanser.DataCleanser as dc
+import UserManager.UserManager as um
 import Utils.DataBaseUtils as db_utils
 import Utils.DataBaseSQL as sql_stmt
 import Utils.Settings as st
-import DataCleanser.DataCleanser as dc
-import UserManager.UserManager as um
+import Utils.SettingsBR as st_br
 import os
 import pandas as pd
 
@@ -39,21 +40,27 @@ class DataManager:
                                      storage_type=storage_type, data=data, label=label_obj.get_name())
         local = st.enum_storage_type_bool(
             storage_type=storage_type)
+
+        all_archive_datasets = self.get_all_archive_datasets(DataManager)
+        archive_dataset_exists = False
+        for archive_dataset in all_archive_datasets:
+            if archive_dataset.get_hash_of_dataset() == dataset_archive.get_hash_of_dataset():
+                archive_dataset_exists = True
+                break
+        if not archive_dataset_exists:
+            self.insert_dataset_db(
+                DataManager, dataset=dataset_archive, local=local, archive=True)
+            self.insert_dataset_data_db(
+                DataManager, dataset=dataset, local=local, archive=True)
         self.insert_dataset_db(
             DataManager, dataset=dataset, local=local)
-        self.insert_dataset_db(
-            DataManager, dataset=dataset_archive, local=local, archive=True)
-        self.insert_dataset_data_db(DataManager, dataset=dataset, local=local)
+        self.insert_dataset_data_db(
+            DataManager, dataset=dataset, local=local)
         self.insert_user_dataset_access_relation_db(
             DataManager, dataset=dataset)
         self.insert_department_dataset_access_relation_db(
             DataManager, dataset=dataset)
         return dataset
-
-    # def check_suitable_cleansers(headerlist):
-    #     cleansers = dc.DataCleanser.get_all_cleansers()
-    #     for cleanser in cleansers:
-    #         if
 
     def check_suitable_label(self, header_list, label_name=""):
         labels = self.get_all_labels(DataManager)
@@ -76,6 +83,17 @@ class DataManager:
                 label = self.parse_label_obj(DataManager, row)
                 labels.append(label)
         return labels
+
+    def get_label_by_name(self, name, local=False):
+        result = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                                    sql_stmt.DataBaseSQL.
+                                                    select_object_by_condition(
+                                                        sql_stmt.DataBaseSQL, table=st.TABLE_LABEL,
+                                                        condition=st.TB_LABEL_COL_NAME,
+                                                        condition_value=name),
+                                                    fetchone=True, local=False)
+        label = self.parse_label_obj(DataManager, result)
+        return label
 
     def create_label(self, name, header_list, operation_list=""):
         label_id = "label_" + st.create_id()
@@ -105,8 +123,7 @@ class DataManager:
                                                                label_name=label.get_name(), dataset_header_list=label.get_header_list(),
                                                                operations_cleanser=label.get_operation_list()), local=local)
 
-        # Creates Table (if not already exists) and then inserts data into the table
-
+    # Creates Table (if not already exists) and then inserts data into the table
     def insert_dataset_db(self, dataset: ds.DataSet, local: bool, archive=False):
         # Creates Table
         db_utils.DataBaseUtils.execute_sql(
@@ -124,16 +141,18 @@ class DataManager:
                                                                   label=dataset.get_label(), archive=archive), local=local)
 
     # Creates a table for the data holded by a dataset object and insert it into the created table
-    def insert_dataset_data_db(self, dataset: ds.DataSet, local: bool, if_exists="append"):
+    def insert_dataset_data_db(self, dataset: ds.DataSet, local: bool, if_exists="append", archive=False):
         dataset.set_data(dataset.get_data().fillna(value=""))
         dataset.set_data(dataset.get_data().astype(str))
         db_engine = db_utils.DataBaseUtils.create_db_engine(
             db_utils.DataBaseUtils, local=local)
         try:
-            dataset.get_data().to_sql(dataset.get_datasetID(),
-                                      con=db_engine, if_exists=if_exists, index=False)
-            dataset.get_data().to_sql(st.make_dataset_id_to_archive_id(dataset.get_datasetID()),
-                                      con=db_engine, if_exists=if_exists, index=False)
+            if archive:
+                dataset.get_data().to_sql(st.make_dataset_id_to_archive_id(dataset.get_datasetID()),
+                                          con=db_engine, if_exists=if_exists, index=False)
+            else:
+                dataset.get_data().to_sql(dataset.get_datasetID(),
+                                          con=db_engine, if_exists=if_exists, index=False)
             return True
         except:
             return False
@@ -252,6 +271,20 @@ class DataManager:
                                                         condition_operator='=', condition_value=st.make_dataset_id_to_archive_id(dataset_id)),
                                            local=local)
 
+    def get_all_archive_datasets(self):
+        db_utils.DataBaseUtils.execute_sql(
+            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.
+            create_DataSet_table_sql(sql_stmt.DataBaseSQL, archive=True), local=False)
+        data = []
+        result = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                                    sql_stmt.DataBaseSQL.select_all_data_from_table(
+                                                        sql_stmt.DataBaseSQL, table=st.TABLE_DATASET_ARCHIVE),
+                                                    fetchall=True, local=False)
+        for row in result:
+            dataset = self.parse_dataset_obj(DataManager, row)
+            data.append(dataset)
+        return data
+
     # Returns all dataset from the databases (local and cloud) and further create
     def get_all_datasets(self, user_id: str):
         data = []
@@ -369,6 +402,97 @@ class DataManager:
             sql_stmt.DataBaseSQL, table=table), con=db_engine.connect())
         return result
 
+    def get_departments_by_department_hierarchy_br(self, department: str, dataset_id="", dataset_label=""):
+        departments = []
+        departments_in_dataset = DataManager.get_departments_from_dataset(
+            DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        haupt_abteilung_tmp = department.replace(
+            " (Organisationseinheit)", "")
+        abteilung_tmp = department.replace(
+            " (Organisationseinheit)", "").replace("Abt. ", "")
+        if department == st.ALL_VALUES_INPUT_FIELD:
+            departments = st_br.get_departments_bayerischer_rundfunk_list()
+            return departments
+        elif department.startswith("HA "):
+            for ha_abt in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"].keys()):
+                if ha_abt in haupt_abteilung_tmp:
+                    departments.append(department)
+                    for abteilung in st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][ha_abt]["Abteilungen"]:
+                        abteilung_to_list = [
+                            val for val in departments_in_dataset if abteilung in val and val.startswith("Abt. ")]
+                        if len(abteilung_to_list) == 1:
+                            departments.append(abteilung_to_list[0])
+                        elif len(abteilung_to_list) > 1:
+                            abteilung_to_list = [
+                                val for val in abteilung_to_list if not "," in val or not "\n" in val]
+                            departments.append(abteilung_to_list[0])
+                        for fachgruppe in st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][ha_abt]["Abteilungen"][abteilung]["Fachgruppen"]:
+                            fachgruppe_to_list = [
+                                val for val in departments_in_dataset if fachgruppe in val]
+                            if len(fachgruppe_to_list) == 1:
+                                departments.append(fachgruppe_to_list[0])
+                            elif len(fachgruppe_to_list) > 1:
+                                fachgruppe_to_list = [
+                                    val for val in fachgruppe_to_list if not "," in val or not "\n" in val]
+                                departments.append(fachgruppe_to_list[0])
+                    return departments
+        elif department.startswith("Abt. "):
+            for ha_abt in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"].keys()):
+                if abteilung_tmp in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][ha_abt]["Abteilungen"]):
+                    departments.append(department)
+                    dept_in_settings = [
+                        val for val in departments_in_dataset if department in val][0].replace(
+                        " (Organisationseinheit)", "").replace("Abt. ", "")
+                    try:
+                        for fachgruppe in st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][ha_abt]["Abteilungen"][dept_in_settings]["Fachgruppen"]:
+                            fachgruppe_to_list = [
+                                val for val in departments_in_dataset if fachgruppe in val]
+                            if len(fachgruppe_to_list) == 1:
+                                departments.append(fachgruppe_to_list[0])
+                            elif len(fachgruppe_to_list) > 1:
+                                fachgruppe_to_list = [
+                                    val for val in fachgruppe_to_list if not "," in val or not "\n" in val]
+                                departments.append(fachgruppe_to_list[0])
+                    except:
+                        print("list_dep" + dept_in_settings)
+                    return departments
+        elif department.startswith("FG "):
+            departments.append(department)
+            return departments
+        if len(departments) == 0:
+            departments.append(department)
+            return departments
+
+    def get_departments_from_dataset(self, dataset_id="", dataset_label=""):
+        dataset_id = DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+            DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        data = DataManager.get_table_as_df(
+            DataManager, dataset_id)
+        departments = st.prepend_elem_to_list(st.prepend_elem_to_list(list(filter(None, list(
+            set(data['Verantwortliche Organisationseinheit'].to_list())))), st.NO_ENTRY_INPUT_FIELD), st.ALL_VALUES_INPUT_FIELD)
+        return departments
+
+    def get_apps_from_dataset(self, dataset_id="", dataset_label=""):
+        dataset_id = DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+            DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        data = DataManager.get_table_as_df(
+            DataManager, dataset_id)
+        apps = list(
+            set(data['Name'].to_list()))
+        return apps
+
+    def get_domains_from_dataset(self, dataset_id="", dataset_label=""):
+        dataset_id = DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+            DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        data = DataManager.get_table_as_df(
+            DataManager, dataset_id)
+        domains = list(
+            set(list(filter(None, " ".join(str(data['Zugeordnete Domäne'].to_list()).strip('][')
+                                           .replace(" \\n", "").replace("'',", "").replace("'", "")
+                                           .split()).split(",")))))
+        domains = [val.strip() for val in domains]
+        return list(set(domains))
+
     def parse_dataset_obj(self, db_row):
         if db_row:
             dataset_id = db_row[0]
@@ -442,6 +566,12 @@ class DataManager:
                     dataset_ids.append(row[0])
         data = sorted(data, key=lambda x: x.get_creation_date(), reverse=True)
         return data[0]
+
+    def check_dataset_exists_and_return_alternative_based_on_label(self, dataset_id, dataset_label):
+        if not self.check_dataset_exists(DataManager, dataset_id=dataset_id):
+            dataset_id = self.get_newest_dataset_replacement_by_dataset_label(
+                DataManager, dataset_label=dataset_label).get_datasetID()
+        return dataset_id
 
     # Deletes a dataset from the database
 

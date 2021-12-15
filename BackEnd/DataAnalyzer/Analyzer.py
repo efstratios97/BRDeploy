@@ -65,6 +65,7 @@ class Analyzer:
             return x.replace('\n', ' ').replace(' (Geschäftsfähigkeit)', '')
         df['Unterstützte Geschäftsfähigkeiten'] = df['Unterstützte Geschäftsfähigkeiten'].apply(lambda x: split_bc(x)
                                                                                                 if isinstance(x, str) else None)
+        self.list_bc = list(filter(None, self.list_bc))
 
     def __normalize_bc(self, df):
         def split_bc(x):

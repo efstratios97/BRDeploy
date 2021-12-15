@@ -44,9 +44,6 @@ class DataBaseUtils:
     def __connect_local_db(self):
         conn = None
         try:
-            #conn = sqlite3.connect(self.db_local)
-            print('e')
-
             return conn
         except:
             print('e')
@@ -88,8 +85,7 @@ class DataBaseUtils:
             if local:
                 e = 'sqlite3.Error'
             else:
-                #e = pymysql.Error
-                print('test')
+                e = pymysql.Error
             print(e)
             return False
         finally:

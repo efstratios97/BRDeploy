@@ -1,14 +1,7 @@
 <template>
   <main class="site-wrapper">
     <div class="pt-table desktop-768">
-      <div
-        class="pt-tablecell page-home relative"
-        style="
-          background-image: url(https://www.br.de/unternehmen/inhalt/organisation/bayerischer-rundfunk-funkhaus-muenchen-100~_v-img__16__9__l_-1dc0e8f74459dd04c91a0d45af4972b9069f1135.jpg?version=ba675);
-          background-position: center;
-          background-size: cover;
-        "
-      >
+      <div class="pt-tablecell page-home relative" style="">
         <div class="overlay"></div>
 
         <div class="container">
@@ -134,7 +127,7 @@
                     <div></div>
                     <div></div>
                   </div>
-                  <a href="https://br.de" class="hex-content">
+                  <router-link to="/executivedashboard" class="hex-content">
                     <span class="hex-content-inner">
                       <span class="icon">
                         <i class="glyphicon glyphicon-qrcode"></i>
@@ -153,7 +146,7 @@
                         fill="#1e2530"
                       ></path>
                     </svg>
-                  </a>
+                  </router-link>
                 </div>
                 <div class="hexagon-item">
                   <div class="hex-item">
@@ -230,12 +223,12 @@
                     <div></div>
                     <div></div>
                   </div>
-                  <a href="https://br.de" class="hex-content">
+                  <router-link to="/kpimanager" class="hex-content">
                     <span class="hex-content-inner">
                       <span class="icon">
                         <i class="glyphicon glyphicon-eye-open"></i>
                       </span>
-                      <span class="title">Bayerischer Rundfunk</span>
+                      <span class="title">KPI Manager</span>
                     </span>
                     <svg
                       viewBox="0 0 173.20508075688772 200"
@@ -249,7 +242,7 @@
                         fill="#1e2530"
                       ></path>
                     </svg>
-                  </a>
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -713,7 +706,10 @@ label {
 }
 
 .page-home {
-  background-position: center center;
+  background-image: url(~@/assets/HOME_BACKGROUND.jpg);
+  background-position: center;
+  background-size: cover;
+  /* background-position: center center; */
   background-repeat: no-repeat;
   background-size: cover;
   vertical-align: middle;

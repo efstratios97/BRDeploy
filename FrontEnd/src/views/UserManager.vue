@@ -363,6 +363,6 @@ export default {
 </script>
 <style scoped>
 .banner-image {
-  background-image: url(https://www.designtagebuch.de/wp-content/uploads/mediathek//2016/04/br-rundschau-studio-700x393.jpg);
+  background-image: url(~@/assets/USERMANAGER_BACKGROUND.jpg);
 }
 </style>

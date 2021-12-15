@@ -6,10 +6,13 @@ Description: Various Helpermethods and Attributes for re-use
 '''
 
 from inspect import currentframe, getframeinfo
+from typing import Pattern
 import uuid
 import hashlib
 import pandas as pd
 import functools
+import ast
+import re
 
 ATHENA_CLOUD_DB_HOST = 'localhost'
 ATHENA_CLOUD_DB_USER = 'br'
@@ -38,6 +41,14 @@ TABLE_PLOTS = "executive_dashboards_plots"
 TABLE_EXECUTIVE_DASHBOARDS_PLOTS_RELATION = "executive_dashboard_plot_relation"
 TABLE_LABEL = "labels"
 TABLE_DATASET_ARCHIVE = "dataset_archive"
+TABLE_KPI = "kpis"
+TABLE_ASPECT = "aspects"
+TABLE_FORMULA = "formulas"
+TABLE_KPI_FORMULA_RELATION = "kpi_formula_relation"
+TABLE_ASPECT_FORMULA_RELATION = "aspect_formula_relation"
+TABLE_KPI_ASPECT_RELATION = "kpi_aspect_relation"
+TABLE_KPI_CATEGORY_TYPE = "kpi_category_types"
+TABLE_RESULT = "result"
 
 
 # Dataset Table columns
@@ -122,6 +133,54 @@ TB_LABEL_COL_HEADER = "LABEL_HEADER_DATASET"
 TB_LABEL_COL_OPERATIONS_CLEANSER = "LABEL_OPERATIONS_CLEANSER"
 TB_LABEL_COL_CREATED_AT = "CREATED_AT"
 
+# KPI Table
+TB_KPI_COL_KPI_ID = 'KPI_ID'
+TB_KPI_COL_NAME = 'NAME'
+TB_KPI_COL_DESCRIPTION = 'DESCRIPTION'
+TB_KPI_COL_HIGH_LEVEL_KPI_COMPONENT_KPI_WEIGHT = 'HIGH_LEVEL_KPI_COMPONENT_KPI_WEIGHT'
+TB_KPI_COL_KPI_ASPECTS_WEIGHTS = 'KPI_ASPECTS_WEIGHTS'
+TB_KPI_COL_THRESHOLD = 'THRESHOLD'
+TB_KPI_COL_FORMULA = 'FORMULA'
+TB_KPI_COL_DATASET_ID = 'DATASET_ID'
+TB_KPI_COL_DATASET_LABELS = 'DATASET_LABELS'
+TB_KPI_COL_KPI_FAMILY = 'KPI_FAMILY'
+TB_KPI_COL_COLOR_CODING = 'COLOR_CODING'
+TB_KPI_COL_CREATED_AT = 'CREATED_AT'
+
+# Aspect Table
+TB_ASPECT_COL_ID = 'ASPECT_ID'
+TB_ASPECT_COL_NAME = 'NAME'
+TB_ASPECT_COL_DESCRIPTION = 'DESCRIPTION'
+TB_ASPECT_COL_RAW_COMPONENTS_FROM_DATASET = 'RAW_COMPONENTS_FROM_DATASET'
+TB_ASPECT_COL_SKALA_SIZE = 'SKALA_SIZE'
+TB_ASPECT_COL_WEIGHT = 'WEIGHT'
+TB_ASPECT_COL_THRESHOLD = 'THRESHOLD'
+TB_ASPECT_COL_OPERATION_TYPE = 'OPERATION_TYPE'
+TB_ASPECT_COL_FORMULA = 'FORMULA'
+TB_ASPECT_COL_DATASET_ID = 'DATASET_ID'
+TB_ASPECT_COL_DATASET_LABELS = 'DATASET_LABELS'
+TB_ASPECT_COL_KPI_FAMILY = 'KPI_FAMILY'
+TB_ASPECT_COL_CREATED_AT = 'CREATED_AT'
+
+# Formula Table
+TB_FORMULA_COL_FORMULA_ID = 'FORMULA_ID'
+TB_FORMULA_COL_NAME = 'NAME'
+TB_FORMULA_COL_DESCRIPTION = 'DESCRIPTION'
+TB_FORMULA_COL_OPERATION = 'OPERATION'
+TB_FORMULA_COL_PURPOSE = 'PURPOSE'
+TB_FORMULA_COL_KPI_FAMILIES = 'KPI_FAMILY'
+TB_FORMULA_COL_CREATED_AT = 'CREATED_AT'
+
+# KPI Category Type Table
+TB_KPI_CATEGORY_TYPE_COL_ID = 'KPI_CATEGORY_TYPE_ID'
+TB_KPI_CATEGORY_TYPE_COL_NAME = 'NAME'
+TB_KPI_CATEGORY_TYPE_COL_CREATED_AT = 'CREATED_AT'
+
+# TABLE Result
+TB_RESULT_ID = 'RESULT_ID'
+TB_RESULT_RESULT = 'RESULT'
+TB_RESULT_CREATED_AT = 'CREATED_AT'
+
 # Other Global variables
 DEPARTMENT_GENESIS = "None Department Assigned"
 NO_LABEL = "NO_LABEL_6aba48df0cb55992803d864977c3aa204520d659"
@@ -129,6 +188,13 @@ ARCHIVE_ID_PREFIX = "archive_"
 TB_ARCHIVE_DATASET_COL_DATASET_ID = ARCHIVE_ID_PREFIX + TB_DATASET_COL_DATASET_ID
 # Names after APEX Graphs Package
 STANDARD_VIEW_TYPES = ["bar", "treemap", "pie"]
+FORMULA_PURPOSE_ASPECT = "aspect"
+FORMULA_PURPOSE_KPI = "kpi"
+ASPECT_OPERATION_TYPE_COUNT = "Count #"
+ASPECT_OPERATION_TYPE_CATEGORICAL_3_SCALE = "Categorical with 3 Options (Niedrig; Mittel; Hoch)"
+ASPECT_OPERATION_TYPE_CATEGORICAL_5_SCALE = "Categorical with 5 Options (Sehr Niedrig; Niedrig; Mittel; Hoch; Sehr Hoch)"
+ALL_VALUES_INPUT_FIELD = "All"
+NO_ENTRY_INPUT_FIELD = "Undefined"
 
 
 def get_filename_of_occured_error():
@@ -172,10 +238,6 @@ def check_list_identical(list_1, list_2):
         return True
     else:
         return False
-    # if functools.reduce(lambda i, j: i and j, map(lambda m, k: m == k, list_1, list_2), True):
-    #     return False
-    # else:
-    #     return True
 
 
 def check_list_1_subset_list_2(list_1, list_2):
@@ -250,3 +312,79 @@ def enum_storage_type_bool(storage_type):
               'Line: ' + str(get_linenumber_of_occured_error())
               + 'File: ' + str(get_filename_of_occured_error()))
     return res
+
+
+def string_list_with_string_dict_into_list_dict(representation: str):
+    list_new = []
+    representation = representation.replace(
+        "},", "}§").replace(",", "$%$").replace("}§", "},")
+    if "[(" or ")]" in representation:
+        list_with_string_dict = representation.strip(')][(').split(', ')
+    else:
+        list_with_string_dict = representation.strip('][').split(', ')
+    for string_dict in list_with_string_dict:
+        string_dict = string_dict.replace("$%$", ",")
+        list_new.append(ast.literal_eval(string_dict))
+    return list_new
+
+
+def string_list_with_nested_string_dict_into_list_dict(representation: str):
+    try:
+        list_new = []
+        if "[(" or ")]" in representation:
+            tuple_with_dict = ast.literal_eval(
+                representation.strip(')][(').split('}}, ')[0])
+        else:
+            tuple_with_dict = ast.literal_eval(
+                representation.strip('][').split('}}, ')[0])
+        if len(tuple_with_dict) == 1:
+            list_new.append(tuple_with_dict)
+        else:
+            for dict in tuple_with_dict:
+                list_new.append(dict)
+        return list_new
+    except:
+        return representation
+
+
+def string_dict_to_dict(string_dict: str):
+    representation = string_dict.replace("),", ")$$").replace("\n", "$Spacer$")
+    dict = ast.literal_eval(representation)
+
+    dict = {key: value.replace(")$$", "),").replace(
+        "$Spacer$", "\n") if isinstance(value, str) else value for (key, value) in dict.items()}
+    return dict
+
+
+def string_list_to_list(representation: str):
+    list_new = []
+    list_with_string = representation.strip('][').split(',')
+    for string in list_with_string:
+        list_new.append(string.replace('"', ""))
+    return list_new
+
+
+def prepend_elem_to_list(list: list, elem):
+    list.insert(0, elem)
+    return list
+
+
+def get_all_values_from_nested_dict(dict: dict):
+    list_tmp = list(__get_all_values_from_nested_dict_helper(dict_=dict))
+    return [item for sublist in list_tmp for item in sublist]
+
+
+def __get_all_values_from_nested_dict_helper(dict_):
+    for val in dict_.values():
+        if isinstance(val, dict):
+            yield from __get_all_values_from_nested_dict_helper(val)
+        else:
+            yield val
+
+
+def get_keys_by_value(dict: dict, valueToFind):
+    listOfKeys = list()
+    for item in dict.items():
+        if item[1] == valueToFind:
+            listOfKeys.append(item[0])
+    return listOfKeys

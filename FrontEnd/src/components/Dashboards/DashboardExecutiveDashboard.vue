@@ -3,43 +3,54 @@
     <TabView class="tabview-custom" ref="tabview4" :key="componentKey">
       <TabPanel :disabled="disabled">
         <template #header>
-          <b-icon-speedometer style="font-size: 18px; margin: 3px" />
+          <b-icon-gear-wide-connected style="font-size: 18px; margin: 3px" />
           <span><h4>ExecutiveDashboardManager</h4></span>
         </template>
         <span v-if="admin">
-          <table-executive-dashboard
-            @delete="increaseComponentKey"
-          ></table-executive-dashboard>
-          <br />
-          <Carousel
-            :value="operationsItems"
-            :numVisible="1"
-            :numScroll="1"
-            :responsiveOptions="responsiveOptions"
-          >
-            <template #header>
-              <h1 style="text-align: center">Available Operations</h1>
+          <Card class="component-card">
+            <template v-slot:title> Executive Dashboards </template>
+            <template v-slot:subtitle>
+              Manager here your Executive Dashboards
             </template>
-            <template #item="slotProps">
-              <div class="operation-item">
-                <div class="operation-item-content">
-                  <div class="p-mb-3">
-                    <span style="text-align: center">
-                      <span v-html="slotProps.data.operation_img"></span
-                    ></span>
+            <template v-slot:content>
+              <table-executive-dashboard
+                @delete="increaseComponentKey"
+              ></table-executive-dashboard>
+            </template>
+          </Card>
+          <Card class="component-card">
+            <template v-slot:content>
+              <Carousel
+                :value="operationsItems"
+                :numVisible="1"
+                :numScroll="1"
+                :responsiveOptions="responsiveOptions"
+              >
+                <template #header>
+                  <h1 style="text-align: center">Available Operations</h1>
+                </template>
+                <template #item="slotProps">
+                  <div class="operation-item">
+                    <div class="operation-item-content">
+                      <div class="p-mb-3">
+                        <span style="text-align: center">
+                          <span v-html="slotProps.data.operation_img"></span
+                        ></span>
+                      </div>
+                      <h4>{{ slotProps.data.operation_desc }}</h4>
+                      <div
+                        v-html="slotProps.data.operation_button"
+                        @click.capture="toggleShowAddExecutiveDashboard"
+                        v-if="
+                          slotProps.data.operation === 'add_executive_dashboard'
+                        "
+                      ></div>
+                    </div>
                   </div>
-                  <h4>{{ slotProps.data.operation_desc }}</h4>
-                  <div
-                    v-html="slotProps.data.operation_button"
-                    @click.capture="toggleShowAddExecutiveDashboard"
-                    v-if="
-                      slotProps.data.operation === 'add_executive_dashboard'
-                    "
-                  ></div>
-                </div>
-              </div>
+                </template>
+              </Carousel>
             </template>
-          </Carousel>
+          </Card>
         </span>
       </TabPanel>
       <TabPanel
@@ -160,7 +171,6 @@ export default {
           var executive_dashboard_id =
             this.suitable_dashboards[index].executive_dashboard_id;
           this.increaseComponentKey();
-
           this.$axios
             .get(
               "/get_plots_from_executive_dashboards/" + executive_dashboard_id
@@ -205,6 +215,25 @@ export default {
   margin-right: 10px;
   margin-left: 10px;
   /* min-width: 100%; */
+}
+
+.component-card-table {
+  margin-top: 30px;
+  position: relative;
+  display: flex;
+  table-layout: fixed;
+  flex-grow: 1;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border-radius: 0.25rem;
+  resize: both;
+  overflow: auto;
+  margin-right: 10px;
+  margin-left: 10px;
+  min-width: 100%;
 }
 
 .centered-chart {

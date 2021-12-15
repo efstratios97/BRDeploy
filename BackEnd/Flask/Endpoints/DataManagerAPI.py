@@ -49,7 +49,7 @@ class DataManagerEndpoints:
     def label_to_dict(self, label: lab):
         dict_formatted = {}
         if label:
-            dict_formatted['label_id'] = label.get_datasetID()
+            dict_formatted['label_id'] = label.get_labelID()
             dict_formatted['name'] = label.get_name()
             dict_formatted['header_list'] = st.make_str_to_list(
                 label.get_header_list())
@@ -228,4 +228,37 @@ def get_labels():
     for label in labels:
         result['data'].append(DataManagerEndpoints.label_to_dict(
             DataManagerEndpoints, label=label))
+    return fl.jsonify(result), 200
+
+
+@blueprint.route('/get_departments_from_dataset/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
+def get_departments_from_dataset(dataset_id, dataset_label):
+    result = {}
+    result['data'] = []
+    departments = dm.DataManager.get_departments_from_dataset(
+        dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+    for department in departments:
+        result['data'].append(department)
+    return fl.jsonify(result), 200
+
+
+@blueprint.route('/get_departments_by_br_hiararchy/<department>/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
+def get_departments_by_br_hiararchy(department, dataset_id, dataset_label):
+    result = {}
+    result['data'] = []
+    departments = dm.DataManager.get_departments_by_department_hierarchy_br(
+        dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label, department=department)
+    for department in departments:
+        result['data'].append(department)
+    return fl.jsonify(result), 200
+
+
+@blueprint.route('/get_domains_from_dataset/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
+def get_domains_from_dataset(dataset_id, dataset_label):
+    result = {}
+    result['data'] = []
+    domains = dm.DataManager.get_domains_from_dataset(
+        dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+    for domain in domains:
+        result['data'].append(domain)
     return fl.jsonify(result), 200

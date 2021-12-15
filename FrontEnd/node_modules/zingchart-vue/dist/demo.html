@@ -1,0 +1,19 @@
+<meta charset="utf-8">
+<title>zingchartVue demo</title>
+<script src="https://unpkg.com/vue"></script>
+<script src="./zingchartVue.umd.js"></script>
+
+<link rel="stylesheet" href="./zingchartVue.css">
+
+
+<div id="app">
+  <demo></demo>
+</div>
+
+<script>
+new Vue({
+  components: {
+    demo: zingchartVue
+  }
+}).$mount('#app')
+</script>

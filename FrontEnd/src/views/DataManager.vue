@@ -122,6 +122,7 @@ export default {
   methods: {
     toggleShowAddData() {
       this.showAddData = !this.showAddData;
+      this.componentKey += 1;
     },
     toggleShowAddTableData() {
       this.showAddTableData = !this.showAddTableData;
@@ -180,7 +181,7 @@ export default {
 }
 
 .banner-image {
-  background-image: url(https://www.climaplan.de/wp-content/uploads/2020/02/BR-Format.jpg);
+  background-image: url(~@/assets/DATAMANAGER_BACKGROUND.jpg);
 }
 
 .p-card {

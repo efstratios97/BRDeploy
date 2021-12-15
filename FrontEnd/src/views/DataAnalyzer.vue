@@ -103,7 +103,7 @@ export default {
 
 <style scoped>
 .banner-image {
-  background-image: url("~@/assets/DataAnalyzerWallpaper2.png");
+  background-image: url("~@/assets/DATAANALYZER_BACKGROUND.png");
 }
 .bokeh-graph {
   resize: both;

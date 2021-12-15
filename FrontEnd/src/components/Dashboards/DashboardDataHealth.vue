@@ -8,19 +8,6 @@
         </template>
         <div class="container-...">
           <div class="row row-cols-auto auto-cols-adj">
-            <!-- <Card class="component-card">
-              <template v-slot:title> Chart </template>
-              <template v-slot:subtitle>
-                Departments by # of Applications as Treemap representation
-              </template>
-              <template v-slot:content>
-                <chart
-                  :selected_dataset_id="selected_dataset_id"
-                  :selected_dataset_label="selected_dataset_label"
-                ></chart>
-              </template>
-            </Card> -->
-
             <Card class="component-card">
               <template v-slot:title> Treemap </template>
               <template v-slot:subtitle>
@@ -230,18 +217,6 @@ export default {
       }
     },
     create_plot_and_save_to_executive_dashboard(selected_executive_dashboards) {
-      // this.formData = new FormData();
-      // this.formData.append("title", this.title_chart);
-      // this.formData.append("subtitle", this.subtitle_chart);
-      // this.formData.append("legend_show", this.legend_show_chart);
-      // this.formData.append("dataset_id_for_chart", this.selected_dataset_id);
-      // this.formData.append("dataset_label", this.selected_dataset_label);
-      // this.formData.append("chart_type", this.chart_type);
-      // this.formData.append("chart_width", this.chart_width);
-      // this.formData.append("chart_height", this.chart_height);
-      // this.formData.append("xaxis_categories", this.xaxis_categories);
-      // this.formData.append("input_fields", this.input_fields);
-      // this.formData.append("input_fields_id", this.input_fields_id);
       for (
         let index = 0;
         index < selected_executive_dashboards.length;

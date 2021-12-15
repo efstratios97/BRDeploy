@@ -15,7 +15,8 @@ import Flask.Endpoints.DataHealthAPI as api_dh
 import Flask.Endpoints.ArchitectureViewAPI as api_av
 import Flask.Endpoints.ExecutiveDashboardAPI as api_ed
 import Flask.Endpoints.DataPlotManagerApi as api_dpm
-
+import Flask.Endpoints.KPIManagerAPI as api_kpi
+import Flask.Endpoints.KPIAspectManagerAPI as api_aspct
 
 BRapp = Flask(__name__)
 CORS(BRapp)
@@ -34,9 +35,11 @@ BRapp.register_blueprint(api_dh.blueprint)
 BRapp.register_blueprint(api_av.blueprint)
 BRapp.register_blueprint(api_ed.blueprint)
 BRapp.register_blueprint(api_dpm.blueprint)
+BRapp.register_blueprint(api_kpi.blueprint)
+BRapp.register_blueprint(api_aspct.blueprint)
 
 if __name__ == "__main__":
-    BRapp.run(host='0.0.0.0')
+    BRapp.run(host='127.0.0.1')
 
 
 # def create_app():

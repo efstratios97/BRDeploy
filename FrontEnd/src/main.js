@@ -34,7 +34,16 @@ import Checkbox from 'primevue/checkbox';
 import FileUpload from 'primevue/fileupload';
 import ToggleButton from 'primevue/togglebutton';
 import InputSwitch from 'primevue/inputswitch';
+import Knob from 'primevue/knob';
 import CascadeSelect from 'primevue/cascadeselect';
+import VueFusionCharts from 'vue-fusioncharts';
+import FusionCharts from 'fusioncharts';
+import Charts from 'fusioncharts/fusioncharts.charts';
+import TreeMap from 'fusioncharts/fusioncharts.treemap';
+import Widgets from 'fusioncharts/fusioncharts.widgets';
+import FusionTheme from 'fusioncharts/themes/fusioncharts.theme.fusion';
+import Column2D from 'fusioncharts/fusioncharts.charts';
+import PowerCharts from 'fusioncharts/fusioncharts.powercharts';
 import 'primeflex/primeflex.css';
 import 'primevue/resources/primevue.min.css'
 import 'primevue/resources/themes/bootstrap4-light-blue/theme.css';
@@ -69,7 +78,7 @@ const store = createStore({
 })
 const instance = axios.create({
     // baseURL: process.env.NODE_ENV == 'development' ? '' : ''
-    baseURL: 'http://it-eamtoolt-01:8081',// 'http://it-eamtoolt-01:8081''http://10.20.20.133:5000' https://br-eam-backend.herokuapp.com/user/auth?email=tetet&passwd=tete4
+    baseURL: 'http://127.0.0.1:5000',// 'http://it-eamtoolt-01:8081''http://127.0.0.1:5000''http://10.20.20.133:5000' https://br-eam-backend.herokuapp.com/user/auth?email=tetet&passwd=tete4
     timeout: 60 * 4 * 1000
 });
 const app = createApp(App)
@@ -101,6 +110,7 @@ app.component('FileUpload', FileUpload);
 app.component('ToggleButton', ToggleButton);
 app.component('InputSwitch', InputSwitch)
 app.component('CascadeSelect', CascadeSelect)
+app.component('Knob', Knob)
 app.directive('tooltip', Tooltip);
 app.use(VueApexCharts);
 app.use(store)
@@ -108,6 +118,7 @@ app.use(router)
 app.use(ToastService);
 app.use(BootstrapIconsPlugin);
 app.use(VueAxios, axios)
+app.use(VueFusionCharts, FusionCharts, Charts, TreeMap, Widgets, FusionTheme, Column2D, PowerCharts);
 app.config.globalProperties.$axios = instance;
 app.mount('#app')
 

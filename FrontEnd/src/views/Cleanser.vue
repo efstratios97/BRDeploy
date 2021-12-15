@@ -206,6 +206,6 @@ export default {
 </script>
 <style scoped>
 .banner-image {
-  background-image: url(https://fritsch-tschaidse.de/de/assets/galleries/223/_thumbs/large_fritsch_tschaidse_architekten_BR_04_150605_p1_2_br_lobby_rev1_580.jpg);
+  background-image: url(~@/assets/CLEANSER_BACKGROUND.jpg);
 }
 </style>

@@ -82,7 +82,7 @@ export default {
 </script>
 <style scoped>
 .banner-image {
-  background-image: url("https://www.br.de/unternehmen/inhalt/veranstaltungen/bayern-1-ballon-taschen-122~_v-img__16__9__xl_-d31c35f8186ebeb80b0cd843a7c267a0e0c81647.png?version=a7b23");
+  background-image: url(~@/assets/DATAHEALTH_BACKGROUND.png);
 }
 
 .component-card {

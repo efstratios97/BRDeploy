@@ -475,8 +475,6 @@ export default {
         .post("/create_dataset?uid=" + localStorage.loggedUser, this.formData)
         .then((res) => {
           this.new_created_dataset = res.data;
-          console.log("Here");
-
           if (
             this.new_created_dataset.cleaned_dataset["label"] ===
             "NO_LABEL_6aba48df0cb55992803d864977c3aa204520d659"
