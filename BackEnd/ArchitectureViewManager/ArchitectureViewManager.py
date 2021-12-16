@@ -103,12 +103,12 @@ class ArchitectureViewManager:
         series = []
         labels = []
         for component in architecture_view_components:
-            if "Anzahl" in component:
+            if "Anzahl" in component and "kosten" in component:
                 data[component] = data[component].apply(
                     lambda x: np.nan if x == 0 or x == "0" else x)
             else:
                 data[component] = data[component].apply(
-                    lambda x: np.nan if x == "" or x == "Kein Eintrag" else x)
+                    lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
             series.append(
                 {"data": [(1 - (data[component].isna().sum() / len(data[component])))*100],
                  "name": component})

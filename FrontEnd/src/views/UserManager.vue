@@ -363,6 +363,6 @@ export default {
 </script>
 <style scoped>
 .banner-image {
-  background-image: url(~@/assets/USERMANAGER_BACKGROUND.jpg);
+  background-image: url("~@/assets/USERMANAGER_BACKGROUND.jpg");
 }
 </style>

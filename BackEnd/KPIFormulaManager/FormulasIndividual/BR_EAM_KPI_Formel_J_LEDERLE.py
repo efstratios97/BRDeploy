@@ -1,14 +1,15 @@
-from numpy import NaN
-import numpy
-import Utils.Settings as st
 import sys
-import json
-import KPIAspectManager.AspectManager as aspct_m
-import KPIManager.KPIManager as kpi_m
-import KPIFormulaManager.Result as res
-import pandas as pd
+# sys.path.insert(0, '/root/BRDeploy/BackEnd')
+# sys.path.insert(0,  '/root/brapp/bin')
 import DataManager.DataManager as dm
-import statistics
+import pandas as pd
+import KPIFormulaManager.Result as res
+import KPIManager.KPIManager as kpi_m
+import KPIAspectManager.AspectManager as aspct_m
+import json
+import Utils.Settings as st
+import numpy
+from numpy import NaN
 
 
 def kpi_calculation(kpi_id="", dataset_id="", parameter="", db_location="", dataset_data="", fast=False):

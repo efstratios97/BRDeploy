@@ -13,6 +13,8 @@ departments_bayerischer_rundfunk = {"Hauptabteilungen": {
                                                 "Businesssysteme und -lösungen": {"Fachgruppen": ["Planungs- und Standardapplikationen", "Businessapplikationen", "IT Solutions"]},
                                                 "Planung Infrastrukturtechnologie": {"Fachgruppen": ["Planung Verbreitungstechnik"]}
                                                 }},
+    "HA Programmdirektion Information": {"Abteilungen": {"Softwareentwicklung und Plattformen (SEP)": {"Fachgruppen": []},
+                                                         }},
     "HA Produktionsservice": {"Abteilungen": {"Veranstaltungsservice": {"Fachgruppen": ["Veranstaltungstechnik", "Veranstaltungssicherheit", "Ausstattungsservice"]},
                                               "Kamera": {"Fachgruppen": ["Kamera 1", "Kamera 2"]},
                                               "Audio/Video Engineering": {"Fachgruppen": ["Audio Engineering", "Video Engineering"]},
@@ -36,8 +38,6 @@ departments_bayerischer_rundfunk = {"Hauptabteilungen": {
                                                   "Studios und Mobile Produktion": {"Fachgruppen": ["Studios", "Mobile Produktion", "Materialmanagement"]},
                                                   "Dezentrale Produktionsstandorte": {"Fachgruppen": ["Regionen und Ausland", "Produktionsservice Franken"]}
                                                   }},
-    "HA Programmdirektion Information": {"Abteilungen": {"Softwareentwicklung und Plattformen (SEP)": {"Fachgruppen": []},
-                                                         }},
 }}
 
 

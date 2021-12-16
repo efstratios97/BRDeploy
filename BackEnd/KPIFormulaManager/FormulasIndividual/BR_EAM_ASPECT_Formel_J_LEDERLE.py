@@ -1,12 +1,14 @@
-from numpy import NaN, integer
-import numpy
-import Utils.Settings as st
 import sys
-import json
-import KPIAspectManager.AspectManager as aspct_m
-import KPIFormulaManager.Result as res
-import pandas as pd
+# sys.path.insert(0, '/root/BRDeploy/BackEnd')
+# sys.path.insert(0,  '/root/brapp/bin')
 import DataManager.DataManager as dm
+import pandas as pd
+import KPIFormulaManager.Result as res
+import KPIAspectManager.AspectManager as aspct_m
+import json
+import Utils.Settings as st
+import numpy
+from numpy import NaN, integer
 
 
 def aspect_calculation(app="", aspect_id="", dataset_data=""):

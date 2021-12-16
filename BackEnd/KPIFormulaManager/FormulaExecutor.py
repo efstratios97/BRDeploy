@@ -34,11 +34,11 @@ class FormulaExecutor:
                 return ind_kpi.kpi_calculation(
                     kpi_id=kpi_id, dataset_id=dataset_id, parameter=parameter, dataset_data=dataset_data, fast=True)
             else:
-                subprocess.call(['python', os.path.dirname(os.path.abspath(__file__)) +
-                                 "\\FormulasIndividual\\{operation}.py".format(operation=operation), kpi_id, dataset_id, parameter, res_table_name], shell=False)
+                subprocess.run(['python', os.path.dirname(os.path.abspath(__file__)) +
+                                "/FormulasIndividual/{operation}.py".format(operation=operation), kpi_id, dataset_id, parameter, res_table_name], shell=False)
         elif purpose == st.FORMULA_PURPOSE_ASPECT:
-            subprocess.call(['python', os.path.dirname(os.path.abspath(__file__)) +
-                             "\\FormulasIndividual\\{operation}.py".format(operation=operation), aspect_id, dataset_id, parameter, res_table_name], shell=False)
+            subprocess.run(['python', os.path.dirname(os.path.abspath(__file__)) +
+                            "/FormulasIndividual/{operation}.py".format(operation=operation), aspect_id, dataset_id, parameter, res_table_name], shell=False)
         results = res.Result.get_results(res.Result, table_name=res_table_name)
         result = False
         if len(results) == 1:

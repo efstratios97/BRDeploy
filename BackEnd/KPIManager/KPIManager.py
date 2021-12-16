@@ -434,7 +434,7 @@ class KPIManager:
         try:
             department_dataset = [
                 val for val in departments_from_dataset if dep_br in val and not "," in val and "abt. " in val.lower()][0]
-            if len(st_br.clean_department_from_dataset(department_dataset).split(" ")) != len(dep_br.split(" ")):
+            if len(st_br.clean_department_from_dataset(department_dataset).split(" ")) != len(dep_br.split(" ")) and not "(SEP)" in dep_br:
                 department_dataset = [
                     val for val in departments_from_dataset if dep_br in val and not "," in val and "abt. " in val.lower() and len(st_br.clean_department_from_dataset(val).split(" ")) == len(dep_br.split(" "))][0]
             return self.__create_json_dep_apps_kpi_app_landscape(KPIManager, dep_br=dep_br, department_dataset=department_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label, fillcolor=fillcolor)
@@ -515,12 +515,12 @@ class KPIManager:
             dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
         data = dm.DataManager.get_table_as_df(
             dm.DataManager, dataset_id)
-        if "Anzahl" in raw_component:
+        if "Anzahl" in raw_component and "kosten" in raw_component:
             data[raw_component] = data[raw_component].apply(
                 lambda x: np.nan if x == 0 or x == "0" else x)
         else:
             data[raw_component] = data[raw_component].apply(
-                lambda x: np.nan if x == "" or x == "Kein Eintrag" else x)
+                lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
         value = ((len(data[raw_component]) - data[raw_component].isna().sum()
                   ) / len(data[raw_component])) * 100
         return value
@@ -539,12 +539,12 @@ class KPIManager:
         all_raw_aspects_count = 0
         aspects_completed_data_count = 0
         for raw_component in raw_components:
-            if "Anzahl" in raw_component:
+            if "Anzahl" in raw_component and "kosten" in raw_component:
                 data[raw_component] = data[raw_component].apply(
                     lambda x: np.nan if x == 0 or x == "0" else x)
             else:
                 data[raw_component] = data[raw_component].apply(
-                    lambda x: np.nan if x == "" or x == "Kein Eintrag" else x)
+                    lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
             all_raw_aspects_count += len(data[raw_component])
             aspects_completed_data_count += len(
                 data[raw_component]) - data[raw_component].isna().sum()
@@ -589,12 +589,12 @@ class KPIManager:
             raw_components = [
                 val for sublist in aspect_raw_components for val in sublist]
             for raw_component in raw_components:
-                if "Anzahl" in raw_component:
+                if "Anzahl" in raw_component and "kosten" in raw_component:
                     data[raw_component] = data[raw_component].apply(
                         lambda x: np.nan if x == 0 or x == "0" else x)
                 else:
                     data[raw_component] = data[raw_component].apply(
-                        lambda x: np.nan if x == "" or x == "Kein Eintrag" else x)
+                        lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
                 all_raw_aspects_count += len(data[raw_component])
                 aspects_completed_data_count += len(
                     data[raw_component]) - data[raw_component].isna().sum()
