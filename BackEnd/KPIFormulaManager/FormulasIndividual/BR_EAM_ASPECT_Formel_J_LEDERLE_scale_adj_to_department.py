@@ -11,14 +11,17 @@ import numpy
 from numpy import NaN, integer
 
 
-def aspect_calculation(app="", aspect_id="", dataset_data=""):
+def aspect_calculation(parameter="", aspect_id="", dataset_data="", dataset_id="", fast=False):
     result = {}
-    aspect_id = sys.argv[1]
-    dataset_id = sys.argv[2]
-    parameter = json.loads(sys.argv[3])
-    db_location = sys.argv[4]
-    dataset_data = dm.DataManager.get_table_as_df(
-        dm.DataManager, dataset_id)
+    if not fast:
+        aspect_id = sys.argv[1]
+        dataset_id = sys.argv[2]
+        parameter = json.loads(sys.argv[3])
+        db_location = sys.argv[4]
+        dataset_data = dm.DataManager.get_table_as_df(
+            dm.DataManager, dataset_id)
+    else:
+        parameter = json.loads(parameter)
     aspect = aspct_m.AspectManager.get_aspect_by_id(
         aspct_m.AspectManager, aspect_id=aspect_id)
     raw_components_from_datasets = aspect.get_raw_components_from_dataset()
@@ -141,9 +144,12 @@ def aspect_calculation(app="", aspect_id="", dataset_data=""):
     result['aspect_id'] = aspect_id
     result['aspect_name'] = aspect.get_name()
     result['parameter'] = parameter
-    sys.argv = []
-    res.Result.save_result(res.Result, result=result,
-                           table_name=db_location)
+    if fast:
+        return result
+    else:
+        sys.argv = []
+        res.Result.save_result(res.Result, result=result,
+                               table_name=db_location)
 
 
 if __name__ == "__main__":

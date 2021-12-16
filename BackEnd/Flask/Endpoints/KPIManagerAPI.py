@@ -200,6 +200,11 @@ def calculate_kpis(dataset_id, dataset_label):
     except:
         parameters = fl.request.form[
             'parameter']
+    fast = True
+    if fast:
+        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
     for param in parameters:
         for kpi in kpis:
             formula = kpi_m.KPIManager.get_suitable_formula(
@@ -218,7 +223,7 @@ def calculate_kpis(dataset_id, dataset_label):
                              "department": "", "domain": param['domain']}
             result = fa_e.FormulaExecutor.execute_formula(
                 operation=formula_operation, purpose=formula.get_purpose(), kpi_id=kpi['kpi']['kpi_id'],
-                dataset_id=dataset_id, dataset_label=dataset_label, parameter=parameter)
+                dataset_id=dataset_id, dataset_label=dataset_label, parameter=parameter, dataset_data=data, fast=fast)
             if not result['parameter'] in list(results.keys()):
                 results[result['parameter']] = []
             results[result['parameter']].append(result)

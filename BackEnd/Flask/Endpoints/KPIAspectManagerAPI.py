@@ -17,6 +17,7 @@ import KPIAspectManager.AspectManager as aspct_m
 import KPIFormulaManager.FormulaManager as fa_m
 import KPIFormulaManager.FormulaExecutor as fa_e
 import KPIFormulaManager.Formula as fa
+import DataManager.DataManager as dm
 import ast
 
 
@@ -176,6 +177,11 @@ def calculate_aspects(dataset_id, dataset_label):
     except:
         parameters = fl.request.form[
             'parameter']
+    fast = True
+    if fast:
+        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
     for param in parameters:
         for aspect in aspects:
             formula = aspct_m.AspectManager.get_suitable_formula(
@@ -195,7 +201,7 @@ def calculate_aspects(dataset_id, dataset_label):
                              "department": "", "domain": param['domain']}
             result = fa_e.FormulaExecutor.execute_formula(
                 operation=formula_operation, purpose=formula.get_purpose(), aspect_id=aspect['aspect']['aspect_id'],
-                dataset_id=dataset_id, dataset_label=dataset_label, parameter=parameter)
+                dataset_id=dataset_id, dataset_label=dataset_label, parameter=parameter, dataset_data=data, fast=fast)
             if result == False:
                 return KPIAspectManagerEndpoints.endpoints_exception(
                     KPIAspectManagerEndpoints, code=500, msg="Calculation unsuccessful! Restart")

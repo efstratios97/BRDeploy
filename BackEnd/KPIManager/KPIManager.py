@@ -476,7 +476,7 @@ class KPIManager:
     def __calc_kpi_value_for_kpi_app_landscape(self, app, data, formula, kpi, dataset_id, dataset_label):
         return fa_e.FormulaExecutor.execute_formula(
             operation=formula.get_operation(), purpose=formula.get_purpose(), kpi_id=kpi,
-            dataset_id=dataset_id, dataset_label=dataset_label, parameter={"app": app, "department": "", "domain": ""}, fast_landscape_kpi=True, dataset_data=data)["result"]
+            dataset_id=dataset_id, dataset_label=dataset_label, parameter={"app": app, "department": "", "domain": ""}, fast=True, dataset_data=data)["result"]
 
     def get_all_kpis_by_dataset_label(self, dataset_label):
         data = []

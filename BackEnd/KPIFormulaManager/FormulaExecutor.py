@@ -17,28 +17,36 @@ import json
 import KPIFormulaManager.Result as res
 import KPIManager.KPIManager as kpi_m
 import KPIFormulaManager.FormulasIndividual.BR_EAM_KPI_Formel_J_LEDERLE as ind_kpi
+import KPIFormulaManager.FormulasIndividual.BR_EAM_ASPECT_Formel_J_LEDERLE as ind_aspect_normal
+import KPIFormulaManager.FormulasIndividual.BR_EAM_ASPECT_Formel_J_LEDERLE_scale_adj_to_department as ind_aspect_angepasst
 import DataManager.DataManager as dm
 import subprocess
 
 
 class FormulaExecutor:
 
-    def execute_formula(operation, purpose, kpi_id="", aspect_id=[], dataset_id="", dataset_label="", parameter="{}", fast_landscape_kpi=False, dataset_data=""):
-        if not fast_landscape_kpi:
+    def execute_formula(operation, purpose, kpi_id="", aspect_id=[], dataset_id="", dataset_label="", parameter="{}", fast=False, dataset_data=""):
+        if not fast:
             res_table_name = "result_" + st.create_id()
             res.Result.create_result_table(
                 res.Result, table_name=res_table_name)
         parameter = json.dumps(parameter)
         if purpose == st.FORMULA_PURPOSE_KPI:
-            if fast_landscape_kpi:
+            if fast:
                 return ind_kpi.kpi_calculation(
                     kpi_id=kpi_id, dataset_id=dataset_id, parameter=parameter, dataset_data=dataset_data, fast=True)
             else:
                 subprocess.run(['python', os.path.dirname(os.path.abspath(__file__)) +
                                 "/FormulasIndividual/{operation}.py".format(operation=operation), kpi_id, dataset_id, parameter, res_table_name], shell=False)
         elif purpose == st.FORMULA_PURPOSE_ASPECT:
-            subprocess.run(['python', os.path.dirname(os.path.abspath(__file__)) +
-                            "/FormulasIndividual/{operation}.py".format(operation=operation), aspect_id, dataset_id, parameter, res_table_name], shell=False)
+            if fast:
+                if operation == "BR_EAM_ASPECT_Formel_J_LEDERLE_scale_adj_to_department":
+                    return ind_aspect_angepasst.aspect_calculation(parameter=parameter, dataset_data=dataset_data, aspect_id=aspect_id, dataset_id=dataset_id, fast=True)
+                elif operation == "BR_EAM_ASPECT_Formel_J_LEDERLE":
+                    return ind_aspect_normal.aspect_calculation(parameter=parameter, dataset_data=dataset_data, aspect_id=aspect_id,  dataset_id=dataset_id, fast=True)
+            else:
+                subprocess.run(['python', os.path.dirname(os.path.abspath(__file__)) +
+                                "/FormulasIndividual/{operation}.py".format(operation=operation), aspect_id, dataset_id, parameter, res_table_name], shell=False)
         results = res.Result.get_results(res.Result, table_name=res_table_name)
         result = False
         if len(results) == 1:
