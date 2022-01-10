@@ -12,10 +12,7 @@
           class="p-col p-d-flex p-ai-center p-jc-center"
           v-if="dataset_not_selected"
         >
-          <!-- <div class="overflow-auto"> -->
           <selector-dataset @next-page="next($event)"></selector-dataset>
-          <!-- </div> -->
-          <!-- </div> -->
         </div>
         <div v-else>
           <Splitter layout="vertical">
@@ -23,16 +20,18 @@
               style="margin: 25px"
               class="p-d-flex p-ai-center p-jc-center"
             >
-              <h1 style="font-family: 'Roboto', sans-serif">KPI Analysis</h1>
+              <h1 style="font-family: 'Roboto', sans-serif">
+                KPI Application Life Cycle Analysis
+              </h1>
             </SplitterPanel>
             <SplitterPanel>
-              <render-kpis
+              <render-life-cycle-kpi
                 :selected_dataset_id="selected_dataset_id"
                 :selected_dataset_label="selected_dataset_label"
                 :apps="apps"
                 :domains="domains"
                 :departments="departments"
-              ></render-kpis>
+              ></render-life-cycle-kpi>
             </SplitterPanel>
             <SplitterPanel
               style="margin: 25px"
@@ -52,23 +51,6 @@
               ></render-app-landscape>
             </SplitterPanel>
             <SplitterPanel
-              style="margin: 25px"
-              class="p-d-flex p-ai-center p-jc-center"
-            >
-              <h1 style="font-family: 'Roboto', sans-serif">
-                KPI Application Life Cycle Analysis
-              </h1>
-            </SplitterPanel>
-            <SplitterPanel>
-              <render-life-cycle-kpi
-                :selected_dataset_id="selected_dataset_id"
-                :selected_dataset_label="selected_dataset_label"
-                :apps="apps"
-                :domains="domains"
-                :departments="departments"
-              ></render-life-cycle-kpi>
-            </SplitterPanel>
-            <SplitterPanel
               style="margin: 25px; margin-top: 100px"
               class="p-d-flex p-ai-center p-jc-center"
             >
@@ -80,6 +62,21 @@
                 alt="Mockup"
                 style="height: 550px; width: 100%"
               />
+            </SplitterPanel>
+            <SplitterPanel
+              style="margin: 25px"
+              class="p-d-flex p-ai-center p-jc-center"
+            >
+              <h1 style="font-family: 'Roboto', sans-serif">KPI Analysis</h1>
+            </SplitterPanel>
+            <SplitterPanel>
+              <render-kpis
+                :selected_dataset_id="selected_dataset_id"
+                :selected_dataset_label="selected_dataset_label"
+                :apps="apps"
+                :domains="domains"
+                :departments="departments"
+              ></render-kpis>
             </SplitterPanel>
           </Splitter>
         </div>

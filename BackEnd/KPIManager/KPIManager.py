@@ -523,12 +523,17 @@ class KPIManager:
         categories = [{"category": [{"start": category_quarters[0]["start"],
                                      "end": end_date, "label": "Application LifeCycle"}]}]
         categories.append({"category": category_quarters})
+        kpi_name = kpi.get_KPI_name()
+        parameter = st_br.get_parameter_as_string_from_parameter_dict(
+            parameter)
+        subcaption = parameter + " & " + kpi_name
         dataSource = {
             "chart": {
                 "dateformat": "dd/mm/yyyy",
                 "theme": "fusion",
                 "useverticalscrolling": "0",
                 "caption": "App Lifecycles",
+                "subcaption": subcaption,
                 "canvasborderalpha": "40",
                 "ganttlinealpha": "50",
                 "exportEnabled": "1",
@@ -564,8 +569,29 @@ class KPIManager:
             '%d/%m/%Y')
         end_date = max(pd.to_datetime(
             apps_data_set[st_br.life_cycle_end], errors='coerce')).to_pydatetime().strftime('%d/%m/%Y')
-        return st_br.get_quarter_by_time_span_formatted_by_operation(
-            start_date=start_date, end_date=end_date, data=apps_data_set, line_chart=True)
+        kpi_name = kpi.get_KPI_name()
+        parameter = st_br.get_parameter_as_string_from_parameter_dict(
+            parameter)
+        subcaption = parameter + " & " + kpi_name
+        dataSource = {
+            "chart": {
+                "caption": "Applications Lifecycle Overview",
+                "subcaption": subcaption,
+                "yaxisname": "# of Application to Shut-Down",
+                "anchorradius": "3",
+                "plottooltext": "# App shut-Downs in $label is <b>$dataValue</b>",
+                "showhovereffect": "1",
+                "showvalues": "0",
+                "theme": "fusion",
+                "anchorbgcolor": "#72D7B2",
+                "palettecolors": "#72D7B2",
+                "yAxisMinValue": 0,
+                "exportEnabled": 1,
+            },
+            "data": st_br.get_quarter_by_time_span_formatted_by_operation(
+                start_date=start_date, end_date=end_date, data=apps_data_set, line_chart=True)
+        }
+        return dataSource
 
     def __create_json_dep_apps_kpi_app_landscape(self, dep_br, department_dataset, data, formula, kpi, dataset_id, dataset_label, fillcolor="#bcbcbc"):
         new_dep_br = {"label": dep_br,

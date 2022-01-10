@@ -63,6 +63,7 @@
               <spline-chart
                 id="spline-chart"
                 :data="data_spline_chart"
+                :subCaption="subCaption"
               ></spline-chart>
             </span>
           </div>

@@ -137,6 +137,17 @@ def get_parameters_from_input(parameters):
     return parameter
 
 
+def get_parameter_as_string_from_parameter_dict(parameter):
+    if not parameter["department"] == "":
+        return parameter["department"]
+    elif not parameter["app"] == "":
+        return parameter["app"]
+    elif parameter["domain"] == "":
+        return parameter["domain"]
+    else:
+        return "Undefined"
+
+
 def date_handler(x):
     def date_color_coding(x):
         if x[life_cycle_end].year <= datetime.datetime.now().year + 2:
