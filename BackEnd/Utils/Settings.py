@@ -13,6 +13,7 @@ import pandas as pd
 import functools
 import ast
 import re
+import datetime
 
 ATHENA_CLOUD_DB_HOST = 'localhost'
 ATHENA_CLOUD_DB_USER = 'br'
@@ -25,7 +26,7 @@ ATHENA_CLOUD_DB_DBNAME = 'BRArchitectureManager'
 # ATHENA_CLOUD_DB_HOST = 'localhost'
 # ATHENA_CLOUD_DB_USER = 'root'
 # ATHENA_CLOUD_DB_PW = '12345'
-# ATHENA_CLOUD_DB_DBNAME = 'brdb'
+# ATHENA_CLOUD_DB_DBNAME = 'BRArchitectureManager'
 
 # Table names
 TABLE_DATASET = 'datasets'
@@ -193,6 +194,7 @@ FORMULA_PURPOSE_KPI = "kpi"
 ASPECT_OPERATION_TYPE_COUNT = "Count #"
 ASPECT_OPERATION_TYPE_CATEGORICAL_3_SCALE = "Categorical with 3 Options (Niedrig; Mittel; Hoch)"
 ASPECT_OPERATION_TYPE_CATEGORICAL_5_SCALE = "Categorical with 5 Options (Sehr Niedrig; Niedrig; Mittel; Hoch; Sehr Hoch)"
+ASPECT_OPERATION_TYPE_CATEGORICAL_LIFE_CYCLE_END = "Application Lifecycle End (<2 years imminent action required; >2 & <5 years planning action required; >5 years no action required)"
 ALL_VALUES_INPUT_FIELD = "All"
 NO_ENTRY_INPUT_FIELD = "Undefined"
 

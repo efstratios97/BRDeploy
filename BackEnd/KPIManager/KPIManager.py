@@ -19,6 +19,7 @@ import Utils.SettingsBR as st_br
 import os
 import pandas as pd
 import numpy as np
+import datetime
 
 
 class KPIManager:
@@ -100,7 +101,8 @@ class KPIManager:
                 "alreay_initiated_BR_EAM_ASPECT_Formel_J_LEDERLE_scale_adj_to_department")
         kpi_category_types = {"category_1": st.ASPECT_OPERATION_TYPE_COUNT,
                               "category_2": st.ASPECT_OPERATION_TYPE_CATEGORICAL_3_SCALE,
-                              "category_3": st.ASPECT_OPERATION_TYPE_CATEGORICAL_5_SCALE}
+                              "category_3": st.ASPECT_OPERATION_TYPE_CATEGORICAL_5_SCALE,
+                              "category_4": st.ASPECT_OPERATION_TYPE_CATEGORICAL_LIFE_CYCLE_END}
         for k, v in kpi_category_types.items():
             try:
                 kpi_category_type = kpi_c_t.KPI_CATEGORY_TYPE(k, v)
@@ -454,6 +456,117 @@ class KPIManager:
             print(dep_br + " not in dep from dataset")
             return False
 
+    def render_app_life_cycle(self, parameter, time_horizon, kpi, dataset_id, dataset_label):
+        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
+        formula = self.get_suitable_formula(
+            KPIManager, kpi_id=kpi.get_KPIID())
+        formula = fa_m.FormulaManager.get_formula_by_id(
+            fa_m.FormulaManager, formula_id=formula.get_formulaID())
+        apps_data_set = st_br.get_apps_df_by_parameter(
+            parameter=parameter, dataset_data=data, dataset_id=dataset_id, return_apps=False)
+        apps_data_set.drop(apps_data_set[(apps_data_set[st_br.life_cycle_end] ==
+                           '-') & (apps_data_set[st_br.life_cycle_start] == '-')].index, inplace=True)
+        if apps_data_set.empty:
+            return {}
+        all_apps = apps_data_set["Name"].to_list()
+        apps_kpis = [self.__calc_kpi_value_for_kpi(
+            KPIManager, app=val, data=data, formula=formula, kpi=kpi.get_KPIID(), dataset_id=dataset_id, dataset_label=dataset_label) for val in all_apps]
+        apps_data_set["KPI Value"] = apps_kpis
+        apps_data_set.sort_values(
+            by=["KPI Value"], ascending=False, inplace=True)
+        apps_data_set = apps_data_set.apply(
+            lambda x: st_br.date_handler(x), axis=1)
+        datatable = {}
+        datatable.update({"headervalign": "bottom"})
+        app_names = []
+        [app_names.append(
+            {"label": app}) for app in apps_data_set["Name"]]
+        processes = {
+            "headertext": "Applications",
+            "headervalign": "bottom",
+            "headeralign": "left",
+            "align": "left",
+            "process": app_names}
+        kpi_values = []
+        [kpi_values.append({"label": str(round(val, 2))})
+         for val in apps_data_set["KPI Value"]]
+        datacolumn = [
+            {
+                "headertext": kpi.get_KPI_name(),
+                "headervalign": "bottom",
+                "headeralign": "left",
+                "align": "left",
+                "text": kpi_values}]
+        datatable.update({"datacolumn": datacolumn})
+        tasks = {}
+        time_horizons = []
+        [time_horizons.append({"start": start, "end": end, "color": color_coding}) for start, end, color_coding in zip(
+            apps_data_set[st_br.life_cycle_start], apps_data_set[st_br.life_cycle_end], apps_data_set["color_coding"])]
+        tasks.update({"task": time_horizons})
+        apps_data_set[st_br.life_cycle_end] = pd.to_datetime(
+            apps_data_set[st_br.life_cycle_end], errors='coerce')
+        apps_data_set[st_br.life_cycle_end].fillna(datetime.datetime.now().replace(
+            year=datetime.datetime.now().year + 10), inplace=True)
+        apps_data_set[st_br.life_cycle_end] = apps_data_set[st_br.life_cycle_end].dt.strftime(
+            '%d/%m/%Y')
+        start_date = max(pd.to_datetime(
+            apps_data_set[st_br.life_cycle_start], errors='coerce')).to_pydatetime().strftime(
+            '%d/%m/%Y')
+        end_date = max(pd.to_datetime(
+            apps_data_set[st_br.life_cycle_end], errors='coerce')).to_pydatetime().strftime('%d/%m/%Y')
+        category_quarters = st_br.get_quarter_by_time_span_formatted_by_operation(
+            start_date=start_date, end_date=end_date, data=apps_data_set, gantt_chart=True)
+        category_quarters.append({"start": category_quarters[-1]["end"], "end": end_date,
+                                  "label": "LQ " + str(datetime.datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y'))})
+        categories = [{"category": [{"start": category_quarters[0]["start"],
+                                     "end": end_date, "label": "Application LifeCycle"}]}]
+        categories.append({"category": category_quarters})
+        dataSource = {
+            "chart": {
+                "dateformat": "dd/mm/yyyy",
+                "theme": "fusion",
+                "useverticalscrolling": "0",
+                "caption": "App Lifecycles",
+                "canvasborderalpha": "40",
+                "ganttlinealpha": "50",
+                "exportEnabled": "1",
+            },
+            "processes": processes,
+            "datatable": datatable,
+            "tasks": tasks,
+            "categories": categories}
+        return dataSource
+
+    def render_life_cycle_development(self, parameter, time_horizon, kpi, dataset_id, dataset_label):
+        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
+        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
+        formula = self.get_suitable_formula(
+            KPIManager, kpi_id=kpi.get_KPIID())
+        formula = fa_m.FormulaManager.get_formula_by_id(
+            fa_m.FormulaManager, formula_id=formula.get_formulaID())
+        apps_data_set = st_br.get_apps_df_by_parameter(
+            parameter=parameter, dataset_data=data, dataset_id=dataset_id, return_apps=False)
+        apps_data_set.drop(apps_data_set[(apps_data_set[st_br.life_cycle_end] ==
+                           '-') & (apps_data_set[st_br.life_cycle_start] == '-')].index, inplace=True)
+        if apps_data_set.empty:
+            return {}
+        apps_data_set = apps_data_set.apply(
+            lambda x: st_br.date_handler(x), axis=1)
+        apps_data_set[st_br.life_cycle_end] = pd.to_datetime(
+            apps_data_set[st_br.life_cycle_end], errors='coerce')
+        apps_data_set[st_br.life_cycle_end].fillna(datetime.datetime.now().replace(
+            year=datetime.datetime.now().year + 10), inplace=True)
+        start_date = max(pd.to_datetime(
+            apps_data_set[st_br.life_cycle_start], errors='coerce')).to_pydatetime().strftime(
+            '%d/%m/%Y')
+        end_date = max(pd.to_datetime(
+            apps_data_set[st_br.life_cycle_end], errors='coerce')).to_pydatetime().strftime('%d/%m/%Y')
+        return st_br.get_quarter_by_time_span_formatted_by_operation(
+            start_date=start_date, end_date=end_date, data=apps_data_set, line_chart=True)
+
     def __create_json_dep_apps_kpi_app_landscape(self, dep_br, department_dataset, data, formula, kpi, dataset_id, dataset_label, fillcolor="#bcbcbc"):
         new_dep_br = {"label": dep_br,
                       "fillcolor": fillcolor,
@@ -461,7 +574,7 @@ class KPIManager:
         apps = data[data["Verantwortliche Organisationseinheit"]
                     == department_dataset]["Name"].to_list()
         for app in apps:
-            val = self.__calc_kpi_value_for_kpi_app_landscape(
+            val = self.__calc_kpi_value_for_kpi(
                 KPIManager, app=app, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
             if val == 0.0:
                 val = 0.01
@@ -473,7 +586,7 @@ class KPIManager:
             )
         return new_dep_br
 
-    def __calc_kpi_value_for_kpi_app_landscape(self, app, data, formula, kpi, dataset_id, dataset_label):
+    def __calc_kpi_value_for_kpi(self, app, data, formula, kpi, dataset_id, dataset_label):
         return fa_e.FormulaExecutor.execute_formula(
             operation=formula.get_operation(), purpose=formula.get_purpose(), kpi_id=kpi,
             dataset_id=dataset_id, dataset_label=dataset_label, parameter={"app": app, "department": "", "domain": ""}, fast=True, dataset_data=data)["result"]
@@ -515,7 +628,7 @@ class KPIManager:
             dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
         data = dm.DataManager.get_table_as_df(
             dm.DataManager, dataset_id)
-        if "Anzahl" in raw_component and "kosten" in raw_component:
+        if "Anzahl" in raw_component or "kosten" in raw_component:
             data[raw_component] = data[raw_component].apply(
                 lambda x: np.nan if x == 0 or x == "0" else x)
         else:
@@ -539,7 +652,7 @@ class KPIManager:
         all_raw_aspects_count = 0
         aspects_completed_data_count = 0
         for raw_component in raw_components:
-            if "Anzahl" in raw_component and "kosten" in raw_component:
+            if "Anzahl" in raw_component or "kosten" in raw_component:
                 data[raw_component] = data[raw_component].apply(
                     lambda x: np.nan if x == 0 or x == "0" else x)
             else:

@@ -116,6 +116,18 @@
       </TabPanel>
       <TabPanel>
         <template #header>
+          <b-icon-columns style="font-size: 18px; margin: 3px" />
+          <span><h4>KPI Application Lifecyle</h4></span>
+        </template>
+        <render-life-cycle-kpi
+          :selected_dataset_id="selected_dataset_id"
+          :selected_dataset_label="selected_dataset_label"
+          :domains="domains"
+          :departments="departments"
+        ></render-life-cycle-kpi>
+      </TabPanel>
+      <TabPanel>
+        <template #header>
           <b-icon-speedometer style="font-size: 18px; margin: 3px" />
           <span><h4>DEMO</h4></span>
         </template>
@@ -133,6 +145,7 @@
 import RenderKPIs from "../HelperComponents/RenderKPIs.vue";
 import RenderAspects from "../HelperComponents/RenderAspects.vue";
 import RenderAppLandscape from "../HelperComponents/RenderAppLandscape.vue";
+import RenderLifeCycleKPI from "../HelperComponents/RenderLifeCycleKPI.vue";
 import TableKPI from "../Tables/TableKPI.vue";
 import TableAspect from "../Tables/TableAspect.vue";
 //Demo
@@ -145,6 +158,7 @@ export default {
     "render-kpis": RenderKPIs,
     "render-aspects": RenderAspects,
     "render-app-landscape": RenderAppLandscape,
+    "render-life-cycle-kpi": RenderLifeCycleKPI,
     "table-kpi": TableKPI,
     "table-aspect": TableAspect,
     "demo-sankey": DemoSankey,

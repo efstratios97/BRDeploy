@@ -35,8 +35,8 @@ BRapp.register_blueprint(api_dh.blueprint)
 BRapp.register_blueprint(api_av.blueprint)
 BRapp.register_blueprint(api_ed.blueprint)
 BRapp.register_blueprint(api_dpm.blueprint)
-BRapp.register_blueprint(api_kpi.blueprint)
 BRapp.register_blueprint(api_aspct.blueprint)
+BRapp.register_blueprint(api_kpi.blueprint)
 
 if __name__ == "__main__":
     BRapp.run(host='127.0.0.1')

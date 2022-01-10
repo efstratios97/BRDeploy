@@ -108,17 +108,20 @@ export default {
             this.selected_raw_component_tmp =
               this.selected_raw_component.raw_component;
             this.$refs.applicabilityGauge.update_value(this.gauge_value);
-            this.$emit("selected-raw-component-operation-type", [
-              this.selected_raw_component.raw_component,
-              this.selected_operation_type.operation_type,
-            ]);
-            if (this.selected_raw_component !== undefined) {
+            if (
+              this.selected_raw_component !== undefined &&
+              this.disabled_component !== true
+            ) {
               this.disabled_component = true;
               this.getKPICategoryTypesOptions();
             }
             if (this.selected_operation_type !== "") {
               this.disabled_type = true;
             }
+            this.$emit("selected-raw-component-operation-type", [
+              this.selected_raw_component.raw_component,
+              this.selected_operation_type.operation_type,
+            ]);
           });
       }
     },
@@ -139,24 +142,26 @@ export default {
         });
     },
     getKPICategoryTypesOptions() {
-      this.$axios
-        .get(
-          "/get_suitable_kpi_category_types/" +
-            this.selected_raw_component_tmp +
-            "/" +
-            this.selected_dataset_id +
-            "/" +
-            this.selected_dataset_label
-        )
-        .then((res) => {
-          var operation_type_tmp = [];
-          for (let index = 0; index < res.data.data.length; index++) {
-            operation_type_tmp.push({
-              operation_type: res.data.data[index]["name"],
-            });
-          }
-          this.operation_types = operation_type_tmp;
-        });
+      if (this.selected_operation_type === "") {
+        this.$axios
+          .get(
+            "/get_suitable_kpi_category_types/" +
+              this.selected_raw_component_tmp +
+              "/" +
+              this.selected_dataset_id +
+              "/" +
+              this.selected_dataset_label
+          )
+          .then((res) => {
+            var operation_type_tmp = [];
+            for (let index = 0; index < res.data.data.length; index++) {
+              operation_type_tmp.push({
+                operation_type: res.data.data[index]["name"],
+              });
+            }
+            this.operation_types = operation_type_tmp;
+          });
+      }
     },
   },
 };

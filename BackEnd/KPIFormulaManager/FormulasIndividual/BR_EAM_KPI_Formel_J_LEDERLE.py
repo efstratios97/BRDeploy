@@ -10,6 +10,7 @@ import json
 import Utils.Settings as st
 import numpy
 from numpy import NaN
+import datetime
 
 
 def kpi_calculation(kpi_id="", dataset_id="", parameter="", db_location="", dataset_data="", fast=False):
@@ -138,6 +139,20 @@ def aspect_calculation(dataset_data: pd.DataFrame, internal_use=False, app="", a
                         return 0
                 app_data[raw_component] = app_data[raw_component].apply(
                     lambda x: define_scale_categorical_5(x))
+                max_val_scale += 10
+                aspect_nominal += app_data[raw_component].iloc[0]
+            elif st.ASPECT_OPERATION_TYPE_CATEGORICAL_LIFE_CYCLE_END:
+                def define_scale_categorical_life_cycle_end(x):
+                    if x == "-":
+                        return 0
+                    elif (datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now()).days < 2*365:
+                        return 10
+                    elif (datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now()).days < 5*365:
+                        return 6
+                    elif (datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now()).days >= 5*365:
+                        return 3
+                app_data[raw_component] = app_data[raw_component].apply(
+                    lambda x: define_scale_categorical_life_cycle_end(x))
                 max_val_scale += 10
                 aspect_nominal += app_data[raw_component].iloc[0]
             else:

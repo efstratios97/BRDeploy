@@ -36,6 +36,9 @@ import ToggleButton from 'primevue/togglebutton';
 import InputSwitch from 'primevue/inputswitch';
 import Knob from 'primevue/knob';
 import CascadeSelect from 'primevue/cascadeselect';
+import Calendar from 'primevue/calendar';
+import Splitter from 'primevue/splitter';
+import SplitterPanel from 'primevue/splitterpanel';
 import VueFusionCharts from 'vue-fusioncharts';
 import FusionCharts from 'fusioncharts';
 import Charts from 'fusioncharts/fusioncharts.charts';
@@ -44,6 +47,8 @@ import Widgets from 'fusioncharts/fusioncharts.widgets';
 import FusionTheme from 'fusioncharts/themes/fusioncharts.theme.fusion';
 import Column2D from 'fusioncharts/fusioncharts.charts';
 import PowerCharts from 'fusioncharts/fusioncharts.powercharts';
+import Gantt from "fusioncharts/fusioncharts.gantt";
+import ExcelExport from "fusioncharts/fusioncharts.excelexport";
 import 'primeflex/primeflex.css';
 import 'primevue/resources/primevue.min.css'
 import 'primevue/resources/themes/bootstrap4-light-blue/theme.css';
@@ -111,6 +116,9 @@ app.component('ToggleButton', ToggleButton);
 app.component('InputSwitch', InputSwitch)
 app.component('CascadeSelect', CascadeSelect)
 app.component('Knob', Knob)
+app.component('Calendar', Calendar)
+app.component('Splitter', Splitter)
+app.component('SplitterPanel', SplitterPanel)
 app.directive('tooltip', Tooltip);
 app.use(VueApexCharts);
 app.use(store)
@@ -118,7 +126,8 @@ app.use(router)
 app.use(ToastService);
 app.use(BootstrapIconsPlugin);
 app.use(VueAxios, axios)
-app.use(VueFusionCharts, FusionCharts, Charts, TreeMap, Widgets, FusionTheme, Column2D, PowerCharts);
+app.use(VueFusionCharts, FusionCharts, Charts, TreeMap,
+    Widgets, FusionTheme, Column2D, PowerCharts, Gantt, ExcelExport);
 app.config.globalProperties.$axios = instance;
 app.mount('#app')
 

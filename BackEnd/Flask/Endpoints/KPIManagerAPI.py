@@ -10,6 +10,7 @@ from KPIFormulaManager.FormulaManager import FormulaManager
 import flask as fl
 import pandas as pd
 import Utils.Settings as st
+import Utils.SettingsBR as st_br
 from datetime import datetime
 import KPIManager.KPIManager as kpi_m
 import KPIManager.KPI as kpi_obj
@@ -241,16 +242,7 @@ def render_application_landscape_kpi(dataset_id, dataset_label):
     except:
         parameters = fl.request.form[
             'parameter']
-    for param in parameters:
-        if "dep" in list(param.keys()):
-            parameter = {"app": "",
-                         "department": param["dep"], "domain": ""}
-        if "app" in list(param.keys()):
-            parameter = {"app": param['app'],
-                         "department": "", "domain": ""}
-        if "domain" in list(param.keys()):
-            parameter = {"app": "",
-                         "department": "", "domain": param['domain']}
+    parameter = st_br.get_parameters_from_input(parameters)
     for kpi in kpis:
         kpi = kpi_m.KPIManager.get_kpi_by_id(
             kpi_m.KPIManager, kpi_id=kpi["kpi"]["kpi_id"])
@@ -259,6 +251,52 @@ def render_application_landscape_kpi(dataset_id, dataset_label):
         threshold = kpi.get_threshold()
     results["result"] = result
     results["threshold"] = threshold
+    return fl.jsonify(results), 200
+
+
+@blueprint.route('/render_app_life_cycle/<dataset_id>/<dataset_label>', methods=['POST', 'OPTIONS'])
+def render_app_life_cycle(dataset_id, dataset_label):
+    results = {}
+    try:
+        time_horizon = fl.request.form[
+            'time_horizon']
+        kpis = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
+            'kpis'])
+        parameters = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
+            'parameter'])
+    except:
+        parameters = fl.request.form[
+            'parameter']
+    parameter = st_br.get_parameters_from_input(parameters)
+    for kpi in kpis:
+        kpi = kpi_m.KPIManager.get_kpi_by_id(
+            kpi_m.KPIManager, kpi_id=kpi["kpi"]["kpi_id"])
+    result = kpi_m.KPIManager.render_app_life_cycle(
+        kpi_m.KPIManager, kpi=kpi, time_horizon=time_horizon, parameter=parameter, dataset_id=dataset_id, dataset_label=dataset_label)
+    results["result"] = result
+    return fl.jsonify(results), 200
+
+
+@blueprint.route('/render_life_cycle_development/<dataset_id>/<dataset_label>', methods=['POST', 'OPTIONS'])
+def render_life_cycle_development(dataset_id, dataset_label):
+    results = {}
+    try:
+        time_horizon = fl.request.form[
+            'time_horizon']
+        kpis = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
+            'kpis'])
+        parameters = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
+            'parameter'])
+    except:
+        parameters = fl.request.form[
+            'parameter']
+    parameter = st_br.get_parameters_from_input(parameters)
+    for kpi in kpis:
+        kpi = kpi_m.KPIManager.get_kpi_by_id(
+            kpi_m.KPIManager, kpi_id=kpi["kpi"]["kpi_id"])
+    result = kpi_m.KPIManager.render_life_cycle_development(
+        kpi_m.KPIManager, kpi=kpi, time_horizon=time_horizon, parameter=parameter, dataset_id=dataset_id, dataset_label=dataset_label)
+    results["result"] = result
     return fl.jsonify(results), 200
 
 

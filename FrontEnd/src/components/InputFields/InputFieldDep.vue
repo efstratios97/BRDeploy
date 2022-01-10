@@ -1,65 +1,57 @@
 <template>
-  <div>
-    <Card class="component-card">
-      <template v-slot:title> Department </template>
-      <template v-slot:subtitle>
-        Select Department to perform KPI Analysis
-      </template>
-      <template v-slot:content>
-        <form>
-          <div class="p-grid">
-            <div class="p-col">
-              <Dropdown
-                v-model="selected_department"
-                :options="departments"
-                :filter="true"
-                optionLabel="dep"
-                placeholder="Select Department"
-                filterPlaceholder="Find a Departmet"
-                @change="send_departments"
-              />
-            </div>
-            <div class="p-col">
-              <Button
-                icon="pi pi-info"
-                class="p-button-rounded p-button-info"
-                @click="toggleDepInfo()"
-                :disabled="disabled_depInfo"
-              />
-              <Dialog
-                header="Info"
-                v-model:visible="depInfo"
-                :style="{ width: '50vw' }"
-                :maximizable="true"
-                :modal="true"
-              >
-                <p class="p-m-0">
-                  By selecting a department all sub departments associated with
-                  the selected department will be included in the Analysis too!
-                  In your current case:
-                </p>
-                <ul
-                  v-for="department in departments_by_hierarchy"
-                  :key="department.dep"
-                >
-                  <li>{{ department.dep }}</li>
-                </ul>
-                <template #footer>
-                  <Button
-                    label="Confirm"
-                    icon="pi pi-check"
-                    @click="toggleDepInfo()"
-                    autofocus
-                  />
-                </template>
-              </Dialog>
-            </div>
-          </div>
-        </form>
-      </template>
-      <template #footer> </template>
-    </Card>
-  </div>
+  <Card class="component-card">
+    <template v-slot:title> Department </template>
+    <template v-slot:subtitle>
+      Select Department to perform KPI Analysis
+    </template>
+    <template v-slot:content>
+      <form class="overflow-auto">
+        <Dropdown
+          v-model="selected_department"
+          :options="departments"
+          :filter="true"
+          optionLabel="dep"
+          placeholder="Select Department"
+          filterPlaceholder="Find a Departmet"
+          @change="send_departments"
+        />
+        <Button
+          icon="pi pi-info"
+          class="p-button-rounded p-button-info"
+          @click="toggleDepInfo()"
+          :disabled="disabled_depInfo"
+        />
+        <Dialog
+          header="Info"
+          v-model:visible="depInfo"
+          :style="{ width: '50vw' }"
+          :maximizable="true"
+          :modal="true"
+        >
+          <p class="p-m-0">
+            By selecting a department all sub departments associated with the
+            selected department will be included in the Analysis too! In your
+            current case:
+          </p>
+          <ul
+            v-for="department in departments_by_hierarchy"
+            :key="department.dep"
+          >
+            <li>{{ department.dep }}</li>
+          </ul>
+          <template #footer>
+            <Button
+              label="Confirm"
+              icon="pi pi-check"
+              @click="toggleDepInfo()"
+              autofocus
+            />
+          </template>
+        </Dialog>
+      </form>
+    </template>
+    <template #footer> </template>
+  </Card>
 </template>
 <script>
 export default {

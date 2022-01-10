@@ -103,7 +103,7 @@ class ArchitectureViewManager:
         series = []
         labels = []
         for component in architecture_view_components:
-            if "Anzahl" in component and "kosten" in component:
+            if "Anzahl" in component or "kosten" in component:
                 data[component] = data[component].apply(
                     lambda x: np.nan if x == 0 or x == "0" else x)
             else:

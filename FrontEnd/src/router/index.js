@@ -11,7 +11,7 @@ import GoToMenuBack from '../components/GoToMenuBack.vue'
 import DashboardDataHealth from '../components/Dashboards/DashboardDataHealth.vue'
 import DashboardAnalyzer from '../components/Dashboards/DashboardAnalyzer.vue'
 import DashboardKPI from '../components/Dashboards/DashboardKPI.vue'
-import DashboardExecutiveDashboard from '../components/Dashboards/DashboardExecutiveDashboard.vue'
+import DashboardExecutiveDashboard from '../components/Dashboards/DashboardExecutiveDashboardMockup.vue'
 import SelectorDataset from '../components/SelectorDataset.vue'
 import Login from '../views/Login.vue'
 
