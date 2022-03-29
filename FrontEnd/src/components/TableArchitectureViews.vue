@@ -31,7 +31,7 @@
       Loading Architecture Views. Please wait.
       <ProgressBar mode="indeterminate" />
     </template>
-    <Column selectionMode="single" style="min-width: 3rem"></Column>
+    <Column selectionMode="multiple" style="min-width: 3rem"></Column>
     <Column
       field="architecture_view_id"
       header="ID"
@@ -63,18 +63,15 @@
 
     <Column header="Ad hoc Operations" style="min-width: auto">
       <template #body>
-        <div class="btn-align-td">
-          <button
-            v-on:click="
-              deleteArchitectureView(
-                this.selected_architecture_view.architecture_view_id
-              )
-            "
-            class="btn btn-secondary"
-            v-tooltip="'Select Architecture View first'"
-          >
-            <b-icon-trash-fill />
-          </button>
+        <div>
+          <SpeedDial
+            :model="items"
+            :radius="50"
+            direction="right"
+            type="right"
+            buttonClass="p-button-secondary"
+            style="position: relative"
+          />
         </div>
         <ProgressBar mode="indeterminate" v-if="architecture_view_operating" />
       </template>
@@ -91,6 +88,22 @@ export default {
       selected_architecture_view: "",
       architecture_view_loading: true,
       architecture_view_operating: false,
+      items: [
+        {
+          label: "Delete",
+          icon: "pi pi-trash",
+          command: () => {
+            this.deleteSelected();
+          },
+        },
+        {
+          label: "Update",
+          icon: "pi pi-refresh",
+          command: () => {
+            this.getSelectedToUpdate();
+          },
+        },
+      ],
     };
   },
   methods: {
@@ -98,11 +111,30 @@ export default {
       for (let index = 0; index < this.architecture_views.length; index++) {
         for (var key in this.architecture_views[index]) {
           if (key === "components") {
-            this.architecture_views[index][key] = this.architecture_views[
-              index
-            ][key].split(",");
+            this.architecture_views[index][key] =
+              this.architecture_views[index][key].split(",");
           }
         }
+      }
+    },
+    deleteSelected() {
+      this.selected_architecture_view.forEach((architecture_view) => {
+        this.deleteArchitectureView(architecture_view.architecture_view_id);
+      });
+    },
+    getSelectedToUpdate() {
+      if (
+        this.selected_architecture_view.length === 1 &&
+        this.selected_architecture_view.length !== 0
+      ) {
+        this.$emit("update", this.selected_architecture_view[0]);
+      } else {
+        this.$toast.add({
+          severity: "warn",
+          summary: "None or More than 1 ArchitectureView selected",
+          detail: "Please select only one ArchitectureView to display",
+          life: 4000,
+        });
       }
     },
     deleteArchitectureView(architecture_view_id) {

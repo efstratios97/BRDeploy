@@ -50,6 +50,20 @@
     >
     </Column>
     <Column
+      field="dataset_choice_rule"
+      header="Dataset Choice Rule"
+      sortable
+      style="min-width: auto"
+    >
+    </Column>
+    <Column
+      field="dataset_label"
+      header="Associated Dataset Label"
+      sortable
+      style="min-width: auto"
+    >
+    </Column>
+    <Column
       field="access_user_list"
       header="Access Users"
       headerStyle="min-width: 4rem; text-align: center"
@@ -83,23 +97,15 @@
     </Column>
     <Column header="Ad hoc Operations" style="min-width: auto">
       <template #body>
-        <div class="btn-align-td">
-          <button
-            v-on:click="UpdateSelectedExecutiveDashboard()"
-            class="btn btn-secondary"
-            v-tooltip="'Select Dataset first'"
-          >
-            <b-icon-pencil-square></b-icon-pencil-square>
-          </button>
-        </div>
-        <div class="btn-align-td">
-          <button
-            v-on:click="deleteSelected()"
-            class="btn btn-secondary"
-            v-tooltip="'Select Dataset first'"
-          >
-            <b-icon-trash-fill />
-          </button>
+        <div>
+          <SpeedDial
+            :model="items"
+            :radius="50"
+            direction="right"
+            type="right"
+            buttonClass="p-button-secondary"
+            style="position: relative"
+          />
         </div>
         <ProgressBar
           mode="indeterminate"
@@ -119,9 +125,40 @@ export default {
       selected_executive_dashboard: "",
       executive_dashboard_loading: true,
       executive_dashboard_operating: false,
+      items: [
+        {
+          label: "Add",
+          icon: "pi pi-trash",
+          command: () => {
+            this.deleteSelected();
+          },
+        },
+        {
+          label: "Update",
+          icon: "pi pi-refresh",
+          command: () => {
+            this.getSelectedToUpdate();
+          },
+        },
+      ],
     };
   },
   methods: {
+    getSelectedToUpdate() {
+      if (
+        this.selected_executive_dashboard.length === 1 &&
+        this.selected_executive_dashboard.length !== 0
+      ) {
+        this.$emit("update", this.selected_executive_dashboard[0]);
+      } else {
+        this.$toast.add({
+          severity: "warn",
+          summary: "None or More than 1 Executive Dashboard selected",
+          detail: "Please select only one Executive Dashboard to display",
+          life: 4000,
+        });
+      }
+    },
     deleteSelected() {
       for (
         let index = 0;
@@ -135,6 +172,9 @@ export default {
       this.$emit("delete");
     },
     normalize_executive_dashboards(executive_dashboards) {
+      if (executive_dashboards === undefined) {
+        this.listAllExecutiveDashboards();
+      }
       for (let index = 0; index < executive_dashboards.length; index++) {
         for (var key in executive_dashboards[index]) {
           if (key === "user") {
@@ -158,12 +198,17 @@ export default {
           }
         }
       }
+      this.executive_dashboard_loading = false;
       return executive_dashboards;
     },
     enumUser(user) {
-      for (let i = 0; i < this.users.length; i++) {
-        if (this.users[i]["user_id"] === user) {
-          return this.users[i]["email"];
+      if (this.users === undefined) {
+        this.listUsers();
+      } else {
+        for (let i = 0; i < this.users.length; i++) {
+          if (this.users[i]["user_id"] === user) {
+            return this.users[i]["email"];
+          }
         }
       }
       return user;
@@ -193,6 +238,8 @@ export default {
           }
           this.executive_dashboard_operating = false;
           this.selected_executive_dashboard = "";
+          this.executive_dashboard_loading = false;
+          this.$emit("delete");
         })
         .catch(() => {
           this.executive_dashboard_operating = false;
@@ -205,17 +252,6 @@ export default {
           this.selected_executive_dashboard = "";
         });
     },
-    UpdateSelectedExecutiveDashboard(executive_dashboard_id) {
-      if (executive_dashboard_id === undefined) {
-        this.$toast.add({
-          severity: "warn",
-          summary: "No Executive Dashboard selected",
-          detail: "Please select Executive Dashboard first",
-          life: 3000,
-        });
-      }
-      //TODO
-    },
     listUsers() {
       this.$axios.get("/users").then((res) => {
         this.users = res.data;
@@ -226,13 +262,14 @@ export default {
         this.executive_dashboards = this.normalize_executive_dashboards(
           res.data.data
         );
+        this.executive_dashboard_loading = false;
       });
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 .btn-align-td {
   display: inline-block;
   margin: 2px;

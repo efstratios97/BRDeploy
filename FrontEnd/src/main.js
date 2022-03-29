@@ -38,6 +38,10 @@ import Knob from 'primevue/knob';
 import CascadeSelect from 'primevue/cascadeselect';
 import Calendar from 'primevue/calendar';
 import Splitter from 'primevue/splitter';
+import Sidebar from 'primevue/sidebar';
+import Dock from 'primevue/dock';
+import SpeedDial from 'primevue/speeddial';
+import Fieldset from 'primevue/fieldset';
 import SplitterPanel from 'primevue/splitterpanel';
 import VueFusionCharts from 'vue-fusioncharts';
 import FusionCharts from 'fusioncharts';
@@ -61,7 +65,10 @@ const store = createStore({
     state() {
         return {
             loggedUser: null,
-            token: null
+            token: null,
+            admin: null,
+            selected_dataset_id: null,
+            selected_dataset_label: null
         };
     },
     mutations: {
@@ -70,6 +77,15 @@ const store = createStore({
         },
         setToken(state, token) {
             state.token = token;
+        },
+        setAdmin(state, admin) {
+            state.admin = admin;
+        },
+        setSelectedDatasetID(state, selected_dataset_id) {
+            state.selected_dataset_id = selected_dataset_id;
+        },
+        setSelectedDatasetLabel(state, selected_dataset_label) {
+            state.selected_dataset_label = selected_dataset_label;
         }
     },
     getters: {
@@ -78,6 +94,15 @@ const store = createStore({
         },
         getToken(state) {
             return state.token;
+        },
+        getAdmin(state) {
+            return state.admin
+        },
+        getSelectedDatasetID(state) {
+            return state.selected_dataset_id
+        },
+        getSelectedDatasetLabel(state) {
+            return state.selected_dataset_label
         }
     }
 })
@@ -119,6 +144,10 @@ app.component('Knob', Knob)
 app.component('Calendar', Calendar)
 app.component('Splitter', Splitter)
 app.component('SplitterPanel', SplitterPanel)
+app.component('Sidebar', Sidebar)
+app.component('Dock', Dock)
+app.component('Fieldset', Fieldset)
+app.component('SpeedDial', SpeedDial)
 app.directive('tooltip', Tooltip);
 app.use(VueApexCharts);
 app.use(store)
@@ -129,5 +158,6 @@ app.use(VueAxios, axios)
 app.use(VueFusionCharts, FusionCharts, Charts, TreeMap,
     Widgets, FusionTheme, Column2D, PowerCharts, Gantt, ExcelExport);
 app.config.globalProperties.$axios = instance;
+app.provide("axios-instance", instance)
 app.mount('#app')
 

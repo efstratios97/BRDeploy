@@ -101,8 +101,8 @@ class DataSet:
     def set_owner(self, owner):
         self.__owner = owner
 
-    def set_cleaned(self, cleaned: bool):
-        self.__cleaned = cleaned
+    def set_cleaned(self, cleaned):
+        self.__cleaned = self.enum_cleaned(cleaned)
 
     def set_access_user_list(self, access_user_list: list):
         self.__access_user_list = access_user_list

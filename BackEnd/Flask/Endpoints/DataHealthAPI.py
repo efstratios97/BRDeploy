@@ -48,16 +48,6 @@ def get_data_for_app_dep_ranking(dataset_id):
     return fl.jsonify(result), 200
 
 
-@blueprint.route('/get_applications/<dataset_id>', methods=['GET', 'OPTIONS'])
-def get_applications(dataset_id):
-    result = {}
-    result = dhm.DataHealthManager.get_applications(
-        dhm.DataHealthManager, dataset_id)
-    if not result:
-        DataHealthManagerEndpoints(404, "APPLICATIONS_NOT_FOUND")
-    return fl.jsonify(result), 200
-
-
 @blueprint.route('/get_data_for_radar_app/<dataset_id>/<app_name>', methods=['GET', 'OPTIONS'])
 def get_data_for_radar_app(dataset_id, app_name):
     result = {}

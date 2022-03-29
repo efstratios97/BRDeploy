@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div v-if="admin === 'true'">
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
         <h1 style="text-align: left; font-size: 38px">Data Analyzer</h1>
         <div class="component-card">
-          <Steps :model="items" :readonly="true" />
+          <!-- <Steps :model="items" :readonly="true" /> -->
           <router-view
             v-slot="{ Component }"
             :selected_dataset_id="selected_dataset_id"
@@ -37,6 +37,7 @@ export default {
   data() {
     this.autenticateSession();
     return {
+      admin: localStorage.admin,
       showAnalyzerSelector: false,
       showFurtherHeatMaps: false,
       showFurtherSimpleStatistics: false,

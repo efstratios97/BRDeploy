@@ -137,12 +137,15 @@
           :selected_dataset_id="selected_dataset_id"
           :selected_dataset_label="selected_dataset_label"
           @close="increaseComponentKey"
+          @update="update_architecture_view($event)"
         ></architecture-views>
       </TabPanel>
     </TabView>
-    <div class="p-grid p-nogutter p-justify-between">
-      <Button label="Back" @click="prevPage()" icon="pi pi-angle-left" />
-    </div>
+    <customazible-button
+      @button-click="prevPage()"
+      altLabel="Back"
+      altStyle="margin-top: 10px; margin-bottom: 20px"
+    ></customazible-button>
     <transition class="modal-animation">
       <modal-view
         v-if="showAddPlotToExecutiveDashboards"
@@ -162,7 +165,6 @@
   </div>
 </template>
 <script>
-// import Chart from "../Plots/Chart.vue";
 import PieChart from "../Plots/PieChart.vue";
 import TreeMap from "../Plots/TreeMap.vue";
 import BarChart from "../Plots/BarChart.vue";
@@ -171,11 +173,10 @@ import ArchitectureViews from "../DashboardComponents/ArchitectureViews.vue";
 import ArchitectureViewApplicabilityAnalysis from "../Plots/ArchitectureViewApplicabilityAnalysis.vue";
 import AddPlotToExecutiveDashboards from "../InputForms/AddPlotToExecutiveDashboards.vue";
 import Modal from "../Modal.vue";
+import CustomazibleButton from "../HelperComponents/CustomazibleButton.vue";
 
 export default {
-  props: ["selected_dataset_id", "selected_dataset_label"],
   components: {
-    // chart: Chart,
     "pie-chart": PieChart,
     "tree-map": TreeMap,
     "bar-chart": BarChart,
@@ -185,23 +186,26 @@ export default {
       ArchitectureViewApplicabilityAnalysis,
     "add-plot-to-executive-dashboards": AddPlotToExecutiveDashboards,
     "modal-view": Modal,
+    "customazible-button": CustomazibleButton,
   },
   data() {
     return {
       componentKey: 0,
       showAddPlotToExecutiveDashboards: false,
       formData: "",
+      selected_dataset_id: localStorage.selected_dataset_id,
+      selected_dataset_label: localStorage.selected_dataset_label,
     };
   },
   methods: {
+    update_architecture_view(architecture_view) {
+      this.$emit("update", architecture_view);
+    },
     get_plot_data_as_form(formData) {
-      console.log(formData);
-
       this.formData = new FormData();
       for (var key in formData) {
         this.formData.append(key, formData[key]);
       }
-      console.log(this.formData);
     },
     toggleShowAddPlotToExecutiveDashboards(chart_type) {
       this.showAddPlotToExecutiveDashboards =
@@ -222,7 +226,6 @@ export default {
         index < selected_executive_dashboards.length;
         index++
       ) {
-        console.log(this.formData);
         var executive_dashboard_id =
           selected_executive_dashboards[index].executive_dashboard
             .executive_dashboard_id;

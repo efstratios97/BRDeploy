@@ -80,23 +80,15 @@
     </Column>
     <Column header="Ad hoc Operations" style="min-width: auto">
       <template #body>
-        <div class="btn-align-td">
-          <button
-            v-on:click="UpdateSelectedKPI()"
-            class="btn btn-secondary"
-            v-tooltip="'Select Dataset first'"
-          >
-            <b-icon-pencil-square></b-icon-pencil-square>
-          </button>
-        </div>
-        <div class="btn-align-td">
-          <button
-            v-on:click="deleteSelected()"
-            class="btn btn-secondary"
-            v-tooltip="'Select Dataset first'"
-          >
-            <b-icon-trash-fill />
-          </button>
+        <div>
+          <SpeedDial
+            :model="items"
+            :radius="50"
+            direction="right"
+            type="right"
+            buttonClass="p-button-secondary"
+            style="position: relative"
+          />
         </div>
         <ProgressBar mode="indeterminate" v-if="kpis_operating" />
       </template>
@@ -113,9 +105,37 @@ export default {
       selected_kpis: "",
       kpis_loading: true,
       kpis_operating: false,
+      items: [
+        {
+          label: "Delete",
+          icon: "pi pi-trash",
+          command: () => {
+            this.deleteSelected();
+          },
+        },
+        {
+          label: "Update",
+          icon: "pi pi-refresh",
+          command: () => {
+            this.getSelectedToUpdate();
+          },
+        },
+      ],
     };
   },
   methods: {
+    getSelectedToUpdate() {
+      if (this.selected_kpis.length === 1 && this.selected_kpis.length !== 0) {
+        this.$emit("update", this.selected_kpis[0].kpi);
+      } else {
+        this.$toast.add({
+          severity: "warn",
+          summary: "None or More than 1 Dataset selected",
+          detail: "Please select only one Dataset to display",
+          life: 4000,
+        });
+      }
+    },
     deleteSelected() {
       for (let index = 0; index < this.selected_kpis.length; index++) {
         this.deleteKPI(this.selected_kpis[index].kpi.kpi_id);
@@ -159,17 +179,6 @@ export default {
           this.selected_kpis = "";
         });
       this.get_kpis();
-    },
-    UpdateSelectedKPI(kpi_id) {
-      if (kpi_id === undefined) {
-        this.$toast.add({
-          severity: "warn",
-          summary: "No KPI selected",
-          detail: "Please select KPI first",
-          life: 3000,
-        });
-      }
-      //TODO
     },
     get_kpis() {
       this.kpis_loading = true;

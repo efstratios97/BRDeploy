@@ -13,6 +13,7 @@ import DataManager.Label as lab
 import UserManager.UserManager as um
 import Utils.Settings as st
 from datetime import datetime
+import pytz
 
 
 class DataManagerEndpoints:
@@ -38,11 +39,12 @@ class DataManagerEndpoints:
             dict_formatted['data'] = data_path
             dict_formatted['storage_type'] = dataset.get_storage_type()
             dict_formatted['label'] = dataset.get_label()
+            GMT = pytz.timezone("UTC")
             if isinstance(dataset.get_creation_date(), datetime):
-                dict_formatted['creation_date'] = dataset.get_creation_date().strftime(
-                    "%Y/%m/%d, %H:%M:%S")
+                dict_formatted['creation_date'] = dataset.get_creation_date().astimezone(GMT).strftime(
+                    "%d %b %Y %H:%M:%S GMT")
             elif isinstance(dataset.get_creation_date(), str):
-                dict_formatted['creation_date'] = datetime.strptime(dataset.get_creation_date(),
+                dict_formatted['creation_date'] = datetime.strptime(dataset.get_creation_date().astimezone(GMT),
                                                                     '%Y-%m-%d %H:%M:%S')
         return dict_formatted
 
@@ -77,50 +79,41 @@ def post_dataset():
     elif data.filename.lower()[-4:] == 'xlsx' or data.filename.lower()[-3:] == 'xls':
         data = pd.read_excel(data, engine='openpyxl')
     # Adds to the user_access_list the owner/creator of the dataset by default
-    access_user_list_ids = ""
-    if access_business_unit_list == "":
-        access_business_unit_list = st.DEPARTMENT_GENESIS
-    if access_user_list == "":
-        access_user_list = owner
-    else:
-        for user_mail in access_user_list.split(','):
-            user = um.UserManager.get_user_by_email(um.UserManager, user_mail)
-            access_user_list_ids += user.get_userID() + ","
-        access_user_list = access_user_list_ids[:-1]
-    if not owner in access_user_list.split(','):
-        access_user_list += "," + owner
+    access_business_unit_list, access_user_list = st.determine_bu_and_user_access(
+        access_business_unit_list=access_business_unit_list,
+        access_user_list=access_user_list, owner=owner)
     dataset = dm.DataManager.create_data_set(dm.DataManager, name=name, owner=owner, data=data, cleaned=cleaned,
                                              access_user_list=access_user_list, access_business_unit_list=access_business_unit_list,
                                              description=description, storage_type=storage_type)
     result.update({"cleaned_dataset": DataManagerEndpoints.data_set_to_dict(
         DataManagerEndpoints, dataset=dataset)})
-    # result = DataManagerEndpoints.data_set_to_dict(
-    #     DataManagerEndpoints, dataset=dataset)
     return fl.jsonify(result), 200
 
 
 @blueprint.route('/update_dataset', methods=['POST', 'OPTIONS'])
 def update_dataset():
     result = {}
-    body = fl.request.get_json(force=True)
-    dataset_id = body['dataset_id']
-    name = body['name']
-    cleaned = body['cleaned']
-    # access_user_list = body['access_user_list']
-    # access_business_unit_list = body['access_business_unit_list']
-    description = body['description']
-    storage_type = body['storage_type']
+    dataset_id = fl.request.form['dataset_id']
+    name = fl.request.form['name']
+    cleaned = fl.request.form['cleaned']
+    access_user_list = fl.request.form['access_user_list']
+    access_business_unit_list = fl.request.form['access_business_unit_list']
+    description = fl.request.form['description']
+    owner = fl.request.args.get('uid')
+    access_business_unit_list, access_user_list = st.determine_bu_and_user_access(
+        access_business_unit_list=access_business_unit_list,
+        access_user_list=access_user_list, owner=owner)
     dataset = dm.DataManager.get_dataset_by_id(
-        dm.DataManager, dataset_id=dataset_id, local=st.
-        enum_storage_type_bool(storage_type=storage_type))
-    # Set the new values/changes in the dataset obkect
+        dm.DataManager, dataset_id=dataset_id, local=False)
+    # Set the new values/changes in the dataset object
     dataset.set_name(name=name)
-    dataset.set_cleaned(cleaned=cleaned)
     dataset.set_description(description=description)
-    # if access_user_list == ""
+    dataset.set_cleaned(cleaned=cleaned)
+    dataset.set_access_business_unit_list(
+        access_business_unit_list=access_business_unit_list)
+    dataset.set_access_user_list(access_user_list=access_user_list)
     dm.DataManager.update_dataset(
-        dm.DataManager, dataset=dataset, local=st.
-        enum_storage_type_bool(storage_type=storage_type))
+        dm.DataManager, dataset=dataset, local=False)
     result = DataManagerEndpoints.data_set_to_dict(
         DataManagerEndpoints, dataset=dataset)
     return fl.jsonify(result), 200
@@ -148,13 +141,13 @@ def delete_dataset(dataset_id, storage_type):
     return fl.jsonify(result), 200
 
 
-@blueprint.route('/get_dataset/<dataset_id>/<storage_type>', methods=['GET', 'OPTIONS'])
-def get_dataset(dataset_id, storage_type):
+@blueprint.route('/get_dataset/<dataset_id>', methods=['GET', 'OPTIONS'])
+def get_dataset(dataset_id):
     result = {}
-    local = st.enum_storage_type_bool(
-        storage_type=storage_type)
+    dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
+        dm.DataManager, dataset_id=dataset_id)
     dataset = dm.DataManager.get_dataset_by_id(
-        dm.DataManager, dataset_id=dataset_id, local=local)
+        dm.DataManager, dataset_id=dataset_id, local=False)
     if dataset:
         result = DataManagerEndpoints.data_set_to_dict(
             DataManagerEndpoints, dataset=dataset)
@@ -221,44 +214,40 @@ def assign_label_to_dataset(dataset_id, label):
 
 @blueprint.route('/get_all_labels', methods=['GET', 'OPTIONS'])
 def get_labels():
-    result = {}
-    result['data'] = []
+    result = []
     labels = dm.DataManager.get_all_labels(
         dm.DataManager)
     for label in labels:
-        result['data'].append(DataManagerEndpoints.label_to_dict(
+        result.append(DataManagerEndpoints.label_to_dict(
             DataManagerEndpoints, label=label))
     return fl.jsonify(result), 200
 
 
-@blueprint.route('/get_departments_from_dataset/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
-def get_departments_from_dataset(dataset_id, dataset_label):
-    result = {}
-    result['data'] = []
-    departments = dm.DataManager.get_departments_from_dataset(
-        dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-    for department in departments:
-        result['data'].append(department)
+@blueprint.route('/get_label_by_name/<name>', methods=['GET', 'OPTIONS'])
+def get_label_by_name(name):
+    result = []
+    label = dm.DataManager.get_label_by_name(
+        dm.DataManager, name=name)
+    result.append(DataManagerEndpoints.label_to_dict(
+        DataManagerEndpoints, label=label))
     return fl.jsonify(result), 200
 
 
-@blueprint.route('/get_departments_by_br_hiararchy/<department>/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
-def get_departments_by_br_hiararchy(department, dataset_id, dataset_label):
-    result = {}
-    result['data'] = []
-    departments = dm.DataManager.get_departments_by_department_hierarchy_br(
-        dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label, department=department)
-    for department in departments:
-        result['data'].append(department)
+@blueprint.route('/get_label_by_id/<label_id>', methods=['GET', 'OPTIONS'])
+def get_label_by_id(label_id):
+    result = []
+    label = dm.DataManager.get_label_by_id(
+        dm.DataManager, label_id=label_id)
+    result.append(DataManagerEndpoints.label_to_dict(
+        DataManagerEndpoints, label=label))
     return fl.jsonify(result), 200
 
 
-@blueprint.route('/get_domains_from_dataset/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
-def get_domains_from_dataset(dataset_id, dataset_label):
+@blueprint.route('/get_newest_dataset_replacement_by_dataset_label/<name>', methods=['GET', 'OPTIONS'])
+def get_newest_dataset_replacement_by_dataset_label(name):
     result = {}
-    result['data'] = []
-    domains = dm.DataManager.get_domains_from_dataset(
-        dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-    for domain in domains:
-        result['data'].append(domain)
+    dataset = dm.DataManager.get_newest_dataset_replacement_by_dataset_label(
+        dm.DataManager, dataset_label=name)
+    result = DataManagerEndpoints.data_set_to_dict(
+        DataManagerEndpoints, dataset=dataset)
     return fl.jsonify(result), 200

@@ -74,13 +74,7 @@
         />
       </template>
     </Column>
-    <!-- <Column
-      field="hash_of_dataset"
-      header="Hash of Dataset"
-      sortable
-      style="min-width: auto"
-    >
-    </Column> -->
+
     <Column
       field="creation_date"
       header="Timestamp"
@@ -90,23 +84,15 @@
     </Column>
     <Column header="Ad hoc Operations" style="min-width: auto">
       <template #body>
-        <div class="btn-align-td">
-          <button
-            v-on:click="deleteSelected()"
-            class="btn btn-secondary"
-            v-tooltip="'Select Dataset first'"
-          >
-            <b-icon-trash-fill />
-          </button>
-        </div>
-        <div class="btn-align-td">
-          <button
-            v-on:click="emitSelected()"
-            class="btn btn-secondary"
-            v-tooltip="'Select Dataset first'"
-          >
-            <b-icon-eye-fill></b-icon-eye-fill>
-          </button>
+        <div>
+          <SpeedDial
+            :model="items"
+            :radius="50"
+            direction="right"
+            type="right"
+            buttonClass="p-button-secondary"
+            style="position: relative"
+          />
         </div>
         <ProgressBar mode="indeterminate" v-if="dataset_operating" />
       </template>
@@ -123,27 +109,77 @@ export default {
       selected_dataset: "",
       dataset_loading: true,
       dataset_operating: false,
+      items: [
+        {
+          label: "Delete",
+          icon: "pi pi-trash",
+          command: () => {
+            this.deleteSelected();
+          },
+        },
+        {
+          label: "Show",
+          icon: "pi pi-eye",
+          command: () => {
+            this.viewSelected();
+          },
+        },
+        {
+          label: "Update",
+          icon: "pi pi-refresh",
+          command: () => {
+            this.getSelectedToUpdate();
+          },
+        },
+      ],
     };
   },
   methods: {
-    deleteSelected() {
-      for (let index = 0; index < this.selected_dataset.length; index++) {
-        this.deleteDataSet(
-          this.selected_dataset[index].dataset_id,
-          this.selected_dataset[index].storage_type
-        );
+    getSelectedToUpdate() {
+      if (
+        this.selected_dataset.length === 1 &&
+        this.selected_dataset.length !== 0
+      ) {
+        this.$emit("update", this.selected_dataset[0]);
+      } else {
+        this.$toast.add({
+          severity: "warn",
+          summary: "None or More than 1 Dataset selected",
+          detail: "Please select only one Dataset to display",
+          life: 4000,
+        });
       }
     },
-    emitSelected() {
-      if (this.selected_dataset.length === 1) {
-        this.emitDataset(
+    deleteSelected() {
+      if (this.selected_dataset.length === 0) {
+        this.$toast.add({
+          severity: "warn",
+          summary: "No Dataset selected",
+          detail: "Please select Dataset first",
+          life: 3000,
+        });
+      } else {
+        for (let index = 0; index < this.selected_dataset.length; index++) {
+          this.deleteDataSet(
+            this.selected_dataset[index].dataset_id,
+            this.selected_dataset[index].storage_type
+          );
+        }
+      }
+    },
+    viewSelected() {
+      if (
+        this.selected_dataset.length === 1 &&
+        this.selected_dataset.length !== 0
+      ) {
+        this.viewDataset(
           this.selected_dataset[0].dataset_id,
           this.selected_dataset[0].storage_type
         );
       } else {
         this.$toast.add({
           severity: "warn",
-          summary: "More than 1 Dataset selected",
+          summary: "None or More than 1 Dataset selected",
           detail: "Please select only one Dataset to display",
           life: 4000,
         });
@@ -229,7 +265,7 @@ export default {
           this.selected_dataset = "";
         });
     },
-    emitDataset(dataset_id, storage_type) {
+    viewDataset(dataset_id, storage_type) {
       if (dataset_id === undefined) {
         this.$toast.add({
           severity: "warn",
@@ -261,6 +297,11 @@ export default {
 
 <style>
 .btn-align-td {
+  display: inline-block;
+  margin: 2px;
+}
+
+.speed-dial-td {
   display: inline-block;
   margin: 2px;
 }

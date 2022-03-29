@@ -67,7 +67,7 @@ class DataBaseUtils:
     # Executes SQL Statements Tables based on passed SQL Statement for the cloud AthenaAnalytics DB.
     # In case User wants to read data from table, she can use fetchone parameter to fetch a single row
     # of the db or the fetchall parameter to fetch all rows of the db
-    def execute_sql(self, sql_statement, local: bool, fetchone=False, fetchall=False):
+    def execute_sql(self, sql_statement, local=False, fetchone=False, fetchall=False):
         if local:
             db = self.__connect_local_db(DataBaseUtils)
         else:

@@ -11,6 +11,7 @@ import Utils.Settings as st
 import numpy
 from numpy import NaN
 import datetime
+import BRIndividual.IndividualMethods.GetData as gt_dt
 
 
 def kpi_calculation(kpi_id="", dataset_id="", parameter="", db_location="", dataset_data="", fast=False):
@@ -43,8 +44,8 @@ def kpi_calculation(kpi_id="", dataset_id="", parameter="", db_location="", data
         if not department == st.ALL_VALUES_INPUT_FIELD:
             if department == st.NO_ENTRY_INPUT_FIELD:
                 department = ""
-            departments = dm.DataManager.get_departments_by_department_hierarchy_br(
-                dm.DataManager, department=department, dataset_id=dataset_id)
+            departments = gt_dt.GetData.get_departments_by_department_hierarchy_br(
+                gt_dt.GetData, department=department, dataset_id=dataset_id)
             dataset_data_dep = dataset_data.copy()
             dataset_data_dep["Verantwortliche Organisationseinheit"] = dataset_data["Verantwortliche Organisationseinheit"].apply(
                 lambda x: x if x in departments else NaN)
@@ -101,14 +102,19 @@ def aspect_calculation(dataset_data: pd.DataFrame, internal_use=False, app="", a
         raw_component = list(raw_components_from_dataset.keys())[0]
         try:
             if st.ASPECT_OPERATION_TYPE_COUNT in list(raw_components_from_dataset.values())[0]:
-                if not isinstance(app_data[raw_component].iloc[0], numpy.int64):
-                    app_data[raw_component] = app_data[raw_component].apply(
-                        lambda x: len(x.split(",")) if not x == "" else 0)
-                    dataset_data[raw_component] = dataset_data[raw_component].apply(
-                        lambda x: len(x.split(",")) if not x == "" else 0)
-                max_val_scale += max(
-                    list(set(dataset_data[raw_component].values.tolist())))
-                aspect_nominal += app_data[raw_component].iloc[0]
+                if not raw_component == "Name":
+                    if not isinstance(app_data[raw_component].iloc[0], numpy.int64):
+                        app_data[raw_component] = app_data[raw_component].apply(
+                            lambda x: len(x.split(",")) if not x == "" else 0)
+                        dataset_data[raw_component] = dataset_data[raw_component].apply(
+                            lambda x: len(x.split(",")) if not x == "" else 0)
+                    max_val_scale += max(
+                        list(set(dataset_data[raw_component].values.tolist())))
+                    aspect_nominal += app_data[raw_component].iloc[0]
+                else:
+                    aspect_nominal += 0
+                    scale += 0
+                    max_val_scale += 1
             elif st.ASPECT_OPERATION_TYPE_CATEGORICAL_3_SCALE in list(raw_components_from_dataset.values())[0]:
                 def define_scale_categorical_3(x):
                     if x == "Niedrig":
@@ -170,6 +176,7 @@ def aspect_calculation(dataset_data: pd.DataFrame, internal_use=False, app="", a
     result['threshold'] = threshold
     result['aspect_id'] = aspect.get_aspectID()
     result['aspect_name'] = aspect.get_name()
+    result['scale'] = scale
     result['app'] = app
     return result
 

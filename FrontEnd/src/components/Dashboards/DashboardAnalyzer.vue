@@ -106,26 +106,30 @@
         </div>
       </TabPanel>
     </TabView>
-    <div class="p-grid p-nogutter p-justify-between">
-      <Button label="Back" @click="prevPage()" icon="pi pi-angle-left" />
-    </div>
-    <br />
+    <customazible-button
+      @button-click="prevPage()"
+      altLabel="Back"
+      altStyle="margin-top: 10px; margin-bottom: 20px"
+    ></customazible-button>
   </div>
 </template>
 
 <script>
 import BubblePlotter from "../Plots/PlotterBubble.vue";
 import PlotterSimpleStatistics from "../Plots/PlotterSimpleStatistics.vue";
+import CustomazibleButton from "../HelperComponents/CustomazibleButton.vue";
 
 export default {
   components: {
     "plotter-bubble": BubblePlotter,
     "plotter-simple-statistics": PlotterSimpleStatistics,
+    "customazible-button": CustomazibleButton,
   },
-  props: ["selected_dataset_id", "selected_dataset_label"],
   data() {
     this.autenticateSession();
     return {
+      selected_dataset_id: localStorage.selected_dataset_id,
+      selected_dataset_label: localStorage.selected_dataset_label,
       showAnalyzerSelector: false,
       showFurtherHeatMaps: false,
       showFurtherSimpleStatistics: false,

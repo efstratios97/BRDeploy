@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="admin === 'true'">
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
@@ -14,60 +14,78 @@
               />
               <span><h4>Datasets</h4></span>
             </template>
-            <data-set-table
-              :key="componentKey"
-              @view="viewDataset"
-            ></data-set-table>
-
-            <data-set-complete-table
-              :dataset_id="this.selected_dataset_id"
-              :storage_type="this.selected_storage_type"
-              v-if="showAddTableData"
-            >
-            </data-set-complete-table>
+            <Card class="component-card">
+              <template v-slot:title> Datasets </template>
+              <template v-slot:subtitle> Manager here your Datasets </template>
+              <template v-slot:content>
+                <data-set-table
+                  :key="componentKey"
+                  @view="viewDataset"
+                  @update="updateDataset($event)"
+                ></data-set-table>
+              </template>
+            </Card>
+            <Card class="component-card">
+              <template v-slot:title> Complete Data View </template>
+              <template v-slot:subtitle>
+                View here your whole dataset
+              </template>
+              <template v-slot:content>
+                <data-set-complete-table
+                  :dataset_id="this.selected_dataset_id"
+                  :storage_type="this.selected_storage_type"
+                  v-if="showAddTableData"
+                >
+                </data-set-complete-table>
+              </template>
+            </Card>
           </TabPanel>
           <TabPanel>
             <template #header>
               <i class="pi pi-cog" style="font-size: 18px; margin: 3px"></i>
               <span><h4>DataManager Operations</h4></span>
             </template>
-            <Carousel
-              :value="operations"
-              :numVisible="1"
-              :numScroll="1"
-              :responsiveOptions="responsiveOptions"
-            >
-              <template #header>
-                <h1 style="text-align: center">Available Operations</h1>
-              </template>
-              <template #item="operations">
-                <div class="operation-item">
-                  <div class="operation-item-content">
-                    <div class="p-mb-3">
-                      <span style="text-align: center">
-                        {{ operations.title
-                        }}<b-icon-file-earmark-plus-fill
-                          style="font-size: 230px"
-                      /></span>
-                    </div>
-                    <h4>Click to create a new Dataset</h4>
-                    <div>
-                      <div class="d-grid">
-                        <button
-                          class="btn btn-primary"
-                          type="button"
-                          @click="toggleShowAddData"
-                        >
-                          <span class="btn-label"
-                            ><b-icon-file-earmark-plus-fill
+            <Card class="component-card">
+              <template v-slot:content>
+                <Carousel
+                  :value="operations"
+                  :numVisible="1"
+                  :numScroll="1"
+                  :responsiveOptions="responsiveOptions"
+                >
+                  <template #header>
+                    <h1 style="text-align: center">Available Operations</h1>
+                  </template>
+                  <template #item="operations">
+                    <div class="operation-item">
+                      <div class="operation-item-content">
+                        <div class="p-mb-3">
+                          <span style="text-align: center">
+                            {{ operations.title
+                            }}<b-icon-file-earmark-plus-fill
+                              style="font-size: 230px"
                           /></span>
-                        </button>
+                        </div>
+                        <h4>Click to create a new Dataset</h4>
+                        <div>
+                          <div class="d-grid">
+                            <button
+                              class="btn btn-primary"
+                              type="button"
+                              @click="toggleShowAddData"
+                            >
+                              <span class="btn-label"
+                                ><b-icon-file-earmark-plus-fill
+                              /></span>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </template>
+                </Carousel>
               </template>
-            </Carousel>
+            </Card>
           </TabPanel>
         </TabView>
       </div>
@@ -79,43 +97,42 @@
           <add-data-set @close="refreshData"> </add-data-set> </template
       ></modal-view>
     </transition>
-    <!-- <transition class="modal-animation">
-      <modal-view v-if="showAddTableData" @close="toggleShowAddTableData">
-        <template v-slot:header>
-          <h1>{{ this.selected_dataset_id }}</h1></template
-        >
+    <transition class="modal-animation">
+      <modal-view v-if="showUpdateData" @close="toggleShowUpdateData">
+        <template v-slot:header>UPDATE DATASET</template>
         <template v-slot:body>
-          <data-set-complete-table
-            :dataset_id="this.selected_dataset_id"
-            :storage_type="this.selected_storage_type"
-          >
-          </data-set-complete-table>
-        </template>
-      </modal-view>
-    </transition> -->
+          <update-data-set @close="refreshData" :dataset="selected_dataset">
+          </update-data-set> </template
+      ></modal-view>
+    </transition>
   </div>
 </template>
 <script>
 import DataSetTable from "../components/DataSetTable.vue";
 import DataSetCompleteTable from "../components/TableCompleteDataSet.vue";
 import AddDataSet from "../components/AddDataSet.vue";
+import UpdateDataset from "../components/InputForms/UpdateDataset.vue";
 import Modal from "../components/Modal.vue";
 
 export default {
   components: {
     "data-set-table": DataSetTable,
     "add-data-set": AddDataSet,
+    "update-data-set": UpdateDataset,
     "modal-view": Modal,
     "data-set-complete-table": DataSetCompleteTable,
   },
   data() {
     this.autenticateSession();
     return {
+      admin: localStorage.admin,
       showAddData: false,
+      showUpdateData: false,
       showAddTableData: false,
       componentKey: 0,
       selected_dataset_id: "",
       selected_storage_type: "",
+      selected_dataset: "",
       operations: [{ operation: 0 }],
     };
   },
@@ -124,17 +141,26 @@ export default {
       this.showAddData = !this.showAddData;
       this.componentKey += 1;
     },
+    toggleShowUpdateData() {
+      this.showUpdateData = !this.showUpdateData;
+      this.componentKey += 1;
+    },
     toggleShowAddTableData() {
       this.showAddTableData = !this.showAddTableData;
     },
     refreshData() {
-      this.toggleShowAddData();
+      this.showAddData = false;
+      this.showUpdateData = false;
       this.componentKey += 1;
     },
     viewDataset(dataset_id, storage_type) {
       this.selected_dataset_id = dataset_id;
       this.selected_storage_type = storage_type;
       this.toggleShowAddTableData();
+    },
+    updateDataset(dataset) {
+      this.selected_dataset = dataset;
+      this.toggleShowUpdateData();
     },
     autenticateSession() {
       if (localStorage.loggedUser && localStorage.token) {
@@ -192,20 +218,21 @@ export default {
 
 .container-xxl {
   min-width: calc(95%);
-  overflow: auto;
+  overflow: visible;
 }
 
 .page-background {
   background-color: #f1f1f1;
   background-attachment: fixed;
-  height: 80vh;
+  min-height: 80vh;
+  overflow: visible;
 }
 .main-page {
   background-color: white;
   border-radius: 15px;
   position: fixed center;
   transform: translate(0px, -150px);
-  height: 93vh;
+  min-height: 98vh;
 }
 .pt-tablecell {
   display: table-cell;
@@ -291,5 +318,18 @@ button {
 .v-enter-to {
   opacity: 1;
   transform: translateY(0);
+}
+
+.component-card {
+  margin-top: 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border-radius: 0.25rem;
+  /* min-width: 100%; */
 }
 </style>

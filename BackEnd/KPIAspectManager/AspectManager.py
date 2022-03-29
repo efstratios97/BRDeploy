@@ -5,13 +5,15 @@ Contributors:
 Description: Implements main functionality of the AspectManager
 '''
 
-import KPIAspectManager.Aspect as aspt
+import KPIAspectManager.Aspect as aspct
 import DataManager.DataManager as dm
 import KPIFormulaManager.FormulaManager as fa_m
 import KPIManager.KPIManager as kpi_m
 import Utils.DataBaseUtils as db_utils
 import Utils.DataBaseSQL as sql_stmt
 import Utils.Settings as st
+import BRIndividual.Utils.SettingsBR as st_br
+import KPIFormulaManager.FormulaExecutor as fa_e
 import os
 import pandas as pd
 
@@ -22,10 +24,10 @@ class AspectManager:
     def create_aspect(self, name, description, raw_components_from_dataset, skala_size,
                       weight, threshold, operation_type, formula, dataset_id, dataset_labels, kpi_family):
         aspect_id = "aspect_" + st.create_id()
-        aspect = aspt.ASPECT(aspect_id=aspect_id, name=name, description=description,
-                             raw_components_from_dataset=raw_components_from_dataset, skala_size=skala_size,
-                             weight=weight, threshold=threshold, operation_type=operation_type, formula=formula,
-                             dataset_id=dataset_id, dataset_labels=dataset_labels, kpi_family=kpi_family)
+        aspect = aspct.ASPECT(aspect_id=aspect_id, name=name, description=description,
+                              raw_components_from_dataset=raw_components_from_dataset, skala_size=skala_size,
+                              weight=weight, threshold=threshold, operation_type=operation_type, formula=formula,
+                              dataset_id=dataset_id, dataset_labels=dataset_labels, kpi_family=kpi_family)
         self.insert_aspect_db(AspectManager, aspect=aspect)
         formula = fa_m.FormulaManager.get_formula_by_name(
             fa_m.FormulaManager, name=formula)
@@ -34,7 +36,7 @@ class AspectManager:
         return aspect
 
     # Creates Table (if not already exists) and then inserts data into the table
-    def insert_aspect_db(self, aspect: aspt.ASPECT, local=False):
+    def insert_aspect_db(self, aspect: aspct.ASPECT, local=False):
         # Creates Table
         kpi_m.KPIManager.init_tables(kpi_m.KPIManager)
         db_utils.DataBaseUtils.execute_sql(
@@ -53,7 +55,7 @@ class AspectManager:
                                                                 formula=aspect.get_formula(), dataset_id=aspect.get_dataset_id(), dataset_labels=aspect.get_dataset_labels(),
                                                                 kpi_family=aspect.get_kpi_family()), local=local)
 
-    def insert_aspect_formula_relation_db(self, aspect: aspt.ASPECT, formula_id, local=False):
+    def insert_aspect_formula_relation_db(self, aspect: aspct.ASPECT, formula_id, local=False):
         # Creates Table
         kpi_m.KPIManager.init_tables(kpi_m.KPIManager)
         db_utils.DataBaseUtils.execute_sql(
@@ -66,6 +68,19 @@ class AspectManager:
             insert_aspect_formula_relation_values(
                 sql_stmt.DataBaseSQL, aspect_id=aspect.get_aspectID(), formula_id=formula_id),
             local=local)
+
+    def update_aspect(self, aspect: aspct.ASPECT, local=False):
+        aspect_id = aspect.get_aspectID()
+        self.update_aspect_dataset_labels(
+            AspectManager, dataset_labels=aspect.get_dataset_labels(), aspect_id=aspect_id, local=local)
+        self.update_aspect_name(
+            AspectManager, name=aspect.get_name(), aspect_id=aspect_id, local=local)
+        self.update_aspect_formula(
+            AspectManager, formula=aspect.get_formula(), aspect_id=aspect_id, local=local)
+        self.update_raw_components_from_dataset(
+            AspectManager, raw_components_from_dataset=aspect.get_raw_components_from_dataset(), aspect_id=aspect_id, local=local)
+        self.update_skala_size(
+            AspectManager, skala_size=aspect.get_skala_size(), aspect_id=aspect_id, local=local)
 
     def update_aspect_dataset_labels(self, dataset_labels, aspect_id, local=False):
         db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
@@ -126,6 +141,25 @@ class AspectManager:
                                            sql_statement=sql_stmt.DataBaseSQL.
                                            update_value(sql_stmt.DataBaseSQL, table=st.TABLE_ASPECT,
                                                         column=st.TB_ASPECT_COL_WEIGHT, value=weight,
+                                                        condition=st.TB_ASPECT_COL_ID,
+                                                        condition_operator='=', condition_value=aspect_id),
+                                           local=local)
+
+    def update_raw_components_from_dataset(self, raw_components_from_dataset, aspect_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_ASPECT,
+                                                        column=st.TB_ASPECT_COL_RAW_COMPONENTS_FROM_DATASET,
+                                                        value=raw_components_from_dataset,
+                                                        condition=st.TB_ASPECT_COL_ID,
+                                                        condition_operator='=', condition_value=aspect_id),
+                                           local=local)
+
+    def update_operation_type(self, operation_type, aspect_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_ASPECT,
+                                                        column=st.TB_ASPECT_COL_OPERATION_TYPE, value=operation_type,
                                                         condition=st.TB_ASPECT_COL_ID,
                                                         condition_operator='=', condition_value=aspect_id),
                                            local=local)
@@ -220,10 +254,10 @@ class AspectManager:
             dataset_id = db_row[9]
             dataset_labels = db_row[10]
             kpi_family = db_row[11]
-            aspect = aspt.ASPECT(aspect_id=aspect_id, name=name, description=descrption,
-                                 raw_components_from_dataset=raw_components_from_dataset,
-                                 skala_size=skala_size, weight=weight, threshold=threshold,
-                                 operation_type=operation_type, formula=formula, dataset_id=dataset_id,
-                                 dataset_labels=dataset_labels, kpi_family=kpi_family)
+            aspect = aspct.ASPECT(aspect_id=aspect_id, name=name, description=descrption,
+                                  raw_components_from_dataset=raw_components_from_dataset,
+                                  skala_size=skala_size, weight=weight, threshold=threshold,
+                                  operation_type=operation_type, formula=formula, dataset_id=dataset_id,
+                                  dataset_labels=dataset_labels, kpi_family=kpi_family)
             return aspect
         pass

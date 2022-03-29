@@ -55,8 +55,45 @@ class UserManager:
                                                business_unit=user.get_business_unit(), access_rights_pillars=access_rights_pillars,
                                                admin=user.get_admin(), role_manager=user.get_role_manager()), local=local)
 
-    def update_password(self, new_password, user_id):
-        local = False
+    # Updates all relevant data values in a user
+    def update_user(self, user: us.User, local=False):
+        user_id = user.get_userID()
+        self.update_first_name(
+            UserManager, first_name=user.get_first_name(), user_id=user_id, local=local)
+        self.update_last_name(
+            UserManager, last_name=user.get_last_name(), user_id=user_id, local=local)
+        self.update_department(
+            UserManager, department=user.get_business_unit(), user_id=user_id, local=local)
+        self.update_email(
+            UserManager, email=user.get_email(), user_id=user_id, local=local)
+        self.update_admin(
+            UserManager, admin=user.get_admin(), user_id=user_id, local=local)
+
+    def update_first_name(self, first_name, user_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(
+            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.update_value(
+                sql_stmt.DataBaseSQL, table=st.TABLE_USER, column=st.TB_USER_COL_FIRST_NAME, value=first_name,
+                condition=st.TB_USER_COL_USER_ID, condition_value=user_id), local=local)
+
+    def update_last_name(self, last_name, user_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(
+            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.update_value(
+                sql_stmt.DataBaseSQL, table=st.TABLE_USER, column=st.TB_USER_COL_LAST_NAME, value=last_name,
+                condition=st.TB_USER_COL_USER_ID, condition_value=user_id), local=local)
+
+    def update_email(self, email, user_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(
+            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.update_value(
+                sql_stmt.DataBaseSQL, table=st.TABLE_USER, column=st.TB_USER_COL_EMAIL, value=email,
+                condition=st.TB_USER_COL_USER_ID, condition_value=user_id), local=local)
+
+    def update_admin(self, admin, user_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(
+            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.update_value(
+                sql_stmt.DataBaseSQL, table=st.TABLE_USER, column=st.TB_USER_COL_ADMIN, value=admin,
+                condition=st.TB_USER_COL_USER_ID, condition_value=user_id), local=local)
+
+    def update_password(self, new_password, user_id, local=False):
         new_password = st.create_hash_password_sha512(
             password=new_password, complementary_input=user_id)
         db_utils.DataBaseUtils.execute_sql(
@@ -65,14 +102,10 @@ class UserManager:
                 condition=st.TB_USER_COL_USER_ID, condition_value=user_id), local=local)
 
     def update_department(self, department, user_id, local=False):
-        if self.check_admin(UserManager, user_id):
-            db_utils.DataBaseUtils.execute_sql(
-                db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.update_value(
-                    sql_stmt.DataBaseSQL, table=st.TABLE_USER, column=st.TB_USER_COL_BUSINESS_UNIT, value=department,
-                    condition=st.TB_USER_COL_USER_ID, condition_value=user_id), local=local)
-            return True
-        else:
-            return False
+        db_utils.DataBaseUtils.execute_sql(
+            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.update_value(
+                sql_stmt.DataBaseSQL, table=st.TABLE_USER, column=st.TB_USER_COL_BUSINESS_UNIT, value=department,
+                condition=st.TB_USER_COL_USER_ID, condition_value=user_id), local=local)
 
     # Checks whether the given password matches the db entry
 
@@ -183,18 +216,17 @@ class UserManager:
                                                                condition=st.TB_DATASET_COL_DATASET_ID,
                                                                condition_value=dataset.get_datasetID()),
                                                            local=False)
-                # Delete User from users
-                db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                   sql_stmt.DataBaseSQL.
-                                                   delete_row_from_table(
-                                                       sql_stmt.DataBaseSQL, table=st.TABLE_USER,
-                                                       condition=st.TB_USER_COL_USER_ID,
-                                                       condition_value=user_to_delete),
-                                                   local=False)
-                return True
             except:
-                return True
-                print("User Deleletion Unsuccessful")
+                print("User probably not in access_user_list --> all gucci")
+                # Delete User from users
+            db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                               sql_stmt.DataBaseSQL.
+                                               delete_row_from_table(
+                                                   sql_stmt.DataBaseSQL, table=st.TABLE_USER,
+                                                   condition=st.TB_USER_COL_USER_ID,
+                                                   condition_value=user_to_delete),
+                                               local=False)
+            return True
         else:
             return False
 
@@ -242,25 +274,16 @@ class UserManager:
                 data.append(department)
         return data
 
-    def get_departments(self):
-        data = []
-        db_utils.DataBaseUtils.execute_sql(
-            db_utils.DataBaseUtils, sql_statement=sql_stmt.DataBaseSQL.create_department_table_sql(sql_stmt.DataBaseSQL), local=False)
+    def get_departments_frontend_by_name(self, name):
         result = db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                                    sql_stmt.DataBaseSQL.select_all_data_from_table(
-                                                        sql_stmt.DataBaseSQL, table=st.TABLE_DEPARTMENTS),
-                                                    fetchall=True, local=False)
-        if not st.DEPARTMENT_GENESIS in [item for sublist in result for item in sublist]:
-            db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
-                                               sql_statement=sql_stmt.DataBaseSQL.
-                                               insert_department_values(
-                                                   sql_stmt.DataBaseSQL, departmentID=(
-                                                       "dep_" + st.create_id()),
-                                                   department_name=st.DEPARTMENT_GENESIS), local=False)
-        for row in result:
-            department = {'department_id': row[0], 'name': row[1]}
-            data.append(department)
-        return data
+                                                    sql_stmt.DataBaseSQL.
+                                                    select_object_by_condition(
+                                                        sql_stmt.DataBaseSQL, table=st.TABLE_DEPARTMENTS,
+                                                        condition=st.TB_DEPARTMENTS_COL_NAME,
+                                                        condition_value=name),
+                                                    fetchone=True, local=False)
+        department = {'department_id': result[0], 'name': result[1]}
+        return department
 
     def delete_department(self, user_issuer, dep_to_delete):
         if self.check_admin(UserManager, user_issuer):
@@ -269,9 +292,14 @@ class UserManager:
                                                sql_stmt.DataBaseSQL.
                                                delete_row_from_table(
                                                    sql_stmt.DataBaseSQL, table=st.TABLE_DEPARTMENTS,
-                                                   condition=st.TB_DEPARTMENTS_COL_DEPARTMENT_ID,
+                                                   condition=st.TB_DEPARTMENTS_COL_NAME,
                                                    condition_value=dep_to_delete),
                                                local=False)
+            users = self.get_all_users(UserManager)
+            for user in users:
+                if dep_to_delete in user.get_business_unit():
+                    self.update_department(
+                        UserManager, department=st.DEPARTMENT_GENESIS, user_id=user.get_userID())
             return True
         else:
             return False

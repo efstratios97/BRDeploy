@@ -5,15 +5,12 @@ Contributors:
 Description: Various Helpermethods and Attributes for re-use
 '''
 
+import UserManager.UserManager as um
 from inspect import currentframe, getframeinfo
-from typing import Pattern
 import uuid
 import hashlib
 import pandas as pd
-import functools
 import ast
-import re
-import datetime
 
 ATHENA_CLOUD_DB_HOST = 'localhost'
 ATHENA_CLOUD_DB_USER = 'br'
@@ -42,6 +39,7 @@ TABLE_PLOTS = "executive_dashboards_plots"
 TABLE_EXECUTIVE_DASHBOARDS_PLOTS_RELATION = "executive_dashboard_plot_relation"
 TABLE_LABEL = "labels"
 TABLE_DATASET_ARCHIVE = "dataset_archive"
+TABLE_DATASET_UPLOAD_ARCHIVE = "dataset_upload_archive"
 TABLE_KPI = "kpis"
 TABLE_ASPECT = "aspects"
 TABLE_FORMULA = "formulas"
@@ -49,6 +47,8 @@ TABLE_KPI_FORMULA_RELATION = "kpi_formula_relation"
 TABLE_ASPECT_FORMULA_RELATION = "aspect_formula_relation"
 TABLE_KPI_ASPECT_RELATION = "kpi_aspect_relation"
 TABLE_KPI_CATEGORY_TYPE = "kpi_category_types"
+TABLE_DATASET_CHOICE_RULE = "dataset_choice_rules"
+TABLE_VISUALIZATION_RIGHT = "visualization_rights"
 TABLE_RESULT = "result"
 
 
@@ -107,24 +107,19 @@ TB_EXECUTIVE_DASHBOARDS_COL_DESCRIPTION = "EXECUTIVE_DASHBOARD_DESCRIPTION"
 TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_USER_LIST = 'ACCESS_USER_LIST'
 TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_BUSINESS_UNIT_LIST = 'ACCESS_BUSINESS_UNIT_LIST'
 TB_EXECUTIVE_DASHBOARDS_COL_PLOTS = "EXECUTIVE_DASHBOARD_PLOTS"
-TB_EXECUTIVE_DASHBOARDS_COL_DATASET = "EXECUTIVE_DASHBOARD_DATASET"
+TB_EXECUTIVE_DASHBOARDS_COL_DATASET_ID = "EXECUTIVE_DASHBOARD_DATASET_ID"
+TB_EXECUTIVE_DASHBOARDS_COL_DATASET_LABEL = "EXECUTIVE_DASHBOARD_DATASET_LABEL"
+TB_EXECUTIVE_DASHBOARDS_COL_DATASET_CHOICE_RULE = "EXECUTIVE_DASHBOARD_DATASET_CHOICE_RULE"
+TB_EXECUTIVE_DASHBOARDS_COL_VISUALIZATION_RIGHT = "EXECUTIVE_DASHBOARD_VISUALIZATION_RIGHT"
 TB_EXECUTIVE_DASHBOARDS_COL_CREATED_AT = "CREATED_AT"
 
 # Plots Table Columns
 TB_PLOTS_COL_ID = "PLOT_ID"
-TB_PLOTS_COL_TITLE = "PLOT_TITLE"
-TB_PLOTS_COL_SUBTITLE = "PLOT_SUBTITLE"
-TB_PLOTS_COL_LEGEND_SHOW = "PLOT_LEGEND_SHOW"  # BOOL
-TB_PLOTS_COL_DATASET_ID_FOR_CHART = "PLOT_DATASET_ID_FOR_CHART"
-TB_PLOTS_COL_DATASET_LABEL = "PLOT_DATASET_LABEL"
-TB_PLOTS_COL_CHART_TYPE = "PLOT_CHART_TYPE"
-TB_PLOTS_COL_CHART_WIDTH = "PLOT_DATASET_CHART_WIDTH"
-TB_PLOTS_COL_CHART_HEIGHT = "PLOT_DATASET_CHART_HEIGHT"
-TB_PLOTS_COL_XAXIS_CATEGORIES = "PLOT_XAXIS_CATEGORIES"
-TB_PLOTS_COL_INPUT_FIELDS = "PLOT_INPUT_FIELDS"  # BOOL
-TB_PLOTS_COL_INPUT_FIELDS_ID = "PLOT_INPUT_FIELDS_ID"
-TB_PLOTS_COL_EMPTY_FIELD = "PLOT_EMPTY_FIELD"
-TB_PLOTS_COL_EMPTY_FIELD_2 = "PLOT_EMPTY_FIELD_2"
+TB_PLOTS_COL_FORMDATA = "PLOT_FORMDATA"
+TB_PLOTS_COL_GROUPED = "PLOT_GROUPED"  # BOOL
+TB_PLOTS_COL_VISUALIZATION_TYPE = "PLOT_VISUALIZATION_TYPE"
+TB_PLOTS_COL_VISUALIZATION_RIGHT = "PLOT_VISUALIZATION_RIGHT"
+TB_PLOTS_COL_COMPONENT_NAME = "PLOT_COMPONENT_NAME"
 TB_PLOTS_COL_CREATED_AT = "CREATED_AT"
 
 # LABEL Table
@@ -177,6 +172,18 @@ TB_KPI_CATEGORY_TYPE_COL_ID = 'KPI_CATEGORY_TYPE_ID'
 TB_KPI_CATEGORY_TYPE_COL_NAME = 'NAME'
 TB_KPI_CATEGORY_TYPE_COL_CREATED_AT = 'CREATED_AT'
 
+# Executive Dashboard Dataset Choice Rules Table
+TB_DATASET_CHOICE_RULE_COL_ID = 'DATASET_CHOICE_RULE_ID'
+TB_DATASET_CHOICE_RULE_COL_NAME = 'NAME'
+TB_DATASET_CHOICE_RULE_COL_DESCRIPTION = 'DESCRIPTION'
+TB_DATASET_CHOICE_RULE_COL_CREATED_AT = 'CREATED_AT'
+
+# Executive Dashboard Dataset Choice Rules Table
+TB_VISUALIZATION_RIGHT_COL_ID = 'VISUALIZATION_RIGHT_ID'
+TB_VISUALIZATION_RIGHT_COL_NAME = 'NAME'
+TB_VISUALIZATION_RIGHT_COL_DESCRIPTION = 'DESCRIPTION'
+TB_VISUALIZATION_RIGHT_COL_CREATED_AT = 'CREATED_AT'
+
 # TABLE Result
 TB_RESULT_ID = 'RESULT_ID'
 TB_RESULT_RESULT = 'RESULT'
@@ -187,6 +194,16 @@ DEPARTMENT_GENESIS = "None Department Assigned"
 NO_LABEL = "NO_LABEL_6aba48df0cb55992803d864977c3aa204520d659"
 ARCHIVE_ID_PREFIX = "archive_"
 TB_ARCHIVE_DATASET_COL_DATASET_ID = ARCHIVE_ID_PREFIX + TB_DATASET_COL_DATASET_ID
+DATA_CHOICE_RULE_SPECIFIC_DATASET = "Specific Dataset"
+DATA_CHOICE_RULE_RECENT_DATASET = "Recent Dataset based on Label"
+DATA_CHOICE_RULE_USER_CHOICE = "User's Choice"
+DATA_CHOICE_RULES = [DATA_CHOICE_RULE_SPECIFIC_DATASET, DATA_CHOICE_RULE_RECENT_DATASET,
+                     DATA_CHOICE_RULE_USER_CHOICE]
+VISUALIZATION_RIGHTS_OWN_ANALYSIS_UNRESTRICTED = "Run own Analysis through unrestricted Inputfield access"
+VISUALIZATION_RIGHTS_OWN_ANALYSIS_RESTRICTED = "Run own Analysis with restricted Inputfield based on Department"
+VISUALIZATION_RIGHTS_NONE = "No option for own Analysis - Plain Visualization"
+VISUALIZATION_RIGHTS = [VISUALIZATION_RIGHTS_OWN_ANALYSIS_UNRESTRICTED, VISUALIZATION_RIGHTS_OWN_ANALYSIS_RESTRICTED,
+                        VISUALIZATION_RIGHTS_NONE]
 # Names after APEX Graphs Package
 STANDARD_VIEW_TYPES = ["bar", "treemap", "pie"]
 FORMULA_PURPOSE_ASPECT = "aspect"
@@ -333,7 +350,9 @@ def string_list_with_string_dict_into_list_dict(representation: str):
 def string_list_with_nested_string_dict_into_list_dict(representation: str):
     try:
         list_new = []
-        if "[(" or ")]" in representation:
+        if isinstance(representation, list):
+            tuple_with_dict = ast.literal_eval(representation[0])
+        elif "[(" or ")]" in representation:
             tuple_with_dict = ast.literal_eval(
                 representation.strip(')][(').split('}}, ')[0])
         else:
@@ -344,6 +363,8 @@ def string_list_with_nested_string_dict_into_list_dict(representation: str):
         else:
             for dict in tuple_with_dict:
                 list_new.append(dict)
+        if isinstance(list_new[0], list):
+            list_new = list_new[0]
         return list_new
     except:
         return representation
@@ -390,3 +411,24 @@ def get_keys_by_value(dict: dict, valueToFind):
         if item[1] == valueToFind:
             listOfKeys.append(item[0])
     return listOfKeys
+
+
+def string_to_lower_case(elem: str):
+    return elem.lower()
+
+
+def determine_bu_and_user_access(access_business_unit_list, access_user_list, owner):
+    access_user_list_ids = ""
+    if access_business_unit_list == "":
+        access_business_unit_list = DEPARTMENT_GENESIS
+    if access_user_list == "":
+        access_user_list = owner
+    else:
+        for user_mail in access_user_list.split(','):
+            user = um.UserManager.get_user_by_email(
+                um.UserManager, user_mail)
+            access_user_list_ids += user.get_userID() + ","
+        access_user_list = access_user_list_ids[:-1]
+    if not owner in access_user_list.split(','):
+        access_user_list += "," + owner
+    return access_business_unit_list, access_user_list

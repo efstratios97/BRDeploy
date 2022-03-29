@@ -8,18 +8,12 @@ Description: Implements main functionality of the KPIManager
 import KPIManager.KPI as kpi_obj
 import DataManager.DataManager as dm
 import KPIFormulaManager.FormulaManager as fa_m
-import KPIFormulaManager.FormulaExecutor as fa_e
 import KPIManager.KPI_Category_Type as kpi_c_t
 import KPIFormulaManager.Result as res
 import KPIAspectManager.AspectManager as aspct_m
 import Utils.DataBaseUtils as db_utils
 import Utils.DataBaseSQL as sql_stmt
 import Utils.Settings as st
-import Utils.SettingsBR as st_br
-import os
-import pandas as pd
-import numpy as np
-import datetime
 
 
 class KPIManager:
@@ -144,6 +138,27 @@ class KPIManager:
                     sql_stmt.DataBaseSQL, kpi_id=kpi.get_KPIID(), aspect_id=aspect, weight=weight),
                 local=local)
 
+    def update_kpi(self, kpi: kpi_obj.KPI):
+        kpi_id = kpi.get_KPIID()
+        self.update_kpi_dataset_labels(
+            KPIManager, kpi_id=kpi_id, dataset_labels=kpi.get_dataset_labels())
+        self.update_high_level_kpi_component_kpi_weight(
+            KPIManager, kpi_id=kpi_id, high_level_kpi_component_kpi_weight=kpi.get_high_level_kpi_component_kpi_weight())
+        self.update_kpi_aspect_weights(
+            KPIManager, kpi_id=kpi_id, kpi_aspects_weights=kpi.get_kpi_aspects_weights())
+        self.update_kpi_family(KPIManager, kpi_id=kpi_id,
+                               kpi_family=kpi.get_kpi_family())
+        self.update_kpi_formula(
+            KPIManager, kpi_id=kpi_id, formula=kpi.get_formula())
+        self.update_kpi_name(KPIManager, kpi_id=kpi_id,
+                             name=kpi.get_KPI_name())
+        self.update_threshold(KPIManager, kpi_id=kpi_id,
+                              threshold=kpi.get_threshold())
+        self.update_kpi_description(
+            KPIManager, kpi_id=kpi_id, description=kpi.get_description())
+        self.update_kpi_color_coding(
+            KPIManager, kpi_id=kpi_id, color_coding=kpi.get_color_coding())
+
     def update_kpi_dataset_labels(self, dataset_labels, kpi_id, local=False):
         db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
                                            sql_statement=sql_stmt.DataBaseSQL.
@@ -162,7 +177,7 @@ class KPIManager:
                                                         condition_operator='=', condition_value=kpi_id),
                                            local=local)
 
-    def update_kpi_aspect(self, kpi_aspects_weights, kpi_id, local=False):
+    def update_kpi_aspect_weights(self, kpi_aspects_weights, kpi_id, local=False):
         db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
                                            sql_statement=sql_stmt.DataBaseSQL.
                                            update_value(sql_stmt.DataBaseSQL, table=st.TABLE_KPI,
@@ -198,11 +213,29 @@ class KPIManager:
                                                         condition_operator='=', condition_value=kpi_id),
                                            local=local)
 
+    def update_kpi_description(self, description, kpi_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_KPI,
+                                                        column=st.TB_KPI_COL_DESCRIPTION, value=description,
+                                                        condition=st.TB_KPI_COL_KPI_ID,
+                                                        condition_operator='=', condition_value=kpi_id),
+                                           local=local)
+
     def update_kpi_formula(self, formula, kpi_id, local=False):
         db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
                                            sql_statement=sql_stmt.DataBaseSQL.
                                            update_value(sql_stmt.DataBaseSQL, table=st.TABLE_KPI,
                                                         column=st.TB_KPI_COL_FORMULA, value=formula,
+                                                        condition=st.TB_KPI_COL_KPI_ID,
+                                                        condition_operator='=', condition_value=kpi_id),
+                                           local=local)
+
+    def update_kpi_color_coding(self, color_coding, kpi_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_KPI,
+                                                        column=st.TB_KPI_COL_COLOR_CODING, value=color_coding,
                                                         condition=st.TB_KPI_COL_KPI_ID,
                                                         condition_operator='=', condition_value=kpi_id),
                                            local=local)
@@ -300,322 +333,16 @@ class KPIManager:
             data.append(kpi_category_type)
         return data
 
-    def render_application_landscape_kpi(self, kpi, parameter, dataset_id, dataset_label):
-        formula = self.get_suitable_formula(
-            KPIManager, kpi_id=kpi)
-        formula = fa_m.FormulaManager.get_formula_by_id(
-            fa_m.FormulaManager, formula_id=formula.get_formulaID())
-        departments_from_dataset = dm.DataManager.get_departments_from_dataset(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        departments_br = dm.DataManager.get_departments_by_department_hierarchy_br(
-            dm.DataManager, department=parameter["department"], dataset_id=dataset_id, dataset_label=dataset_label)
-        results = {"label": "Application Landscape of Department: {department}".format(department=parameter["department"]),
-                   "fillcolor": "595f5d",
-                   "data": []}
-        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
-        if not parameter["department"] == "":
-            if parameter["department"] == st.ALL_VALUES_INPUT_FIELD:
-                for department_br in departments_br:
-                    if any(department_br in string for string in departments_from_dataset) or department_br.startswith("HA "):
-                        if not any(department_br in string for string in departments_from_dataset):
-                            departments_from_dataset.append(department_br)
-                        if department_br in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"].keys()):
-                            haupt_abteilung = self.__find_hauptabteilung_br(
-                                KPIManager, dep_br=department_br, departments_from_dataset=departments_from_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-                            for abteilung_br in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][department_br]["Abteilungen"].keys()):
-                                if any(abteilung_br in string for string in departments_from_dataset):
-                                    new_abteilung_br = self.__find_abteilung_br(
-                                        KPIManager, dep_br=abteilung_br, departments_from_dataset=departments_from_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-                                    if new_abteilung_br != False:
-                                        for fg_br in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][department_br]["Abteilungen"][abteilung_br].values())[0]:
-                                            if any(fg_br in string for string in departments_from_dataset):
-                                                new_fg_br = self.__find_fg_br(
-                                                    KPIManager, dep_br=fg_br, departments_from_dataset=departments_from_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-                                                if new_fg_br != False:
-                                                    new_abteilung_br["data"].append(
-                                                        new_fg_br)
-                                        haupt_abteilung["data"].append(
-                                            new_abteilung_br)
-                            results["data"].append(haupt_abteilung)
-            elif parameter["department"] == st.NO_ENTRY_INPUT_FIELD:
-                department_br = "Undefined"
-                results["data"].append(self.__create_json_dep_apps_kpi_app_landscape(
-                    KPIManager, dep_br=department_br, department_dataset="", data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label))
-            elif parameter["department"].startswith("HA "):
-                department_br = st_br.clean_department_from_dataset(
-                    parameter["department"])
-                department_dataset = [
-                    val for val in departments_from_dataset if parameter["department"] in val][0]
-                haupt_abteilung = self.__create_json_dep_apps_kpi_app_landscape(
-                    KPIManager, dep_br=department_br, department_dataset=department_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label, fillcolor="#898686")
-                try:
-                    for abteilung_br in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][department_br]["Abteilungen"].keys()):
-                        if any(abteilung_br in string for string in departments_from_dataset):
-                            new_abteilung_br = self.__find_abteilung_br(
-                                KPIManager, dep_br=abteilung_br, departments_from_dataset=departments_from_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-                            if new_abteilung_br != False:
-                                for fg_br in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][department_br]["Abteilungen"][abteilung_br].values())[0]:
-                                    if any(fg_br in string for string in departments_from_dataset):
-                                        new_fg_br = self.__find_fg_br(
-                                            KPIManager, dep_br=fg_br, departments_from_dataset=departments_from_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-                                        if new_fg_br != False:
-                                            new_abteilung_br["data"].append(
-                                                new_fg_br)
-                    haupt_abteilung["data"].append(
-                        new_abteilung_br)
-                except:
-                    print("only HA available")
-                results["data"].append(haupt_abteilung)
-            elif parameter["department"].startswith("Abt. "):
-                department_br = st_br.clean_department_from_dataset(
-                    parameter["department"])
-                ha_abteilungen = list(
-                    st_br.departments_bayerischer_rundfunk["Hauptabteilungen"].keys())
-                current_ha_abteilung = ""
-                for ha_abteilung in ha_abteilungen:
-                    for abteilung_br in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][ha_abteilung]["Abteilungen"].keys()):
-                        if department_br in abteilung_br:
-                            current_ha_abteilung = ha_abteilung
-                            break
-                    if current_ha_abteilung != "":
-                        break
-                if not "," in parameter["department"]:
-                    department_dataset = [
-                        val for val in departments_from_dataset if department_br in val and not "," in val and "abt. " in val.lower()][0]
-                else:
-                    department_dataset = parameter["department"]
-                new_abteilung_br = self.__create_json_dep_apps_kpi_app_landscape(
-                    KPIManager, dep_br=department_br, department_dataset=department_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label, fillcolor="#9a9999")
-                try:
-                    for fg_br in list(st_br.departments_bayerischer_rundfunk["Hauptabteilungen"][current_ha_abteilung]["Abteilungen"][department_br].values())[0]:
-                        if any(fg_br in string for string in departments_from_dataset):
-                            new_fg_br = self.__find_fg_br(
-                                KPIManager, dep_br=fg_br, departments_from_dataset=departments_from_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-                            if new_fg_br != False:
-                                new_abteilung_br["data"].append(
-                                    new_fg_br)
-                    results["data"].append(new_abteilung_br)
-                except:
-                    print("somethin wrong")
-                    results["data"].append(new_abteilung_br)
-            else:
-                department_br = st_br.clean_department_from_dataset(
-                    parameter["department"])
-                all_failed = False
-                try:
-                    department_dataset = [
-                        val for val in departments_from_dataset if parameter["department"] in val and not "," in val][0]
-                except:
-                    try:
-                        department_dataset = [
-                            val for val in departments_from_dataset if parameter["department"] in val and "," in val][0]
-                    except:
-                        department_dataset = ""
-                        all_failed = True
-                if not all_failed:
-                    new_fg_br = self.__create_json_dep_apps_kpi_app_landscape(
-                        KPIManager, dep_br=department_br, department_dataset=department_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-                    results["data"].append(new_fg_br)
-        return results
-
-    def __find_hauptabteilung_br(self, dep_br, departments_from_dataset,  data, formula, kpi, dataset_id, dataset_label, fillcolor="#898686"):
-        try:
-            department_dataset = [
-                val for val in departments_from_dataset if dep_br in val and not "," in val and "HA " in val][0]
-            if len(st_br.clean_department_from_dataset(department_dataset).split(" ")) != len(dep_br.split(" ")):
-                department_dataset = [
-                    val for val in departments_from_dataset if dep_br in val and not "," in val and "HA " in val and len(st_br.clean_department_from_dataset(val).split(" ")) == len(dep_br.split(" "))][0]
-            return self.__create_json_dep_apps_kpi_app_landscape(KPIManager, dep_br=dep_br, department_dataset=department_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label, fillcolor=fillcolor)
-        except:
-            print(dep_br + " not in dep from dataset")
-            return False
-
-    def __find_abteilung_br(self, dep_br, departments_from_dataset, data, formula, kpi, dataset_id, dataset_label, fillcolor="#9a9999"):
-        try:
-            department_dataset = [
-                val for val in departments_from_dataset if dep_br in val and not "," in val and "abt. " in val.lower()][0]
-            if len(st_br.clean_department_from_dataset(department_dataset).split(" ")) != len(dep_br.split(" ")) and not "(SEP)" in dep_br:
-                department_dataset = [
-                    val for val in departments_from_dataset if dep_br in val and not "," in val and "abt. " in val.lower() and len(st_br.clean_department_from_dataset(val).split(" ")) == len(dep_br.split(" "))][0]
-            return self.__create_json_dep_apps_kpi_app_landscape(KPIManager, dep_br=dep_br, department_dataset=department_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label, fillcolor=fillcolor)
-        except:
-            print(dep_br + " not in dep from dataset")
-            return False
-
-    def __find_fg_br(self, dep_br, departments_from_dataset,  data, formula, kpi, dataset_id, dataset_label, fillcolor="bcbcbc"):
-        try:
-            department_dataset = [
-                val for val in departments_from_dataset if dep_br in val and not "," in val and "fg " in val.lower()][0]
-            if len(st_br.clean_department_from_dataset(department_dataset).split(" ")) != len(dep_br.split(" ")):
-                department_dataset = [
-                    val for val in departments_from_dataset if dep_br in val and not "," in val and "fg " in val.lower() and len(st_br.clean_department_from_dataset(val).split(" ")) == len(dep_br.split(" "))][0]
-            return self.__create_json_dep_apps_kpi_app_landscape(KPIManager, dep_br=dep_br, department_dataset=department_dataset, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label, fillcolor=fillcolor)
-        except:
-            print(dep_br + " not in dep from dataset")
-            return False
-
-    def render_app_life_cycle(self, parameter, time_horizon, kpi, dataset_id, dataset_label):
-        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
-        formula = self.get_suitable_formula(
-            KPIManager, kpi_id=kpi.get_KPIID())
-        formula = fa_m.FormulaManager.get_formula_by_id(
-            fa_m.FormulaManager, formula_id=formula.get_formulaID())
-        apps_data_set = st_br.get_apps_df_by_parameter(
-            parameter=parameter, dataset_data=data, dataset_id=dataset_id, return_apps=False)
-        apps_data_set.drop(apps_data_set[(apps_data_set[st_br.life_cycle_end] ==
-                           '-') & (apps_data_set[st_br.life_cycle_start] == '-')].index, inplace=True)
-        if apps_data_set.empty:
-            return {}
-        all_apps = apps_data_set["Name"].to_list()
-        apps_kpis = [self.__calc_kpi_value_for_kpi(
-            KPIManager, app=val, data=data, formula=formula, kpi=kpi.get_KPIID(), dataset_id=dataset_id, dataset_label=dataset_label) for val in all_apps]
-        apps_data_set["KPI Value"] = apps_kpis
-        apps_data_set.sort_values(
-            by=["KPI Value"], ascending=False, inplace=True)
-        apps_data_set = apps_data_set.apply(
-            lambda x: st_br.date_handler(x), axis=1)
-        datatable = {}
-        datatable.update({"headervalign": "bottom"})
-        app_names = []
-        [app_names.append(
-            {"label": app}) for app in apps_data_set["Name"]]
-        processes = {
-            "headertext": "Applications",
-            "headervalign": "bottom",
-            "headeralign": "left",
-            "align": "left",
-            "process": app_names}
-        kpi_values = []
-        [kpi_values.append({"label": str(round(val, 2))})
-         for val in apps_data_set["KPI Value"]]
-        datacolumn = [
-            {
-                "headertext": kpi.get_KPI_name(),
-                "headervalign": "bottom",
-                "headeralign": "left",
-                "align": "left",
-                "text": kpi_values}]
-        datatable.update({"datacolumn": datacolumn})
-        tasks = {}
-        time_horizons = []
-        [time_horizons.append({"start": start, "end": end, "color": color_coding}) for start, end, color_coding in zip(
-            apps_data_set[st_br.life_cycle_start], apps_data_set[st_br.life_cycle_end], apps_data_set["color_coding"])]
-        tasks.update({"task": time_horizons})
-        apps_data_set[st_br.life_cycle_end] = pd.to_datetime(
-            apps_data_set[st_br.life_cycle_end], errors='coerce')
-        apps_data_set[st_br.life_cycle_end].fillna(datetime.datetime.now().replace(
-            year=datetime.datetime.now().year + 10), inplace=True)
-        apps_data_set[st_br.life_cycle_end] = apps_data_set[st_br.life_cycle_end].dt.strftime(
-            '%d/%m/%Y')
-        start_date = max(pd.to_datetime(
-            apps_data_set[st_br.life_cycle_start], errors='coerce')).to_pydatetime().strftime(
-            '%d/%m/%Y')
-        end_date = max(pd.to_datetime(
-            apps_data_set[st_br.life_cycle_end], errors='coerce')).to_pydatetime().strftime('%d/%m/%Y')
-        category_quarters = st_br.get_quarter_by_time_span_formatted_by_operation(
-            start_date=start_date, end_date=end_date, data=apps_data_set, gantt_chart=True)
-        category_quarters.append({"start": category_quarters[-1]["end"], "end": end_date,
-                                  "label": "LQ " + str(datetime.datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y'))})
-        categories = [{"category": [{"start": category_quarters[0]["start"],
-                                     "end": end_date, "label": "Application LifeCycle"}]}]
-        categories.append({"category": category_quarters})
-        kpi_name = kpi.get_KPI_name()
-        parameter = st_br.get_parameter_as_string_from_parameter_dict(
-            parameter)
-        subcaption = parameter + " & " + kpi_name
-        dataSource = {
-            "chart": {
-                "dateformat": "dd/mm/yyyy",
-                "theme": "fusion",
-                "useverticalscrolling": "0",
-                "caption": "App Lifecycles",
-                "subcaption": subcaption,
-                "canvasborderalpha": "40",
-                "ganttlinealpha": "50",
-                "exportEnabled": "1",
-            },
-            "processes": processes,
-            "datatable": datatable,
-            "tasks": tasks,
-            "categories": categories}
-        return dataSource
-
-    def render_life_cycle_development(self, parameter, time_horizon, kpi, dataset_id, dataset_label):
-        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
-        formula = self.get_suitable_formula(
-            KPIManager, kpi_id=kpi.get_KPIID())
-        formula = fa_m.FormulaManager.get_formula_by_id(
-            fa_m.FormulaManager, formula_id=formula.get_formulaID())
-        apps_data_set = st_br.get_apps_df_by_parameter(
-            parameter=parameter, dataset_data=data, dataset_id=dataset_id, return_apps=False)
-        apps_data_set.drop(apps_data_set[(apps_data_set[st_br.life_cycle_end] ==
-                           '-') & (apps_data_set[st_br.life_cycle_start] == '-')].index, inplace=True)
-        if apps_data_set.empty:
-            return {}
-        apps_data_set = apps_data_set.apply(
-            lambda x: st_br.date_handler(x), axis=1)
-        apps_data_set[st_br.life_cycle_end] = pd.to_datetime(
-            apps_data_set[st_br.life_cycle_end], errors='coerce')
-        apps_data_set[st_br.life_cycle_end].fillna(datetime.datetime.now().replace(
-            year=datetime.datetime.now().year + 10), inplace=True)
-        start_date = max(pd.to_datetime(
-            apps_data_set[st_br.life_cycle_start], errors='coerce')).to_pydatetime().strftime(
-            '%d/%m/%Y')
-        end_date = max(pd.to_datetime(
-            apps_data_set[st_br.life_cycle_end], errors='coerce')).to_pydatetime().strftime('%d/%m/%Y')
-        kpi_name = kpi.get_KPI_name()
-        parameter = st_br.get_parameter_as_string_from_parameter_dict(
-            parameter)
-        subcaption = parameter + " & " + kpi_name
-        dataSource = {
-            "chart": {
-                "caption": "Applications Lifecycle Overview",
-                "subcaption": subcaption,
-                "yaxisname": "# of Application to Shut-Down",
-                "anchorradius": "3",
-                "plottooltext": "# App shut-Downs in $label is <b>$dataValue</b>",
-                "showhovereffect": "1",
-                "showvalues": "0",
-                "theme": "fusion",
-                "anchorbgcolor": "#72D7B2",
-                "palettecolors": "#72D7B2",
-                "yAxisMinValue": 0,
-                "exportEnabled": 1,
-            },
-            "data": st_br.get_quarter_by_time_span_formatted_by_operation(
-                start_date=start_date, end_date=end_date, data=apps_data_set, line_chart=True)
-        }
-        return dataSource
-
-    def __create_json_dep_apps_kpi_app_landscape(self, dep_br, department_dataset, data, formula, kpi, dataset_id, dataset_label, fillcolor="#bcbcbc"):
-        new_dep_br = {"label": dep_br,
-                      "fillcolor": fillcolor,
-                      "data": []}
-        apps = data[data["Verantwortliche Organisationseinheit"]
-                    == department_dataset]["Name"].to_list()
-        for app in apps:
-            val = self.__calc_kpi_value_for_kpi(
-                KPIManager, app=app, data=data, formula=formula, kpi=kpi, dataset_id=dataset_id, dataset_label=dataset_label)
-            if val == 0.0:
-                val = 0.01
-            new_dep_br["data"].append(
-                {"label": app,
-                    "value": val,
-                    "sValue": val,
-                 }
-            )
-        return new_dep_br
-
-    def __calc_kpi_value_for_kpi(self, app, data, formula, kpi, dataset_id, dataset_label):
-        return fa_e.FormulaExecutor.execute_formula(
-            operation=formula.get_operation(), purpose=formula.get_purpose(), kpi_id=kpi,
-            dataset_id=dataset_id, dataset_label=dataset_label, parameter={"app": app, "department": "", "domain": ""}, fast=True, dataset_data=data)["result"]
+    def get_aspects_by_kpi_id(self, kpi_id):
+        result = []
+        kpi = self.get_kpi_by_id(KPIManager, kpi_id=kpi_id)
+        aspects = [val for sublist in kpi.get_kpi_aspects_weights()
+                   for val in sublist]
+        for aspect_name in aspects:
+            aspect = aspct_m.AspectManager.get_aspect_by_name(
+                aspct_m.AspectManager, name=aspect_name)
+            result.append(aspect)
+        return result
 
     def get_all_kpis_by_dataset_label(self, dataset_label):
         data = []
@@ -648,97 +375,6 @@ class KPIManager:
             sql_statement=sql_stmt.DataBaseSQL.delete_row_from_table(
                 sql_stmt.DataBaseSQL, table=st.TABLE_KPI, condition=st.TB_KPI_COL_KPI_ID,
                 condition_value=kpi_id, condition_operator=condition_operator), local=local)
-
-    def analyze_applicability(self, raw_component, dataset_id="", dataset_label=""):
-        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        data = dm.DataManager.get_table_as_df(
-            dm.DataManager, dataset_id)
-        if "Anzahl" in raw_component or "kosten" in raw_component:
-            data[raw_component] = data[raw_component].apply(
-                lambda x: np.nan if x == 0 or x == "0" else x)
-        else:
-            data[raw_component] = data[raw_component].apply(
-                lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
-        value = ((len(data[raw_component]) - data[raw_component].isna().sum()
-                  ) / len(data[raw_component])) * 100
-        return value
-
-    def analyze_applicability_kpi_based_on_aspect(self, aspect_id, dataset_id="", dataset_label=""):
-        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        data = dm.DataManager.get_table_as_df(
-            dm.DataManager, dataset_id)
-        aspect = aspct_m.AspectManager.get_aspect_by_id(
-            aspct_m.AspectManager, aspect_id=aspect_id)
-        aspect_raw_components = aspect.get_raw_components_from_dataset()
-        raw_components = [
-            val for sublist in aspect_raw_components for val in sublist]
-        value = 0
-        all_raw_aspects_count = 0
-        aspects_completed_data_count = 0
-        for raw_component in raw_components:
-            if "Anzahl" in raw_component or "kosten" in raw_component:
-                data[raw_component] = data[raw_component].apply(
-                    lambda x: np.nan if x == 0 or x == "0" else x)
-            else:
-                data[raw_component] = data[raw_component].apply(
-                    lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
-            all_raw_aspects_count += len(data[raw_component])
-            aspects_completed_data_count += len(
-                data[raw_component]) - data[raw_component].isna().sum()
-        value = aspects_completed_data_count / all_raw_aspects_count * 100
-        return value
-
-    def analyze_applicability_kpi(self, kpi_id, dataset_id="", dataset_label="", parameters="all"):
-        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        data = dm.DataManager.get_table_as_df(
-            dm.DataManager, dataset_id)
-        if not parameters == "all":
-            parameters = st.string_list_with_string_dict_into_list_dict(
-                parameters)
-            for param in parameters:
-                if "dep" in list(param.keys()):
-                    if not param["dep"] == st.ALL_VALUES_INPUT_FIELD:
-                        parameter = param["dep"]
-                        slicer = "Verantwortliche Organisationseinheit"
-                        data = data[data[slicer] == parameter]
-                if "app" in list(param.keys()):
-                    parameter = param['app']
-                    slicer = "Name"
-                    data = data[data[slicer] == parameter]
-                if "domain" in list(param.keys()):
-                    parameter = param['domain']
-                    data["Zugeordnete Domäne"] = data["Zugeordnete Domäne"].apply(
-                        lambda x: x if parameter in x else np.NaN)
-                    data.dropna(inplace=True, subset=[
-                        'Zugeordnete Domäne'])
-        kpi = KPIManager.get_kpi_by_id(
-            KPIManager, kpi_id=kpi_id)
-        aspects = [val for sublist in kpi.get_kpi_aspects_weights()
-                   for val in sublist]
-        value = 0
-        all_raw_aspects_count = 0
-        aspects_completed_data_count = 0
-        for aspect_name in aspects:
-            aspect = aspct_m.AspectManager.get_aspect_by_name(
-                aspct_m.AspectManager, name=aspect_name)
-            aspect_raw_components = aspect.get_raw_components_from_dataset()
-            raw_components = [
-                val for sublist in aspect_raw_components for val in sublist]
-            for raw_component in raw_components:
-                if "Anzahl" in raw_component and "kosten" in raw_component:
-                    data[raw_component] = data[raw_component].apply(
-                        lambda x: np.nan if x == 0 or x == "0" else x)
-                else:
-                    data[raw_component] = data[raw_component].apply(
-                        lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
-                all_raw_aspects_count += len(data[raw_component])
-                aspects_completed_data_count += len(
-                    data[raw_component]) - data[raw_component].isna().sum()
-        value = aspects_completed_data_count / all_raw_aspects_count * 100
-        return value
 
     def parse_kpi_obj(self, db_row):
         if db_row:

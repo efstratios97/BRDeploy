@@ -6,6 +6,7 @@ Description: Endpoints for the UserManager
 '''
 
 import flask as fl
+from numpy import amin
 import UserManager.UserManager as um
 import UserManager.User as us
 import Utils.Settings as st
@@ -92,7 +93,21 @@ def get_users():
 @blueprint.route('/user/<user_id>', methods=['GET', 'OPTIONS'])
 def get_user(user_id):
     result = {}
-    user = um.UserManager.get_user_by_id(um.UserManager, user_id)
+    user_ = um.UserManager.get_user_by_id(um.UserManager, user_id)
+    if user_:
+        result = UserManagerEndpoints.user_to_dict(
+            UserManagerEndpoints, user=user_)
+    elif "@" in user_id:
+        user_ = um.UserManager.get_user_by_email(um.UserManager, user_id)
+        result = UserManagerEndpoints.user_to_dict(
+            UserManagerEndpoints, user=user_)
+    return fl.jsonify(result), 200
+
+
+@blueprint.route('/user_by_email/<email>', methods=['GET', 'OPTIONS'])
+def get_user_by_email(email):
+    result = {}
+    user = um.UserManager.get_user_by_email(um.UserManager, email=email)
     if user:
         result = UserManagerEndpoints.user_to_dict(
             UserManagerEndpoints, user=user)
@@ -109,6 +124,27 @@ def update_department(department, user_id):
     else:
         UserManagerEndpoints.endpoints_exception(UserManagerEndpoints,
                                                  403, 'No rights')
+
+
+@blueprint.route('/update_user', methods=['POST', 'OPTIONS'])
+def update_user():
+    result = {}
+    user_id = fl.request.form['user_id']
+    first_name = fl.request.form['first_name']
+    last_name = fl.request.form['last_name']
+    admin = fl.request.form['admin']
+    email = fl.request.form['email']
+    business_unit = fl.request.form['business_unit']
+    user = um.UserManager.get_user_by_id(um.UserManager, user_id=user_id)
+    user.set_first_name(first_name=first_name)
+    user.set_last_name(last_name=last_name)
+    user.set_admin(admin=admin)
+    user.set_email(email=email)
+    user.set_business_unit(business_unit=business_unit)
+    um.UserManager.update_user(
+        um.UserManager, user=user)
+    result = UserManagerEndpoints.user_to_dict(UserManagerEndpoints, user=user)
+    return fl.jsonify(result), 200
 
 
 @blueprint.route('/delete_user/<to_delete_user_id>/<user_issuer>', methods=['DELETE', 'OPTIONS'])
@@ -135,6 +171,13 @@ def delete_user(to_delete_user_id, user_issuer):
 def get_departments():
     departments = um.UserManager.get_departments_frontend(um.UserManager)
     return fl.jsonify(departments), 200
+
+
+@blueprint.route('/department_by_name/<name>', methods=['GET', 'OPTIONS'])
+def get_department_by_name(name):
+    department = um.UserManager.get_departments_frontend_by_name(
+        um.UserManager, name=name)
+    return fl.jsonify(department), 200
 
 
 @blueprint.route('/create_department/<user_id>', methods=['POST', 'OPTIONS'])
@@ -169,9 +212,8 @@ def delete_department(dep_to_delete, user_issuer):
 
 @blueprint.route('/user/auth', methods=['GET', 'OPTIONS'])
 def auth_user():
-    email = fl.request.args.get('email', None)
+    email = st.string_to_lower_case(fl.request.args.get('email', None))
     passwd = fl.request.args.get('passwd', None)
-
     result = {}
     if email:
         user = um.UserManager.get_user_by_email(um.UserManager, email)
@@ -180,10 +222,6 @@ def auth_user():
 
     if passwd and st.create_hash_password_sha512(passwd, user.get_userID()) == user.get_password():
         token = us.User.generate_token(us.User, user)
-        # try:
-        #     token = token.decode('utf-8')
-        # except:
-        #     token = token
         result = {
             "token": token,
             "duration": 6600
@@ -198,8 +236,6 @@ def auth_user():
 @blueprint.route('/user/validatetoken', methods=['GET', 'OPTIONS'])
 def validade_jwt():
     token = fl.request.args.get('token', None)
-
-    result = {}
     decoded_payload = None
     if token:
         decoded_payload = us.User.decode_token(us.User, token)

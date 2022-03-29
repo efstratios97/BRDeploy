@@ -17,7 +17,7 @@ class User:
         self.__userID = userID
         self.__first_name = first_name
         self.__last_name = last_name
-        self.__email = email
+        self.__email = st.string_to_lower_case(email)
         self.__password = password
         self.__business_unit = business_unit
         self.__access_rights_pillars = access_rights_pillars
@@ -34,7 +34,7 @@ class User:
             1: 1,
             0: 0,
             str(1): 1,
-            str(0): 0
+            str(0): 0,
         }
         try:
             res = enum_admin[admin]
@@ -54,7 +54,9 @@ class User:
             1: True,
             0: False,
             '1': True,
-            '0': False
+            '0': False,
+            'false': False,
+            'true': True
         }
         try:
             res = enum_admin[admin]
@@ -141,7 +143,7 @@ class User:
         self.__last_name = last_name
 
     def set_email(self, email: str):
-        self.__email = email
+        self.__email = st.string_to_lower_case(email)
 
     def set_password(self, password: str):
         self.__password = password
@@ -153,7 +155,7 @@ class User:
         self.__business_unit = business_unit
 
     def set_admin(self, admin):
-        self.__admin = self.enum_admin(admin)
+        self.__admin = self.enum_admin(self.enum_admin_bool(admin))
 
     def set_role_manager(self, role_manager):
         self.__role_manager = self.enum_role_manger(role_manager)

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="admin === 'true'">
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
@@ -12,50 +12,65 @@
               <b-icon-funnel-fill style="font-size: 18px; margin: 3px" />
               <span><h4>Cleansers</h4></span>
             </template>
-            <cleanser-table :key="componentKey"></cleanser-table>
+            <Card class="component-card">
+              <template v-slot:title> Data Cleansers </template>
+              <template v-slot:subtitle>
+                Manager here your Data Cleansers
+              </template>
+              <template v-slot:content>
+                <cleanser-table
+                  :key="componentKey"
+                  @update="update_cleanser($event)"
+                ></cleanser-table>
+              </template>
+            </Card>
           </TabPanel>
           <TabPanel>
             <template #header>
               <i class="pi pi-cog" style="font-size: 18px; margin: 3px"></i>
               <span><h4>DataCleanser Operations</h4></span>
             </template>
-            <Carousel
-              :value="operationsItems"
-              :numVisible="1"
-              :numScroll="1"
-              :responsiveOptions="responsiveOptions"
-            >
-              <template #header>
-                <h1 style="text-align: center">Available Operations</h1>
-              </template>
-              <template #item="slotProps">
-                <div class="operation-item">
-                  <div class="operation-item-content">
-                    <div class="p-mb-3">
-                      <span style="text-align: center">
-                        <span v-html="slotProps.data.operation_img"></span
-                      ></span>
+            <Card class="component-card">
+              <template v-slot:content>
+                <Carousel
+                  :value="operationsItems"
+                  :numVisible="1"
+                  :numScroll="1"
+                  :responsiveOptions="responsiveOptions"
+                >
+                  <template #header>
+                    <h1 style="text-align: center">Available Operations</h1>
+                  </template>
+                  <template #item="slotProps">
+                    <div class="operation-item">
+                      <div class="operation-item-content">
+                        <div class="p-mb-3">
+                          <span style="text-align: center">
+                            <span v-html="slotProps.data.operation_img"></span
+                          ></span>
+                        </div>
+                        <h4>{{ slotProps.data.operation_desc }}</h4>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowAddCleanser"
+                          v-if="slotProps.data.operation === 'add_cleanser'"
+                        ></div>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowApplyCleanser"
+                          v-if="slotProps.data.operation === 'apply_cleanser'"
+                        ></div>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowUpdateCleanser"
+                          v-if="slotProps.data.operation === 'update_cleanser'"
+                        ></div>
+                      </div>
                     </div>
-                    <h4>{{ slotProps.data.operation_desc }}</h4>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowAddCleanser"
-                      v-if="slotProps.data.operation === 'add_cleanser'"
-                    ></div>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowApplyCleanser"
-                      v-if="slotProps.data.operation === 'apply_cleanser'"
-                    ></div>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowUpdateCleanser"
-                      v-if="slotProps.data.operation === 'update_cleanser'"
-                    ></div>
-                  </div>
-                </div>
+                  </template>
+                </Carousel>
               </template>
-            </Carousel>
+            </Card>
           </TabPanel>
         </TabView>
       </div>
@@ -85,13 +100,27 @@
         </template>
       </modal-view>
     </transition>
+    <transition class="modal-animation">
+      <modal-view
+        v-if="showUpdateCleanserObject"
+        @close="toggleShowUpdateCleanserObject"
+      >
+        <template v-slot:header>Update Cleanser</template>
+        <template v-slot:body>
+          <update-cleanser
+            @close="refreshData"
+            :cleanser="selected_cleanser"
+          ></update-cleanser>
+        </template>
+      </modal-view>
+    </transition>
   </div>
 </template>
 <script>
 import CleanserTable from "../components/TableCleanser.vue";
 import AddCleanser from "../components/AddCleanser.vue";
 import AddCleanedDataSet from "../components/AddCleanedDataSet.vue";
-
+import UpdateCleanser from "../components/InputForms/UpdateCleanser.vue";
 import Modal from "../components/Modal.vue";
 
 export default {
@@ -100,18 +129,18 @@ export default {
     "add-cleanser": AddCleanser,
     "modal-view": Modal,
     "add-cleaned-data-set": AddCleanedDataSet,
+    "update-cleanser": UpdateCleanser,
   },
   data() {
     this.autenticateSession();
     return {
+      admin: localStorage.admin,
       showAddCleanser: false,
       showUpdateCleanser: false,
       showApplyCleanser: false,
+      showUpdateCleanserObject: false,
       componentKey: 0,
-      selected_dataset_id: "",
-      selected_dataset_id_to_apply: "",
-      selected_storage_type: "",
-      selected_cleanser_id: "",
+      selected_cleanser: "",
       operationsItems: [
         {
           operation: "add_cleanser",
@@ -158,12 +187,20 @@ export default {
       this.showUpdateCleanser = !this.showUpdateCleanser;
       this.updateCleansers();
     },
+    toggleShowUpdateCleanserObject() {
+      this.showUpdateCleanserObject = !this.showUpdateCleanserObject;
+    },
+    update_cleanser(cleanser) {
+      this.selected_cleanser = cleanser;
+      this.toggleShowUpdateCleanserObject();
+    },
     refreshData() {
       this.componentKey += 1;
       this.showAddCleanser = false;
       this.showUpdateCleanser = false;
       this.showAddTableData = false;
       this.showApplyCleanser = false;
+      this.showUpdateCleanserObject = false;
     },
     updateCleansers() {
       this.$axios
@@ -178,11 +215,6 @@ export default {
           });
           this.refreshData();
         });
-    },
-    viewDataset(dataset_id, storage_type) {
-      this.selected_dataset_id = dataset_id;
-      this.selected_storage_type = storage_type;
-      this.toggleShowAddTableData();
     },
     autenticateSession() {
       if (localStorage.loggedUser && localStorage.token) {
@@ -207,5 +239,17 @@ export default {
 <style scoped>
 .banner-image {
   background-image: url(~@/assets/CLEANSER_BACKGROUND.jpg);
+}
+.component-card {
+  margin-top: 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border-radius: 0.25rem;
+  /* min-width: 100%; */
 }
 </style>

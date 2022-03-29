@@ -38,12 +38,6 @@ class DataHealthManager:
         data = sorted(data, key=lambda i: i['y'], reverse=True)
         return data
 
-    def get_applications(self, dataset_id):
-        data = []
-        df = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
-        data = df['Name'].to_list()
-        return data
-
     def get_data_for_radar_description(self, dataset_id, app_name):
         data = []
         df = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)

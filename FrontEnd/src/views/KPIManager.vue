@@ -1,15 +1,17 @@
 <template>
-  <div>
+  <div v-if="admin === 'true'">
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
         <h1 style="text-align: left; font-size: 38px">KPI Manager</h1>
         <div class="component-card">
-          <Steps :model="items" :readonly="true" />
+          <!-- <Steps :model="items" :readonly="true" /> -->
           <router-view
             v-slot="{ Component }"
             @add-kpi="toggleShowAddKPI"
             @add-aspect="toggleShowAddAspect"
+            @update-kpi="updateKPI($event)"
+            @update-aspect="updateAspect($event)"
             :key="componentKey"
             :selected_dataset_id="selected_dataset_id"
             :selected_dataset_label="selected_dataset_label"
@@ -51,26 +53,56 @@
         </template>
       </modal-view>
     </transition>
+    <transition class="modal-animation">
+      <modal-view v-if="showUpdateAspect" @close="toggleShowUpdateAspect()">
+        <template v-slot:header>Update your Aspect</template>
+        <template v-slot:body>
+          <update-aspect
+            :aspect="selected_aspect"
+            @close="toggleShowUpdateAspect()"
+          >
+          </update-aspect>
+        </template>
+      </modal-view>
+    </transition>
+    <transition class="modal-animation">
+      <modal-view v-if="showUpdateKPI" @close="toggleShowUpdateKPI()">
+        <template v-slot:header>Update your KPI</template>
+        <template v-slot:body>
+          <update-kpi :kpi="selected_kpi" @close="toggleShowUpdateKPI()">
+          </update-kpi>
+        </template>
+      </modal-view>
+    </transition>
   </div>
 </template>
 <script>
 import Modal from "../components/Modal.vue";
 import AddKPI from "../components/InputForms/AddKPI.vue";
 import AddAspect from "../components/InputForms/AddAspect.vue";
+import UpdateKPI from "../components/InputForms/UpdateKPI.vue";
+import UpdateAspect from "../components/InputForms/UpdateAspect.vue";
 
 export default {
   components: {
     "modal-view": Modal,
     "add-kpi": AddKPI,
     "add-aspect": AddAspect,
+    "update-kpi": UpdateKPI,
+    "update-aspect": UpdateAspect,
   },
   data() {
     this.autenticateSession();
     return {
+      admin: localStorage.admin,
       selected_dataset: "",
+      selected_kpi: "",
+      selected_aspect: "",
       componentKey: 0,
       showAddKPI: false,
       showAddAspect: false,
+      showUpdateKPI: false,
+      showUpdateAspect: false,
       items: [
         {
           label: "Select Dataset",
@@ -91,6 +123,22 @@ export default {
     toggleShowAddAspect() {
       this.showAddAspect = !this.showAddAspect;
       this.increaseComponentKey();
+    },
+    toggleShowUpdateAspect() {
+      this.showUpdateAspect = !this.showUpdateAspect;
+      this.increaseComponentKey();
+    },
+    toggleShowUpdateKPI() {
+      this.showUpdateKPI = !this.showUpdateKPI;
+      this.increaseComponentKey();
+    },
+    updateKPI(kpi) {
+      this.selected_kpi = kpi;
+      this.toggleShowUpdateKPI();
+    },
+    updateAspect(aspect) {
+      this.selected_aspect = aspect;
+      this.toggleShowUpdateAspect();
     },
     nextPage(event) {
       this.selected_dataset_id = event.selected_dataset.dataset_id;

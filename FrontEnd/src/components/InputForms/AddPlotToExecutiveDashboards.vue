@@ -15,7 +15,23 @@
               placeholder="Assign Plot to Executive Dashboard"
               filterPlaceholder="Find Executive Dashboards"
               class="multiselect-custom"
-              :showClear="true"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="p-grid p-fluid">
+        <div class="p-col-12 p-md-12">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">
+              <i class="pi pi-database"></i>
+            </span>
+            <Dropdown
+              v-model="selected_visualization_right"
+              :options="visualization_rights"
+              :filter="true"
+              optionLabel="visualization_right.name"
+              placeholder="Select Visualization right"
+              filterPlaceholder="Find Visualization Rights"
             />
           </div>
         </div>
@@ -23,10 +39,10 @@
       <div class="p-grid p-fluid">
         <div class="p-col-12 p-md-12">
           <Button
-            label="Assign Plot to Dashboard"
+            label="Assign Visualization to Dashboard"
             icon="pi pi-plus-circle"
             iconPos="center"
-            @click="emit_selected_executive_dashboards"
+            @click="save_plot_to_dashboard"
           />
         </div>
       </div>
@@ -36,13 +52,27 @@
 
 <script>
 export default {
+  props: ["formdata", "visualization", "grouped", "component_name"],
   data() {
     return {
       executive_dashboards: this.getExecutiveDashboardOptions(),
       selected_executive_dashboards: "",
+      selected_visualization_right: "",
+      visualization_rights: this.getVisualizationRightsOptions(),
     };
   },
   methods: {
+    getVisualizationRightsOptions() {
+      this.$axios.get("/get_visualization_rights").then((res) => {
+        var visualization_rights_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          visualization_rights_tmp.push({
+            visualization_right: res.data[index],
+          });
+        }
+        this.visualization_rights = visualization_rights_tmp;
+      });
+    },
     getExecutiveDashboardOptions() {
       this.$axios.get("/get_executive_dashboards").then((res) => {
         var executive_dashboards_tmp = [];
@@ -54,14 +84,44 @@ export default {
         this.executive_dashboards = executive_dashboards_tmp;
       });
     },
-    emit_selected_executive_dashboards() {
-      this.$emit(
-        "selected_executive_dashboards",
-        this.selected_executive_dashboards
-      );
-      this.close();
-    },
-    close() {
+    save_plot_to_dashboard() {
+      for (
+        let index = 0;
+        index < this.selected_executive_dashboards.length;
+        index++
+      ) {
+        var formdata = new FormData();
+        formdata.append("formdata", JSON.stringify(this.formdata));
+        formdata.append("grouped", this.grouped);
+        formdata.append("visualization_type", this.visualization);
+        formdata.append(
+          "visualization_right",
+          this.selected_visualization_right.visualization_right.name
+        );
+        formdata.append("component_name", this.component_name);
+        var executive_dashboard_id =
+          this.selected_executive_dashboards[index].executive_dashboard
+            .executive_dashboard_id;
+        this.$axios
+          .post("/create_plot/" + executive_dashboard_id, formdata)
+          .then(() => {
+            this.$toast.add({
+              severity: "success",
+              summary: "Plot Creation Successful",
+              detail: "The Plot was created",
+              life: 3000,
+            });
+          })
+          .catch(() => {
+            this.$toast.add({
+              severity: "error",
+              summary: "Plot Creation Unsuccessful",
+              detail: "The Plot Creation was Unsuccessful",
+              life: 3000,
+            });
+            this.submitted = false;
+          });
+      }
       this.$emit("close");
     },
   },

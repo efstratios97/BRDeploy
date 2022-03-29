@@ -182,6 +182,53 @@ class DataCleanser:
                 cca.BRCleanserAlgorithms, dataset_data, df_out)
         return dataset_data, df_out
 
+    def update_cleanser(self, cleanser: cl.Cleanser):
+        cleanser_id = cleanser.get_cleanserID()
+        self.update_cleanser_name(
+            DataCleanser, name=cleanser.get_name(), cleanser_id=cleanser_id)
+        self.update_cleanser_description(
+            DataCleanser, description=cleanser.get_description(), cleanser_id=cleanser_id)
+        self.update_cleanser_datasets(
+            DataCleanser, datasets=cleanser.get_datasets(), cleanser_id=cleanser_id)
+        self.update_cleanser_operation_types(
+            DataCleanser, operation_types=cleanser.get_cleanser_operation_types(), cleanser_id=cleanser_id)
+
+    def update_cleanser_name(self, name, cleanser_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
+                                                        column=st.TB_CLEANSER_COL_NAME, value=name,
+                                                        condition=st.TB_CLEANSER_COL_CLEANSER_ID,
+                                                        condition_operator='=', condition_value=cleanser_id),
+                                           local=local)
+
+    def update_cleanser_description(self, description, cleanser_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
+                                                        column=st.TB_CLEANSER_COL_DESCRIPTION, value=description,
+                                                        condition=st.TB_CLEANSER_COL_CLEANSER_ID,
+                                                        condition_operator='=', condition_value=cleanser_id),
+                                           local=local)
+
+    def update_cleanser_datasets(self, datasets, cleanser_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
+                                                        column=st.TB_CLEANSER_COL_DATASETIDS, value=datasets,
+                                                        condition=st.TB_CLEANSER_COL_CLEANSER_ID,
+                                                        condition_operator='=', condition_value=cleanser_id),
+                                           local=local)
+
+    def update_cleanser_operation_types(self, operation_types, cleanser_id, local=False):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_CLEANSER,
+                                                        column=st.TB_CLEANSER_OPERATION_TYPES, value=operation_types,
+                                                        condition=st.TB_CLEANSER_COL_CLEANSER_ID,
+                                                        condition_operator='=', condition_value=cleanser_id),
+                                           local=local)
+
     def get_all_cleanser_operation_types(self):
         self.define_operations(DataCleanser)
         return list(self.cleanser_operation_types.keys())

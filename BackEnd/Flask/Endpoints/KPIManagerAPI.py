@@ -5,20 +5,14 @@ Contributors:
 Description: Endpoints for KPIMAnager
 '''
 
-from ast import copy_location
-from KPIFormulaManager.FormulaManager import FormulaManager
 import flask as fl
 import pandas as pd
 import Utils.Settings as st
-import Utils.SettingsBR as st_br
-from datetime import datetime
 import KPIManager.KPIManager as kpi_m
 import KPIManager.KPI as kpi_obj
 import KPIManager.KPI_Category_Type as kpi_c_t
 import KPIFormulaManager.FormulaManager as fa_m
-import KPIFormulaManager.FormulaExecutor as fa_e
 import KPIFormulaManager.Formula as fa
-import DataManager.DataManager as dm
 
 
 class KPIManagerEndpoints:
@@ -92,28 +86,35 @@ def post_kpi():
     return fl.jsonify(result), 200
 
 
-@blueprint.route('/update_kpi/<attribute>/<value>/<kpi_id>', methods=['POST', 'OPTIONS'])
-def update_kpi(attribute, value, kpi_id):
+@blueprint.route('/update_KPI', methods=['POST', 'OPTIONS'])
+def update_kpi():
     result = {}
-    if attribute == "name":
-        kpi_m.KPIManager.update_kpi_name(
-            kpi_m.KPIManager, name=value, kpi_id=kpi_id)
-    if attribute == "formula":
-        kpi_m.KPIManager.update_kpi_formula(
-            kpi_m.KPIManager, formula=value, kpi_id=kpi_id)
-    if attribute == "dataset_label":
-        kpi_m.KPIManager.update_kpi_dataset_labels(
-            kpi_m.KPIManager, dataset_labels=value, kpi_id=kpi_id)
-    if attribute == "kpi_family":
-        kpi_m.KPIManager.update_kpi_family(
-            kpi_m.KPIManager, kpi_family=value, kpi_id=kpi_id)
-    if attribute == "high_level_kpi_component_kpi_weight":
-        kpi_m.KPIManager.update_high_level_kpi_component_kpi_weight(
-            kpi_m.KPIManager, high_level_kpi_component_kpi_weight=value, kpi_id=kpi_id)
-    if attribute == "kpi_aspects_weights":
-        kpi_m.KPIManager.update_kpi_aspect(
-            kpi_m.KPIManager, kpi_aspects_weights=value, kpi_id=kpi_id)
+    kpi_id = fl.request.form['kpi_id']
+    name = fl.request.form['name']
+    description = fl.request.form['description']
+    high_level_kpi_component_kpi_weight = fl.request.form['high_level_kpi_component_kpi_weight']
+    kpi_aspects_weights = st.string_list_with_string_dict_into_list_dict(
+        fl.request.form['kpi_aspects_weights'])
+    threshold = fl.request.form['threshold']
+    formula = fl.request.form['formula']
+    dataset_id = fl.request.form['dataset_id']
+    dataset_labels = st.make_list_to_str(st.string_list_to_list(
+        fl.request.form['dataset_labels']))
+    kpi_family = fl.request.form['kpi_family']
+    color_coding = fl.request.form['color_coding']
     kpi = kpi_m.KPIManager.get_kpi_by_id(kpi_m.KPIManager, kpi_id=kpi_id)
+    kpi.set_name(name=name)
+    kpi.set_description(description=description)
+    kpi.set_high_level_kpi_component_kpi_weight(
+        high_level_kpi_component_kpi_weight=high_level_kpi_component_kpi_weight)
+    kpi.set_kpi_aspects_weights(kpi_aspects_weights=kpi_aspects_weights)
+    kpi.set_threshold(threshold=threshold)
+    kpi.set_formula(formula=formula)
+    kpi.set_dataset_id(dataset_id=dataset_id)
+    kpi.set_dataset_labels(dataset_labels=dataset_labels)
+    kpi.set_kpi_family(kpi_family=kpi_family)
+    kpi.set_color_coding(color_coding=color_coding)
+    kpi_m.KPIManager.update_kpi(kpi_m.KPIManager, kpi=kpi)
     result = KPIManagerEndpoints.kpi_to_dict(
         KPIManagerEndpoints, kpi=kpi)
     return fl.jsonify(result), 200
@@ -173,153 +174,6 @@ def get_kpi_by_name(name):
             KPIManagerEndpoints, kpi=kpi)
     else:
         KPIManagerEndpoints(404, "DATASET_NOT_FOUND")
-    return fl.jsonify(result), 200
-
-
-@blueprint.route('/calculate_kpi/<kpi_id>/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
-def calculate_kpi(kpi_id, dataset_id, dataset_label):
-    result = {}
-    formula_id = kpi_m.KPIManager.get_suitable_formula(
-        kpi_m.KPIManager, kpi_id=kpi_id)
-    formula = fa_m.FormulaManager.get_formula_by_id(
-        fa_m.FormulaManager, formula_id=formula_id)
-    formula_operation = formula.get_operation()
-    fa_e.FormulaExecutor.execute_formula(
-        fa_e.FormulaExecutor, operation=formula_operation, purpose=formula.get_purpose(),
-        kpi_id=kpi_id, dataset_id=dataset_id, dataset_label=dataset_label)
-    return fl.jsonify(result), 200
-
-
-@blueprint.route('/calculate_kpis/<dataset_id>/<dataset_label>', methods=['POST', 'OPTIONS'])
-def calculate_kpis(dataset_id, dataset_label):
-    results = {}
-    kpis = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-        'kpis'])
-    try:
-        parameters = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-            'parameter'])
-    except:
-        parameters = fl.request.form[
-            'parameter']
-    fast = True
-    if fast:
-        dataset_id = dm.DataManager.check_dataset_exists_and_return_alternative_based_on_label(
-            dm.DataManager, dataset_id=dataset_id, dataset_label=dataset_label)
-        data = dm.DataManager.get_table_as_df(dm.DataManager, table=dataset_id)
-    for param in parameters:
-        for kpi in kpis:
-            formula = kpi_m.KPIManager.get_suitable_formula(
-                kpi_m.KPIManager, kpi_id=kpi['kpi']['kpi_id'])
-            formula = fa_m.FormulaManager.get_formula_by_id(
-                fa_m.FormulaManager, formula_id=formula.get_formulaID())
-            formula_operation = formula.get_operation()
-            if "dep" in list(param.keys()):
-                parameter = {"app": "",
-                             "department": param["dep"], "domain": ""}
-            if "app" in list(param.keys()):
-                parameter = {"app": param['app'],
-                             "department": "", "domain": ""}
-            if "domain" in list(param.keys()):
-                parameter = {"app": "",
-                             "department": "", "domain": param['domain']}
-            result = fa_e.FormulaExecutor.execute_formula(
-                operation=formula_operation, purpose=formula.get_purpose(), kpi_id=kpi['kpi']['kpi_id'],
-                dataset_id=dataset_id, dataset_label=dataset_label, parameter=parameter, dataset_data=data, fast=fast)
-            if not result['parameter'] in list(results.keys()):
-                results[result['parameter']] = []
-            results[result['parameter']].append(result)
-    return fl.jsonify(results), 200
-
-
-@blueprint.route('/render_application_landscape_kpi/<dataset_id>/<dataset_label>', methods=['POST', 'OPTIONS'])
-def render_application_landscape_kpi(dataset_id, dataset_label):
-    results = {}
-    kpis = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-        'kpis'])
-    try:
-        parameters = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-            'parameter'])
-    except:
-        parameters = fl.request.form[
-            'parameter']
-    parameter = st_br.get_parameters_from_input(parameters)
-    for kpi in kpis:
-        kpi = kpi_m.KPIManager.get_kpi_by_id(
-            kpi_m.KPIManager, kpi_id=kpi["kpi"]["kpi_id"])
-        result = kpi_m.KPIManager.render_application_landscape_kpi(
-            kpi_m.KPIManager, kpi=kpi.get_KPIID(), parameter=parameter, dataset_id=dataset_id, dataset_label=dataset_label)
-        threshold = kpi.get_threshold()
-    results["result"] = result
-    results["threshold"] = threshold
-    return fl.jsonify(results), 200
-
-
-@blueprint.route('/render_app_life_cycle/<dataset_id>/<dataset_label>', methods=['POST', 'OPTIONS'])
-def render_app_life_cycle(dataset_id, dataset_label):
-    results = {}
-    try:
-        time_horizon = fl.request.form[
-            'time_horizon']
-        kpis = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-            'kpis'])
-        parameters = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-            'parameter'])
-    except:
-        parameters = fl.request.form[
-            'parameter']
-    parameter = st_br.get_parameters_from_input(parameters)
-    for kpi in kpis:
-        kpi = kpi_m.KPIManager.get_kpi_by_id(
-            kpi_m.KPIManager, kpi_id=kpi["kpi"]["kpi_id"])
-    result = kpi_m.KPIManager.render_app_life_cycle(
-        kpi_m.KPIManager, kpi=kpi, time_horizon=time_horizon, parameter=parameter, dataset_id=dataset_id, dataset_label=dataset_label)
-    results["result"] = result
-    return fl.jsonify(results), 200
-
-
-@blueprint.route('/render_life_cycle_development/<dataset_id>/<dataset_label>', methods=['POST', 'OPTIONS'])
-def render_life_cycle_development(dataset_id, dataset_label):
-    results = {}
-    try:
-        time_horizon = fl.request.form[
-            'time_horizon']
-        kpis = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-            'kpis'])
-        parameters = st.string_list_with_nested_string_dict_into_list_dict(fl.request.form[
-            'parameter'])
-    except:
-        parameters = fl.request.form[
-            'parameter']
-    parameter = st_br.get_parameters_from_input(parameters)
-    for kpi in kpis:
-        kpi = kpi_m.KPIManager.get_kpi_by_id(
-            kpi_m.KPIManager, kpi_id=kpi["kpi"]["kpi_id"])
-    result = kpi_m.KPIManager.render_life_cycle_development(
-        kpi_m.KPIManager, kpi=kpi, time_horizon=time_horizon, parameter=parameter, dataset_id=dataset_id, dataset_label=dataset_label)
-    results["result"] = result
-    return fl.jsonify(results), 200
-
-
-@blueprint.route('/analyze_applicability_kpi_based_on_aspect/<aspect_id>/<dataset_id>/<dataset_label>', methods=['GET', 'OPTIONS'])
-def analyze_applicability_kpi_based_on_aspect(aspect_id, dataset_id, dataset_label):
-    result = {}
-    data = kpi_m.KPIManager.analyze_applicability_kpi_based_on_aspect(kpi_m.KPIManager,
-                                                                      aspect_id=aspect_id,
-                                                                      dataset_id=dataset_id,
-                                                                      dataset_label=dataset_label)
-    result["data"] = data
-    return fl.jsonify(result), 200
-
-
-@blueprint.route('/analyze_applicability_kpi/<kpi_id>/<dataset_id>/<dataset_label>/<parameters>', methods=['GET', 'OPTIONS'])
-def analyze_applicability_kpi(kpi_id, dataset_id, dataset_label, parameters):
-    result = {}
-    data = kpi_m.KPIManager.analyze_applicability_kpi(kpi_m.KPIManager,
-                                                      kpi_id=kpi_id,
-                                                      dataset_id=dataset_id,
-                                                      dataset_label=dataset_label,
-                                                      parameters=parameters)
-    result["data"] = data
     return fl.jsonify(result), 200
 
 

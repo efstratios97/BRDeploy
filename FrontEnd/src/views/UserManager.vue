@@ -1,5 +1,5 @@
  <template>
-  <div>
+  <div v-if="admin === 'true'">
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
@@ -12,7 +12,16 @@
               <i class="pi pi-users" style="font-size: 18px; margin: 3px"></i>
               <span><h4>Users</h4></span>
             </template>
-            <user-table :key="componentKey"></user-table>
+            <Card class="component-card">
+              <template v-slot:title> Users </template>
+              <template v-slot:subtitle> Manager here your Users </template>
+              <template v-slot:content>
+                <user-table
+                  :key="componentKey"
+                  @update="updateUser($event)"
+                ></user-table>
+              </template>
+            </Card>
           </TabPanel>
           <TabPanel
             ><template #header>
@@ -25,7 +34,15 @@
             <div class="container-sm justify-content-start">
               <div class="row justify-content-start">
                 <div class="col">
-                  <dep-table :key="componentKey"></dep-table>
+                  <Card class="component-card">
+                    <template v-slot:title> Departments </template>
+                    <template v-slot:subtitle>
+                      Manager here your Departments
+                    </template>
+                    <template v-slot:content>
+                      <dep-table :key="componentKey"></dep-table>
+                    </template>
+                  </Card>
                 </div>
               </div>
             </div>
@@ -35,43 +52,47 @@
               <i class="pi pi-cog" style="font-size: 18px; margin: 3px"></i>
               <span><h4>UserManager Operation</h4></span>
             </template>
-            <Carousel
-              :value="operationsItems"
-              :numVisible="1"
-              :numScroll="1"
-              :responsiveOptions="responsiveOptions"
-            >
-              <template #header>
-                <h1 style="text-align: center">Available Operations</h1>
-              </template>
-              <template #item="slotProps">
-                <div class="operation-item">
-                  <div class="operation-item-content">
-                    <div class="p-mb-3">
-                      <span style="text-align: center">
-                        <span v-html="slotProps.data.operation_img"></span
-                      ></span>
+            <Card class="component-card">
+              <template v-slot:content>
+                <Carousel
+                  :value="operationsItems"
+                  :numVisible="1"
+                  :numScroll="1"
+                  :responsiveOptions="responsiveOptions"
+                >
+                  <template #header>
+                    <h1 style="text-align: center">Available Operations</h1>
+                  </template>
+                  <template #item="slotProps">
+                    <div class="operation-item">
+                      <div class="operation-item-content">
+                        <div class="p-mb-3">
+                          <span style="text-align: center">
+                            <span v-html="slotProps.data.operation_img"></span
+                          ></span>
+                        </div>
+                        <h4>{{ slotProps.data.operation_desc }}</h4>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowAddUser"
+                          v-if="slotProps.data.operation === 'add_user'"
+                        ></div>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowAddDep"
+                          v-if="slotProps.data.operation === 'add_dep'"
+                        ></div>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowUpdateDepartment"
+                          v-if="slotProps.data.operation === 'update_dep'"
+                        ></div>
+                      </div>
                     </div>
-                    <h4>{{ slotProps.data.operation_desc }}</h4>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowAddUser"
-                      v-if="slotProps.data.operation === 'add_user'"
-                    ></div>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowAddDep"
-                      v-if="slotProps.data.operation === 'add_dep'"
-                    ></div>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowUpdateDepartment"
-                      v-if="slotProps.data.operation === 'update_dep'"
-                    ></div>
-                  </div>
-                </div>
+                  </template>
+                </Carousel>
               </template>
-            </Carousel>
+            </Card>
           </TabPanel>
           <TabPanel>
             <template #header>
@@ -81,38 +102,42 @@
               ></i>
               <span><h4>My Profile</h4></span>
             </template>
-            <Carousel
-              :value="operationsItemsMyProfile"
-              :numVisible="1"
-              :numScroll="1"
-              :responsiveOptions="responsiveOptions"
-            >
-              <template #header>
-                <h1 style="text-align: center">Available Operations</h1>
-              </template>
-              <template #item="slotProps">
-                <div class="operation-item">
-                  <div class="operation-item-content">
-                    <div class="p-mb-3">
-                      <span style="text-align: center">
-                        <span v-html="slotProps.data.operation_img"></span
-                      ></span>
+            <Card class="component-card">
+              <template v-slot:content>
+                <Carousel
+                  :value="operationsItemsMyProfile"
+                  :numVisible="1"
+                  :numScroll="1"
+                  :responsiveOptions="responsiveOptions"
+                >
+                  <template #header>
+                    <h1 style="text-align: center">Available Operations</h1>
+                  </template>
+                  <template #item="slotProps">
+                    <div class="operation-item">
+                      <div class="operation-item-content">
+                        <div class="p-mb-3">
+                          <span style="text-align: center">
+                            <span v-html="slotProps.data.operation_img"></span
+                          ></span>
+                        </div>
+                        <h4>{{ slotProps.data.operation_desc }}</h4>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowUpdatePassword"
+                          v-if="slotProps.data.operation === 'update_password'"
+                        ></div>
+                        <div
+                          v-html="slotProps.data.operation_button"
+                          @click.capture="toggleShowDeleteUser"
+                          v-if="slotProps.data.operation === 'delete_user'"
+                        ></div>
+                      </div>
                     </div>
-                    <h4>{{ slotProps.data.operation_desc }}</h4>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowUpdatePassword"
-                      v-if="slotProps.data.operation === 'update_password'"
-                    ></div>
-                    <div
-                      v-html="slotProps.data.operation_button"
-                      @click.capture="toggleShowDeleteUser"
-                      v-if="slotProps.data.operation === 'delete_user'"
-                    ></div>
-                  </div>
-                </div>
+                  </template>
+                </Carousel>
               </template>
-            </Carousel>
+            </Card>
           </TabPanel>
         </TabView>
       </div>
@@ -149,6 +174,14 @@
           </update-department> </template
       ></modal-view>
     </transition>
+    <transition class="modal-animation">
+      <modal-view v-if="showUpdateUser" @close="toggleShowUpdateUser">
+        <template v-slot:header>Update Update</template>
+        <template v-slot:body>
+          <update-user @close="refreshData" :user="selected_user">
+          </update-user> </template
+      ></modal-view>
+    </transition>
     <Dialog
       header="Profile Deletion"
       v-model:visible="showDeleteUser"
@@ -179,6 +212,7 @@ import AddDepartment from "../components/AddDepartment.vue";
 import Modal from "../components/Modal.vue";
 import UpdatePassword from "../components/UpdatePassword.vue";
 import UpdateDepartment from "../components/UpdateDepartment.vue";
+import UpdateUser from "../components/InputForms/UpdateUser.vue";
 
 export default {
   components: {
@@ -189,16 +223,20 @@ export default {
     "dep-table": TableDepartments,
     "update-password": UpdatePassword,
     "update-department": UpdateDepartment,
+    "update-user": UpdateUser,
   },
   data() {
     this.autenticateSession();
     return {
+      admin: localStorage.admin,
       showDeleteUser: false,
       showUpdatePassword: false,
       showUpdateDepartment: false,
+      showUpdateUser: false,
       showAddUser: false,
       showAddDep: false,
       componentKey: 0,
+      selected_user: "",
       operations: [
         {
           operation: 0,
@@ -311,6 +349,10 @@ export default {
         life: 3000,
       });
     },
+    updateUser(user) {
+      this.selected_user = user;
+      this.toggleShowUpdateUser();
+    },
     toggleShowDeleteUser() {
       this.showDeleteUser = !this.showDeleteUser;
     },
@@ -319,6 +361,9 @@ export default {
     },
     toggleShowUpdateDepartment() {
       this.showUpdateDepartment = !this.showUpdateDepartment;
+    },
+    toggleShowUpdateUser() {
+      this.showUpdateUser = !this.showUpdateUser;
     },
     toggleShowAddUser() {
       this.showAddUser = !this.showAddUser;
@@ -339,6 +384,9 @@ export default {
       }
       if (this.showUpdateDepartment === true) {
         this.toggleShowUpdateDepartment();
+      }
+      if (this.showUpdateUser === true) {
+        this.toggleShowUpdateUser();
       }
     },
     autenticateSession() {
@@ -364,5 +412,17 @@ export default {
 <style scoped>
 .banner-image {
   background-image: url("~@/assets/USERMANAGER_BACKGROUND.jpg");
+}
+.component-card {
+  margin-top: 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border-radius: 0.25rem;
+  /* min-width: 100%; */
 }
 </style>

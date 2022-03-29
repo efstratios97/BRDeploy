@@ -71,14 +71,15 @@
     </Column>
     <Column header="Ad hoc Operations" style="min-width: auto">
       <template #body>
-        <div class="btn-align-td">
-          <button
-            v-on:click="deleteSelected()"
-            class="btn btn-secondary"
-            v-tooltip="'Select Cleanser first'"
-          >
-            <b-icon-trash-fill />
-          </button>
+        <div>
+          <SpeedDial
+            :model="items"
+            :radius="50"
+            direction="right"
+            type="right"
+            buttonClass="p-button-secondary"
+            style="position: relative"
+          />
         </div>
         <ProgressBar mode="indeterminate" v-if="cleanser_operating" />
       </template>
@@ -94,9 +95,40 @@ export default {
       selected_cleanser: "",
       cleansers_loading: true,
       cleanser_operating: false,
+      items: [
+        {
+          label: "Delete",
+          icon: "pi pi-trash",
+          command: () => {
+            this.deleteSelected();
+          },
+        },
+        {
+          label: "Update",
+          icon: "pi pi-refresh",
+          command: () => {
+            this.getSelectedToUpdate();
+          },
+        },
+      ],
     };
   },
   methods: {
+    getSelectedToUpdate() {
+      if (
+        this.selected_cleanser.length === 1 &&
+        this.selected_cleanser.length !== 0
+      ) {
+        this.$emit("update", this.selected_cleanser[0]);
+      } else {
+        this.$toast.add({
+          severity: "warn",
+          summary: "None or More than 1 Cleanser selected",
+          detail: "Please select only one Cleanser to display",
+          life: 4000,
+        });
+      }
+    },
     normalizeCleanser() {
       for (let index = 0; index < this.cleansers.length; index++) {
         for (var key in this.cleansers[index]) {

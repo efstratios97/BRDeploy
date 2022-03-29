@@ -17,6 +17,7 @@ import Flask.Endpoints.ExecutiveDashboardAPI as api_ed
 import Flask.Endpoints.DataPlotManagerApi as api_dpm
 import Flask.Endpoints.KPIManagerAPI as api_kpi
 import Flask.Endpoints.KPIAspectManagerAPI as api_aspct
+import BRIndividual.Endpoints.IndividualAPI as api_ind
 
 BRapp = Flask(__name__)
 CORS(BRapp)
@@ -27,6 +28,7 @@ def helloWorld():
     return "<html>Hello says Project Athena</html>"
 
 
+BRapp.register_blueprint(api_ind.blueprint)
 BRapp.register_blueprint(api_dm.blueprint)
 BRapp.register_blueprint(api_um.blueprint)
 BRapp.register_blueprint(api_dc.blueprint)
@@ -40,24 +42,3 @@ BRapp.register_blueprint(api_kpi.blueprint)
 
 if __name__ == "__main__":
     BRapp.run(host='127.0.0.1')
-
-
-# def create_app():
-#     BRapp = Flask(__name__)
-#     CORS(BRapp)
-
-#     # @BRapp.route("/")
-#     # def helloWorld():
-#     #     return "<html>Hello says Project Athena</html>"
-
-#     BRapp.register_blueprint(api_dm.blueprint)
-#     BRapp.register_blueprint(api_um.blueprint)
-#     BRapp.register_blueprint(api_dc.blueprint)
-#     BRapp.register_blueprint(api_da.blueprint)
-#     BRapp.register_blueprint(api_dh.blueprint)
-#     BRapp.register_blueprint(api_av.blueprint)
-#     BRapp.run(host='0.0.0.0')
-
-
-# if __name__ == "__main__":
-#     create_app()

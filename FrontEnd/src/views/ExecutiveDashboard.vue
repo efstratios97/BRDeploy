@@ -5,11 +5,7 @@
       <div class="container-xxl main-page p-shadow-14">
         <h1 style="text-align: left; font-size: 38px">Executive Dashboard</h1>
         <div class="component-card">
-          <router-view
-            v-slot="{ Component }"
-            @add-executive-dashboard="toggleShowAddExecutiveDashboard"
-            :key="componentKey"
-          >
+          <router-view v-slot="{ Component }" :key="componentKey">
             <keep-alive>
               <div class="component-card">
                 <component :is="Component" :key="componentKey" />
@@ -19,43 +15,18 @@
         </div>
       </div>
     </div>
-    <transition class="modal-animation">
-      <modal-view
-        v-if="showAddExecutiveDashboard"
-        @close="toggleShowAddExecutiveDashboard"
-      >
-        <template v-slot:header>Add Executive Dashboard</template>
-        <template v-slot:body>
-          <add-executive-dashboards @close="toggleShowAddExecutiveDashboard()">
-          </add-executive-dashboards> </template
-      ></modal-view>
-    </transition>
   </div>
 </template>
 <script>
-import AddExecutiveDashboards from "../components/InputForms/AddExecutiveDashboards.vue";
-import Modal from "../components/Modal.vue";
-
 export default {
-  components: {
-    "add-executive-dashboards": AddExecutiveDashboards,
-    "modal-view": Modal,
-  },
+  components: {},
   data() {
     this.autenticateSession();
     return {
-      showAddExecutiveDashboard: false,
       componentKey: 0,
     };
   },
   methods: {
-    toggleShowAddExecutiveDashboard() {
-      this.showAddExecutiveDashboard = !this.showAddExecutiveDashboard;
-      this.refreshData();
-    },
-    refreshData() {
-      this.componentKey += 1;
-    },
     autenticateSession() {
       if (localStorage.loggedUser && localStorage.token) {
         this.$axios

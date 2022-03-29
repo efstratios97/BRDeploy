@@ -10,8 +10,6 @@ import Utils.DataBaseSQL as sql_stmt
 import Utils.Settings as st
 import DataManager.DataManager as dm
 import ArchitectureViewManager.ArchitectureView as av
-import os
-import pandas as pd
 import numpy as np
 
 
@@ -42,6 +40,39 @@ class ArchitectureViewManager:
                                                                                           architecture_view_description=architecture_view.get_description(),
                                                                                           architecture_view_components=architecture_view.get_components()), local=local)
         return check_unique
+
+    def update_architecture_view(self, architecture_view: av.ArchitectureView):
+        architecture_view_id = architecture_view.get_architecture_viewID()
+        self.update_architecture_view_name(
+            ArchitectureViewManager, name=architecture_view.get_name(), architecture_view_id=architecture_view_id)
+        self.update_architecture_view_description(
+            ArchitectureViewManager, description=architecture_view.get_description(), architecture_view_id=architecture_view_id)
+        self.update_architecture_view_components(
+            ArchitectureViewManager, components=architecture_view.get_components(), architecture_view_id=architecture_view_id)
+
+    def update_architecture_view_name(self, name, architecture_view_id):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_ARCHITECTURE_VIEWS,
+                                                        column=st.TB_ARCHITECTURE_VIEWS_COL_ARCHITECTURE_VIEW_NAME, value=name,
+                                                        condition=st.TB_ARCHITECTURE_VIEWS_COL_ARCHITECTURE_VIEW_ID,
+                                                        condition_operator='=', condition_value=architecture_view_id))
+
+    def update_architecture_view_description(self, description, architecture_view_id):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_ARCHITECTURE_VIEWS,
+                                                        column=st.TB_ARCHITECTURE_VIEWS_COL_ARCHITECTURE_VIEW_DESCRIPTION, value=description,
+                                                        condition=st.TB_ARCHITECTURE_VIEWS_COL_ARCHITECTURE_VIEW_ID,
+                                                        condition_operator='=', condition_value=architecture_view_id))
+
+    def update_architecture_view_components(self, components, architecture_view_id):
+        db_utils.DataBaseUtils.execute_sql(db_utils.DataBaseUtils,
+                                           sql_statement=sql_stmt.DataBaseSQL.
+                                           update_value(sql_stmt.DataBaseSQL, table=st.TABLE_ARCHITECTURE_VIEWS,
+                                                        column=st.TB_ARCHITECTURE_VIEWS_COL_ARCHITECTURE_VIEW_COMPONENTS, value=components,
+                                                        condition=st.TB_ARCHITECTURE_VIEWS_COL_ARCHITECTURE_VIEW_ID,
+                                                        condition_operator='=', condition_value=architecture_view_id))
 
     def delete_architecture_view(self, architecture_view_id, condition_operator='=', local=False):
         db_utils.DataBaseUtils.execute_sql(

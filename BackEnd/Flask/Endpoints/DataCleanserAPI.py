@@ -63,6 +63,25 @@ def post_cleanser():
                                                   code=400, msg="Cleanser Creation Unsuccesful")
 
 
+@blueprint.route('/update_cleanser_object', methods=['POST', 'OPTIONS'])
+def update_cleanser_object():
+    result = {}
+    cleanser_id = fl.request.form['cleanser_id']
+    name = fl.request.form['name']
+    description = fl.request.form['description']
+    datasets = fl.request.form['datasets']
+    cleanser_operation_types = fl.request.form['cleanser_operation_types']
+    cleanser = dc.DataCleanser.get_cleanser_by_id(
+        dc.DataCleanser, cleanser_id=cleanser_id)
+    cleanser.set_name(name=name)
+    cleanser.set_description(description=description)
+    cleanser.set_datasets(datasets=datasets)
+    cleanser.set_cleanser_operation_types(
+        cleanser_operation_types=cleanser_operation_types)
+    dc.DataCleanser.update_cleanser(dc.DataCleanser, cleanser=cleanser)
+    return fl.jsonify(result), 200
+
+
 @blueprint.route('/update_cleansers/<user_id>', methods=['POST', 'OPTIONS'])
 def update_cleanser(user_id):
     result = {}

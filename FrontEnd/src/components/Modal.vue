@@ -31,7 +31,9 @@
       <div class="modal__content overflow-auto">
         <h2><slot name="header"></slot></h2>
         <br />
-        <slot name="body" style="overflow-auto; resize-both"></slot>
+        <ScrollPanel style="width: 100%; max-height: 100vh">
+          <slot name="body"></slot>
+        </ScrollPanel>
       </div>
       <!-- END: .modal__content -->
     </div>
@@ -134,8 +136,8 @@ body {
   justify-content: center;
   -ms-flex-align: center;
   align-items: center;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   padding-top: 200px;
   z-index: 100;
   overflow-y: auto;

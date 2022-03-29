@@ -40,7 +40,7 @@
       <template #body>
         <div class="btn-align-td">
           <button
-            v-on:click="deleteDep(this.selected_department.department_id)"
+            v-on:click="deleteDep(this.selected_department.name)"
             class="btn btn-secondary"
             v-tooltip="'Select Department first'"
           >
@@ -63,8 +63,8 @@ export default {
     };
   },
   methods: {
-    deleteDep(dep_id) {
-      if (dep_id === undefined) {
+    deleteDep(dep_name) {
+      if (dep_name === undefined) {
         this.$toast.add({
           severity: "warn",
           summary: "No Department selected",
@@ -75,14 +75,16 @@ export default {
         this.dep_operations = true;
       }
       this.$axios
-        .delete("/delete_department/" + dep_id + "/" + localStorage.loggedUser)
+        .delete(
+          "/delete_department/" + dep_name + "/" + localStorage.loggedUser
+        )
         .then(() => {
           this.listDepartments();
           if (this.dep_operations === true) {
             this.$toast.add({
               severity: "success",
               summary: "Department Deletion Successful",
-              detail: "The selected Department: " + dep_id + " was deleted",
+              detail: "The selected Department: " + dep_name + " was deleted",
               life: 3000,
             });
           }
@@ -94,7 +96,7 @@ export default {
             summary: "Department Deletion Unsuccessful",
             detail:
               "The selected Department: " +
-              dep_id +
+              dep_name +
               " could not be deleted!\n Check if you have admin rights",
             life: 3000,
           });

@@ -1,17 +1,19 @@
 <template>
-  <div>
+  <div v-if="admin === 'true'">
     <div class="banner-head banner-image p-shadow-14"></div>
     <div class="page-background">
       <div class="container-xxl main-page p-shadow-14">
         <h1 style="text-align: left; font-size: 38px">Data Health</h1>
         <div class="component-card">
-          <Steps :model="items" :readonly="true" />
+          <!-- <Steps :model="items" :readonly="true" /> -->
           <router-view
             v-slot="{ Component }"
             :selected_dataset_id="selected_dataset_id"
             :selected_dataset_label="selected_dataset_label"
             @prev-page="prevPage($event)"
             @next-page="nextPage($event)"
+            @update="update_architecture_view($event)"
+            :key="componentKey"
           >
             <keep-alive>
               <div class="component-card">
@@ -22,14 +24,38 @@
         </div>
       </div>
     </div>
+    <transition class="modal-animation">
+      <modal-view v-if="showUpdateArchitectureView" @close="refreshData()">
+        <template v-slot:header>Update Architecture View</template>
+        <template v-slot:body>
+          <update-architecture-view
+            :architecture_view="selected_architecture_view"
+            :selected_dataset_id="selected_dataset_id"
+            :selected_dataset_label="selected_dataset_label"
+            @close="refreshData()"
+          >
+          </update-architecture-view>
+        </template>
+      </modal-view>
+    </transition>
   </div>
 </template>
 <script>
+import UpdateArchitectureView from "../components/InputForms/UpdateArchitectureView.vue";
+import Modal from "../components/Modal.vue";
+
 export default {
+  components: {
+    "modal-view": Modal,
+    "update-architecture-view": UpdateArchitectureView,
+  },
   data() {
     return {
+      admin: localStorage.admin,
       selected_dataset: "",
+      selected_architecture_view: "",
       componentKey: 0,
+      showUpdateArchitectureView: false,
       items: [
         {
           label: "Select Dataset",
@@ -53,6 +79,17 @@ export default {
     },
     toggleShowAnalyzerSelector() {
       this.showAnalyzerSelector = !this.showAnalyzerSelector;
+    },
+    toggleShowUpdateArchitectureView() {
+      this.showUpdateArchitectureView = !this.showUpdateArchitectureView;
+    },
+    update_architecture_view(architecture_view) {
+      this.selected_architecture_view = architecture_view;
+      this.toggleShowUpdateArchitectureView();
+    },
+    refreshData() {
+      this.componentKey += 1;
+      this.showUpdateArchitectureView = false;
     },
     updateSelectedDataset(value) {
       this.selected_dataset = value;

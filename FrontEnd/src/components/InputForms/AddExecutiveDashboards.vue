@@ -30,6 +30,40 @@
 
       <div class="p-grid p-fluid">
         <div class="p-col-12 p-md-12">
+          <Fieldset
+            legend="Define Dashboard's Dataset basis"
+            :toggleable="true"
+          >
+            <div class="p-col-12 p-md-12">
+              <div class="p-inputgroup">
+                <span class="p-inputgroup-addon">
+                  <i class="pi pi-database"></i>
+                </span>
+                <Dropdown
+                  v-model="selected_dataset_choice_rule"
+                  :options="dataset_choice_rules"
+                  :filter="true"
+                  optionLabel="dataset_choice_rule.name"
+                  placeholder="Select Dataset Rule"
+                  filterPlaceholder="Find Dataset Rules"
+                  @change="show_dataset_options()"
+                />
+              </div>
+            </div>
+            <select-dataset-choice-rule-specific
+              v-if="show_dataset_choice_rule_specific"
+              @input-dataset="assign_dataset_specific($event)"
+            ></select-dataset-choice-rule-specific>
+            <select-dataset-choice-rule-recent
+              v-if="show_dataset_choice_rule_recent_label"
+              @input-label="assign_dataset_recent_label($event)"
+            ></select-dataset-choice-rule-recent>
+          </Fieldset>
+        </div>
+      </div>
+
+      <div class="p-grid p-fluid">
+        <div class="p-col-12 p-md-12">
           <div class="p-inputgroup">
             <span class="p-inputgroup-addon">
               <i class="pi pi-users"></i>
@@ -87,20 +121,75 @@
 </template>
 
 <script>
+import SelectDatasetChoiceRuleSpecific from "./HelperComponents/SelectDatasetChoiceRuleSpecific.vue";
+import SelectDatasetChoiceRuleRecent from "./HelperComponents/SelectDatasetChoiceRuleRecent.vue";
+
 export default {
+  components: {
+    "select-dataset-choice-rule-specific": SelectDatasetChoiceRuleSpecific,
+    "select-dataset-choice-rule-recent": SelectDatasetChoiceRuleRecent,
+  },
   data() {
     return {
       name: "",
       description: "",
       users: this.getUsersOptions(),
       departments: this.getDepartmentsOptions(),
+      dataset_choice_rules: this.getDatasetChoiceRulesOptions(),
+      visualization_rights: this.getVisualizationRightsOptions(),
       selected_users: "",
       selected_departments: "",
+      selected_dataset_choice_rule: "",
       formData: "",
       submitted: false,
+      show_dataset_choice_rule_specific: false,
+      show_dataset_choice_rule_recent_label: false,
+      selected_dataset_id: "",
+      selected_dataset_label: "",
+      selected_visualization_right: "",
     };
   },
   methods: {
+    assign_dataset_specific(selected_dataset) {
+      this.selected_dataset_id = selected_dataset.dataset_id;
+      this.selected_dataset_label = selected_dataset.dataset_label;
+    },
+    assign_dataset_recent_label(selected_dataset_label) {
+      this.selected_dataset_label = selected_dataset_label.label.name;
+      this.$axios
+        .get(
+          "/get_newest_dataset_replacement_by_dataset_label/" +
+            this.selected_dataset_label
+        )
+        .then((res) => {
+          this.selected_dataset_id = res.data.dataset_id;
+        });
+    },
+    show_dataset_options() {
+      if (
+        this.selected_dataset_choice_rule.dataset_choice_rule.name ===
+        "Specific Dataset"
+      ) {
+        this.show_dataset_choice_rule_user_choice = false;
+        this.show_dataset_choice_rule_recent_label = false;
+        this.show_dataset_choice_rule_specific =
+          !this.show_dataset_choice_rule_specific;
+      } else if (
+        this.selected_dataset_choice_rule.dataset_choice_rule.name ===
+        "Recent Dataset based on Label"
+      ) {
+        this.show_dataset_choice_rule_specific = false;
+        this.show_dataset_choice_rule_user_choice = false;
+        this.show_dataset_choice_rule_recent_label =
+          !this.show_dataset_choice_rule_recent_label;
+      } else if (
+        this.selected_dataset_choice_rule.dataset_choice_rule.name ===
+        "User's Choice"
+      ) {
+        this.show_dataset_choice_rule_recent_label = false;
+        this.show_dataset_choice_rule_specific = false;
+      }
+    },
     getUsersOptions() {
       this.$axios.get("/users").then((res) => {
         var users_tmp = [];
@@ -108,6 +197,28 @@ export default {
           users_tmp.push({ user: res.data[index] });
         }
         this.users = users_tmp;
+      });
+    },
+    getDatasetChoiceRulesOptions() {
+      this.$axios.get("/get_dataset_choice_rules").then((res) => {
+        var dataset_choice_rules_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          dataset_choice_rules_tmp.push({
+            dataset_choice_rule: res.data[index],
+          });
+        }
+        this.dataset_choice_rules = dataset_choice_rules_tmp;
+      });
+    },
+    getVisualizationRightsOptions() {
+      this.$axios.get("/get_visualization_rights").then((res) => {
+        var visualization_rights_tmp = [];
+        for (let index = 0; index < res.data.length; index++) {
+          visualization_rights_tmp.push({
+            visualization_right: res.data[index],
+          });
+        }
+        this.visualization_rights = visualization_rights_tmp;
       });
     },
     listAllDatasets() {
@@ -149,16 +260,21 @@ export default {
       this.formData.append("name", this.name);
       this.formData.append("description", this.description);
       this.formData.append("plots", "");
-      this.formData.append("dataset", "");
       this.formData.append("access_user_list", this.toString("user"));
       this.formData.append("access_business_unit_list", this.toString("dep"));
+      this.formData.append("dataset_id", this.selected_dataset_id);
+      this.formData.append("dataset_label", this.selected_dataset_label);
+      this.formData.append(
+        "dataset_choice_rule",
+        this.selected_dataset_choice_rule.dataset_choice_rule.name
+      );
+      this.formData.append("visualization_right", "");
       this.$axios
         .post(
           "/create_executive_dashboard?uid=" + localStorage.loggedUser,
           this.formData
         )
-        .then((res) => {
-          console.log(res);
+        .then(() => {
           this.$toast.add({
             severity: "success",
             summary: "Executive Dashboard Creation Successful",

@@ -170,13 +170,25 @@ export default {
         return value;
       }
     },
+    check_user_admin() {
+      this.$axios.get("/user/" + localStorage.loggedUser).then((res) => {
+        if (res.data.admin == 1) {
+          localStorage.admin = true;
+          this.$router.push("/mainmenu-landing-a");
+        } else {
+          localStorage.admin = false;
+          this.$router.push("/mainmenu-landing-u");
+        }
+      });
+    },
     login() {
+      this.email = this.email.toLowerCase();
       this.$axios
         .get("/user/auth?email=" + this.email + "&passwd=" + this.password)
         .then((res) => {
-          this.users = res.data;
-          this.allUsers = res.data;
           localStorage.token = res.data.token;
+        })
+        .then(() => {
           this.$axios.get("/users").then((res) => {
             this.users = res.data;
             localStorage.loggedUser = this.users.filter(
@@ -191,11 +203,10 @@ export default {
                   life: 3000,
                 });
                 this.users = null;
-                this.$router.push("/mainmenu");
+                this.check_user_admin();
               }
             }
           });
-          this.$router.push("/");
         })
         .catch(() => {
           this.$toast.add({
@@ -204,6 +215,7 @@ export default {
             detail: "The entered Email or Password is wrong",
             life: 3000,
           });
+          this.$router.push("/");
         });
     },
   },
@@ -511,98 +523,4 @@ footer a {
   z-index: 2;
   margin-top: calc(10%);
 }
-
-/*
-
-.header div {
-  float: left;
-  color: #fff;
-  font-family: "Exo", sans-serif;
-  font-size: 35px;
-  font-weight: 200;
-}
-
-.header div span {
-  color: #5379fa !important;
-}
-
-
-
-.login {
-  position: absolute;
-  top: calc(48% - 75px);
-  left: calc(50% - 50px);
-  height: 150px;
-  width: 350px;
-  padding: 10px;
-  z-index: 2;
-}
-
-.login input[type="text"] {
-  width: 250px;
-  height: 30px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 2px;
-  color: #fff;
-  font-family: "Exo", sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 4px;
-}
-
-.login input[type="password"] {
-  width: 250px;
-  height: 30px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 2px;
-  color: #fff;
-  font-family: "Exo", sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 4px;
-  margin-top: 10px;
-}
-
-button {
-  width: 250px;
-  height: 35px;
-  background: #fff;
-  border: 1px solid #fff;
-  cursor: pointer;
-  border-radius: 2px;
-  color: #a18d6c;
-  font-family: "Exo", sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 6px;
-  margin-top: 10px;
-}
-
-button:hover {
-  opacity: 0.8;
-}
-
-.login input[type="text"]:focus {
-  outline: none;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-}
-
-.login input[type="password"]:focus {
-  outline: none;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-}
-
-.login input[type="button"]:focus {
-  outline: none;
-}
-
-::-webkit-input-placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-::-moz-input-placeholder {
-  color: rgba(255, 255, 255, 0.6);
-} */
 </style>

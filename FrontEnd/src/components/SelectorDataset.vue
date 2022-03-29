@@ -5,12 +5,9 @@
       Select the Dataset you want to analyze
     </template>
     <template v-slot:content>
-      <div class="p-fluid">
-        <div class="p-field"></div>
-      </div>
       <CascadeSelect
-        v-model="selected_dataset_v2"
-        :options="datasets_v2"
+        v-model="selected_dataset"
+        :options="datasets"
         optionLabel="dataset_desc"
         optionGroupLabel="label"
         :optionGroupChildren="['dataset']"
@@ -19,35 +16,49 @@
       />
     </template>
     <template v-slot:footer>
-      <div class="p-grid p-nogutter p-justify-between">
-        <i></i>
-        <Button
-          label="Next"
-          @click="nextPage()"
-          icon="pi pi-angle-right"
-          iconPos="right"
-        />
-      </div>
+      <customazible-button
+        @button-click="nextPage()"
+        altLabel="Next"
+        altClass="p-flex p-justify-content-center"
+        altButtonStyle="min-width: 100%"
+        altIcon="pi pi-arrow-circle-right"
+        altIconPos="right"
+      ></customazible-button>
     </template>
   </Card>
 </template>
 
 <script>
+import CustomazibleButton from "./HelperComponents/CustomazibleButton.vue";
+
 export default {
+  components: {
+    "customazible-button": CustomazibleButton,
+  },
   data() {
     return {
-      selected_dataset_v2: "",
-      datasets_v2: this.getDatasetOptions_v2(),
-      label_desc: "",
+      selected_dataset: "",
+      datasets: this.getDatasetOptions(),
     };
   },
+
   methods: {
     nextPage() {
-      if (this.selected_dataset_v2 !== "") {
+      if (this.selected_dataset !== "") {
         var selected_dataset_selector = {};
         selected_dataset_selector["dataset_id"] =
-          this.selected_dataset_v2.dataset_desc.split("ID: ")[1];
-        selected_dataset_selector["dataset_label"] = this.label_desc;
+          this.selected_dataset.dataset_desc
+            .split("ID: ")[1]
+            .substring(
+              0,
+              this.selected_dataset.dataset_desc.split("ID: ")[1].indexOf(" ")
+            );
+        selected_dataset_selector["dataset_label"] =
+          this.selected_dataset.dataset_desc.split("Label: ")[1];
+        localStorage.selected_dataset_id =
+          selected_dataset_selector["dataset_id"];
+        localStorage.selected_dataset_label =
+          selected_dataset_selector["dataset_label"];
         this.$emit("next-page", {
           selected_dataset: selected_dataset_selector,
           pageIndex: 0,
@@ -61,7 +72,7 @@ export default {
         });
       }
     },
-    getDatasetOptions_v2() {
+    getDatasetOptions() {
       this.$axios
         .get("/get_datasets_only_name/" + localStorage.loggedUser)
         .then((res) => {
@@ -87,34 +98,22 @@ export default {
             var index_dataset_tmp = datasets_tmp_plain_list.indexOf(
               label_prefix + res.data.data[index]["label"]
             );
-            if (index === 0) {
-              datasets_tmp[index_dataset_tmp]["dataset"].push({
-                dataset_desc:
-                  "Dataset: " +
-                  res.data.data[index]["name"] +
-                  "   |   " +
-                  "NEWEST" +
-                  "   |   " +
-                  "ID: " +
-                  res.data.data[index]["dataset_id"],
-              });
-              this.label_desc = res.data.data[index]["label"];
-            } else {
-              datasets_tmp[index_dataset_tmp]["dataset"].push({
-                dataset_desc:
-                  "Dataset: " +
-                  res.data.data[index]["name"] +
-                  "   |   " +
-                  "Created: " +
-                  res.data.data[index]["creation_date"].split(",")[1] +
-                  "   |   " +
-                  "ID: " +
-                  res.data.data[index]["dataset_id"],
-              });
-              this.label_desc = res.data.data[index]["label"];
-            }
+            datasets_tmp[index_dataset_tmp]["dataset"].push({
+              dataset_desc:
+                "Dataset: " +
+                res.data.data[index]["name"] +
+                "   |   " +
+                "Created: " +
+                res.data.data[index]["creation_date"].split(",")[1] +
+                "   |   " +
+                "ID: " +
+                res.data.data[index]["dataset_id"] +
+                "   |   " +
+                "Label: " +
+                res.data.data[index]["label"],
+            });
           }
-          this.datasets_v2 = datasets_tmp;
+          this.datasets = datasets_tmp;
         });
     },
   },

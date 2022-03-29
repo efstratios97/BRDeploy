@@ -50,25 +50,19 @@
       style="min-width: auto"
     >
     </Column>
-    <Column
-      field="role_manager"
-      header="Role Manager"
-      sortable
-      style="min-width: auto"
-    >
-    </Column>
     <Column field="admin" header="Admin" sortable style="min-width: auto">
     </Column>
     <Column header="Ad hoc Operations" style="min-width: auto">
       <template #body>
-        <div class="btn-align-td">
-          <button
-            v-on:click="deleteUser(this.selected_user.user_id)"
-            class="btn btn-secondary"
-            v-tooltip="'Select User first'"
-          >
-            <b-icon-trash-fill />
-          </button>
+        <div>
+          <SpeedDial
+            :model="items"
+            :radius="50"
+            direction="right"
+            type="right"
+            buttonClass="p-button-secondary"
+            style="position: relative"
+          />
         </div>
         <ProgressBar mode="indeterminate" v-if="user_operations" /> </template
     ></Column>
@@ -82,9 +76,37 @@ export default {
       users: this.listUsers(),
       selected_user: "",
       user_operations: false,
+      items: [
+        {
+          label: "Delete",
+          icon: "pi pi-trash",
+          command: () => {
+            this.deleteUser(this.selected_user.user_id);
+          },
+        },
+        {
+          label: "Update",
+          icon: "pi pi-refresh",
+          command: () => {
+            this.updateUser(this.selected_user);
+          },
+        },
+      ],
     };
   },
   methods: {
+    updateUser(user) {
+      if (user.user_id === undefined) {
+        this.$toast.add({
+          severity: "warn",
+          summary: "No User selected",
+          detail: "Please select User first",
+          life: 3000,
+        });
+      } else {
+        this.$emit("update", user);
+      }
+    },
     deleteUser(user_id) {
       if (user_id === undefined) {
         this.$toast.add({
@@ -101,36 +123,39 @@ export default {
           detail: "This may take a few minutes depending on User's datasets",
           life: 8000,
         });
+        const issued_user = localStorage.loggedUser;
+        this.$axios
+          .delete("/delete_user/" + user_id + "/" + issued_user)
+          .then(() => {
+            this.listUsers();
+            if (user_id === issued_user) {
+              this.logout();
+            }
+            if (this.user_operations === true) {
+              this.$toast.add({
+                severity: "success",
+                summary: "User Deletion Successful",
+                detail: "The selected User: " + user_id + " was deleted",
+                life: 3000,
+              });
+            }
+            this.user_operations = false;
+            this.selected_user = "";
+          })
+          .catch(() => {
+            if (
+              user_id === issued_user &&
+              Object.keys(this.users).length !== 1
+            ) {
+              this.logout();
+            }
+            this.user_operations = false;
+            this.user_operations = false;
+            this.selected_user = "";
+            this.listUsers();
+            this.checkSuccessDeletion(user_id);
+          });
       }
-      const issued_user = localStorage.loggedUser;
-      this.$axios
-        .delete("/delete_user/" + user_id + "/" + issued_user)
-        .then(() => {
-          this.listUsers();
-          if (user_id === issued_user) {
-            this.logout();
-          }
-          if (this.user_operations === true) {
-            this.$toast.add({
-              severity: "success",
-              summary: "User Deletion Successful",
-              detail: "The selected User: " + user_id + " was deleted",
-              life: 3000,
-            });
-          }
-          this.user_operations = false;
-          this.selected_user = "";
-        })
-        .catch(() => {
-          if (user_id === issued_user && Object.keys(this.users).length !== 1) {
-            this.logout();
-          }
-          this.user_operations = false;
-          this.user_operations = false;
-          this.selected_user = "";
-          this.listUsers();
-          this.checkSuccessDeletion(user_id);
-        });
     },
     checkSuccessDeletion(user_id) {
       if (user_id !== undefined && Object.keys(this.users).length !== 1) {

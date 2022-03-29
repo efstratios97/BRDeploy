@@ -6,14 +6,18 @@ Description: SQL Statements for creating the Database Architecture
 '''
 
 import Utils.Settings as st
+import json
 
 
 class DataBaseSQL:
 
     # Returns SQL statement for creating the DataSet Table
-    def create_DataSet_table_sql(self, archive=False):
+    def create_DataSet_table_sql(self, archive=False, archive_uploads=False):
         if archive:
             table_name = st.TABLE_DATASET_ARCHIVE
+            col_dataset_id = st.ARCHIVE_ID_PREFIX + st.TB_DATASET_COL_DATASET_ID
+        elif archive_uploads:
+            table_name = st.TABLE_DATASET_UPLOAD_ARCHIVE
             col_dataset_id = st.ARCHIVE_ID_PREFIX + st.TB_DATASET_COL_DATASET_ID
         else:
             table_name = st.TABLE_DATASET
@@ -112,14 +116,19 @@ class DataBaseSQL:
                + '{col_ACCESS_USER_LIST} TEXT(65535) NOT NULL,'
                + '{col_ACCESS_BUSINESS_UNIT_LIST} TEXT(65535) NOT NULL,'
                + '{col_PLOTS} TEXT(65535) NOT NULL,'
-               + '{col_DATASET} VARCHAR(255) NOT NULL,'
+               + '{col_DATASET_ID} VARCHAR(255) NOT NULL,'
+               + '{col_DATASET_LABEL} VARCHAR(255) NOT NULL,'
+               + '{col_DATASET_CHOICE_RULE} VARCHAR(255) NOT NULL,'
+               + '{col_VISUALIZATION_RIGHT} VARCHAR(255) NOT NULL,'
                + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
         sql = sql.format(table=st.TABLE_EXECUTIVE_DASHBOARDS, col_EXECUTIVE_DASHBOARD_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
                          col_NAME=st.TB_EXECUTIVE_DASHBOARDS_COL_NAME,
                          col_DESCRIPTION=st.TB_EXECUTIVE_DASHBOARDS_COL_DESCRIPTION,
                          col_ACCESS_USER_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_USER_LIST,
                          col_ACCESS_BUSINESS_UNIT_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_BUSINESS_UNIT_LIST,
-                         col_PLOTS=st.TB_EXECUTIVE_DASHBOARDS_COL_PLOTS, col_DATASET=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET,
+                         col_PLOTS=st.TB_EXECUTIVE_DASHBOARDS_COL_PLOTS, col_DATASET_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET_ID,
+                         col_DATASET_LABEL=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET_LABEL, col_DATASET_CHOICE_RULE=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET_CHOICE_RULE,
+                         col_VISUALIZATION_RIGHT=st.TB_EXECUTIVE_DASHBOARDS_COL_VISUALIZATION_RIGHT,
                          col_CREATED_AT=st.TB_EXECUTIVE_DASHBOARDS_COL_CREATED_AT)
         return sql
 
@@ -127,34 +136,18 @@ class DataBaseSQL:
     def create_Plots_table_sql(self):
         sql = ('CREATE TABLE IF NOT EXISTS {table} ('
                + '{col_PLOT_ID} VARCHAR(255) PRIMARY KEY,'
-               + '{col_TITLE} VARCHAR(512) NOT NULL,'
-               + '{col_SUBTITLE} TEXT(65535),'
-               + '{col_LEGEND_SHOW} INT NOT NULL DEFAULT 0,'
-               + '{col_DATASET_ID_FOR_CHART} VARCHAR(255) NOT NULL,'
-               + '{col_CHART_LABEL} VARCHAR(255) NOT NULL,'
-               + '{col_CHART_TYPE} VARCHAR(255) NOT NULL,'
-               + '{col_CHART_WIDTH} VARCHAR(255) NOT NULL DEFAULT "150%",'
-               + '{col_CHART_HEIGHT} VARCHAR(255) NOT NULL DEFAULT "150%",'
-               + '{col_XAXIS_CATEGORIES} TEXT(65535),'
-               + '{col_INPUT_FIELDS} INT NOT NULL DEFAULT 0,'
-               + '{col_INPUT_FIELDS_ID} VARCHAR(255) NOT NULL,'
-               + '{col_EMPTY_FIELD} VARCHAR(255),'
-               + '{col_EMPTY_FIELD_2} VARCHAR(255),'
+               + '{col_FORMDATA} TEXT(4294967295) NOT NULL,'
+               + '{col_GROUPED} VARCHAR(255) NOT NULL,'
+               + '{col_VISUALIZATION_TYPE} VARCHAR(512) NOT NULL,'
+               + '{col_VISUALIZATION_RIGHT} VARCHAR(512) NOT NULL,'
+               + '{col_COMPONENT_NAME} VARCHAR(255) NOT NULL,'
                + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
         sql = sql.format(table=st.TABLE_PLOTS, col_PLOT_ID=st.TB_PLOTS_COL_ID,
-                         col_TITLE=st.TB_PLOTS_COL_TITLE,
-                         col_SUBTITLE=st.TB_PLOTS_COL_SUBTITLE,
-                         col_LEGEND_SHOW=st.TB_PLOTS_COL_LEGEND_SHOW,
-                         col_DATASET_ID_FOR_CHART=st.TB_PLOTS_COL_DATASET_ID_FOR_CHART,
-                         col_CHART_LABEL=st.TB_PLOTS_COL_DATASET_LABEL,
-                         col_CHART_TYPE=st.TB_PLOTS_COL_CHART_TYPE,
-                         col_CHART_WIDTH=st.TB_PLOTS_COL_CHART_WIDTH,
-                         col_CHART_HEIGHT=st.TB_PLOTS_COL_CHART_HEIGHT,
-                         col_XAXIS_CATEGORIES=st.TB_PLOTS_COL_XAXIS_CATEGORIES,
-                         col_INPUT_FIELDS=st.TB_PLOTS_COL_INPUT_FIELDS,
-                         col_INPUT_FIELDS_ID=st.TB_PLOTS_COL_INPUT_FIELDS_ID,
-                         col_EMPTY_FIELD=st.TB_PLOTS_COL_EMPTY_FIELD,
-                         col_EMPTY_FIELD_2=st.TB_PLOTS_COL_EMPTY_FIELD_2,
+                         col_FORMDATA=st.TB_PLOTS_COL_FORMDATA,
+                         col_GROUPED=st.TB_PLOTS_COL_GROUPED,
+                         col_VISUALIZATION_TYPE=st.TB_PLOTS_COL_VISUALIZATION_TYPE,
+                         col_VISUALIZATION_RIGHT=st.TB_PLOTS_COL_VISUALIZATION_RIGHT,
+                         col_COMPONENT_NAME=st.TB_PLOTS_COL_COMPONENT_NAME,
                          col_CREATED_AT=st.TB_PLOTS_COL_CREATED_AT)
         return sql
 
@@ -240,6 +233,28 @@ class DataBaseSQL:
         sql = sql.format(table=st.TABLE_KPI_CATEGORY_TYPE, col_CATEGORY_TYPE_ID=st.TB_KPI_CATEGORY_TYPE_COL_ID,
                          col_NAME=st.TB_KPI_CATEGORY_TYPE_COL_NAME,
                          col_CREATED_AT=st.TB_KPI_COL_CREATED_AT)
+        return sql
+
+    def create_dataset_choice_rule_table_sql(self):
+        sql = ('CREATE TABLE IF NOT EXISTS {table} ('
+               + '{col_DATA_CHOICE_RULE_ID} VARCHAR(255) NOT NULL PRIMARY KEY,'
+               + '{col_NAME} VARCHAR(512) NOT NULL UNIQUE,'
+               + '{col_DESCRIPTION} TEXT(65535),'
+               + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
+        sql = sql.format(table=st.TABLE_DATASET_CHOICE_RULE, col_DATA_CHOICE_RULE_ID=st.TB_DATASET_CHOICE_RULE_COL_ID,
+                         col_NAME=st.TB_DATASET_CHOICE_RULE_COL_NAME, col_DESCRIPTION=st.TB_DATASET_CHOICE_RULE_COL_DESCRIPTION,
+                         col_CREATED_AT=st.TB_DATASET_CHOICE_RULE_COL_CREATED_AT)
+        return sql
+
+    def create_visualization_right_table_sql(self):
+        sql = ('CREATE TABLE IF NOT EXISTS {table} ('
+               + '{col_VISUALIZATION_RIGHT_ID} VARCHAR(255) NOT NULL PRIMARY KEY,'
+               + '{col_NAME} VARCHAR(512) NOT NULL UNIQUE,'
+               + '{col_DESCRIPTION} TEXT(65535),'
+               + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
+        sql = sql.format(table=st.TABLE_VISUALIZATION_RIGHT, col_VISUALIZATION_RIGHT_ID=st.TB_VISUALIZATION_RIGHT_COL_ID,
+                         col_NAME=st.TB_VISUALIZATION_RIGHT_COL_NAME, col_DESCRIPTION=st.TB_VISUALIZATION_RIGHT_COL_DESCRIPTION,
+                         col_CREATED_AT=st.TB_VISUALIZATION_RIGHT_COL_CREATED_AT)
         return sql
 
     def create_Result_table_sql(self, table_name):
@@ -498,65 +513,57 @@ class DataBaseSQL:
     # Returns SQL statement for inserting a executive_dashboard in executive_dashboard table
     def insert_executive_dashboard_values(self, executive_dashboard_id, executive_dashboard_name,
                                           executive_dashboard_description, access_user_list, access_business_unit_list,
-                                          executive_dashboard_plots, dataset_id):
+                                          executive_dashboard_plots, dataset_id, dataset_label, dataset_choice_rule, visualization_right=""):
         sql = ('INSERT INTO {table} ({col_ID}, {col_NAME}, {col_DESCRIPTION}, {col_ACCESS_USER_LIST},'
-               + '{col_ACCESS_BUSINESS_UNIT_LIST}, {col_PLOTS}, {col_DATASET}) '
+               + '{col_ACCESS_BUSINESS_UNIT_LIST}, {col_PLOTS}, {col_DATASET_ID}, {col_DATASET_LABEL},'
+               + '{col_DATASET_CHOICE_RULE}, {col_VISUALIZATION_RIGHT}) '
                + 'VALUES ("{EXECUTIVE_DASHBOARD_ID}", "{NAME}", "{DESCRIPTION}", "{ACCESS_USER_LIST}",'
-               + '"{ACCESS_BUSINESS_UNIT_LIST}" , "{EXECUTIVE_DASHBOARD_COMPONENTS}", "{EXECUTIVE_DASHBOARD_DATASET}");')
+               + '"{ACCESS_BUSINESS_UNIT_LIST}" , "{EXECUTIVE_DASHBOARD_COMPONENTS}", "{EXECUTIVE_DASHBOARD_DATASET_ID}",'
+               + '"{EXECUTIVE_DASHBOARD_DATASET_LABEL}", "{EXECUTIVE_DASHBOARD_DATASET_CHOICE_RULE}", "{EXECUTIVE_DASHBOARD_VISUALIZATION_RIGHT}"); ')
         sql = sql.format(table=st.TABLE_EXECUTIVE_DASHBOARDS, col_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_ID,
                          col_NAME=st.TB_EXECUTIVE_DASHBOARDS_COL_NAME,
                          col_DESCRIPTION=st.TB_EXECUTIVE_DASHBOARDS_COL_DESCRIPTION,
                          col_ACCESS_USER_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_USER_LIST,
                          col_ACCESS_BUSINESS_UNIT_LIST=st.TB_EXECUTIVE_DASHBOARDS_COL_ACCESS_BUSINESS_UNIT_LIST,
                          col_PLOTS=st.TB_EXECUTIVE_DASHBOARDS_COL_PLOTS,
-                         col_DATASET=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET,
+                         col_DATASET_ID=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET_ID,
+                         col_DATASET_LABEL=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET_LABEL,
+                         col_DATASET_CHOICE_RULE=st.TB_EXECUTIVE_DASHBOARDS_COL_DATASET_CHOICE_RULE,
+                         col_VISUALIZATION_RIGHT=st.TB_EXECUTIVE_DASHBOARDS_COL_VISUALIZATION_RIGHT,
                          EXECUTIVE_DASHBOARD_ID=executive_dashboard_id, NAME=executive_dashboard_name,
                          DESCRIPTION=executive_dashboard_description, ACCESS_USER_LIST=access_user_list,
                          ACCESS_BUSINESS_UNIT_LIST=access_business_unit_list,
                          EXECUTIVE_DASHBOARD_COMPONENTS=executive_dashboard_plots,
-                         EXECUTIVE_DASHBOARD_DATASET=dataset_id)
+                         EXECUTIVE_DASHBOARD_DATASET_ID=dataset_id, EXECUTIVE_DASHBOARD_DATASET_LABEL=dataset_label,
+                         EXECUTIVE_DASHBOARD_DATASET_CHOICE_RULE=dataset_choice_rule,
+                         EXECUTIVE_DASHBOARD_VISUALIZATION_RIGHT=visualization_right)
         return sql
 
     # Returns SQL statement for inserting a executive_dashboard in executive_dashboard table
-    def insert_plots_values(self, plot_id, plot_title, plot_subtitle,
-                            plot_show_legend, plot_dataset_id_for_chart,
-                            plot_dataset_label, plot_chart_type, plot_chart_width,
-                            plot_chart_height, plot_xaxis_categories, plot_input_fields,
-                            plot_input_fields_id, plot_empty_field="", plot_empty_field_2=""):
-        sql = ('INSERT INTO {table} ({col_ID}, {COL_TITLE}, {COL_SUBTITLE}, {COL_LEGEND_SHOW},'
-               + '{COL_DATASET_ID_FOR_CHART}, {COL_DATASET_LABEL}, {COL_CHART_TYPE},'
-               + '{COL_CHART_WIDTH}, {COL_CHART_HEIGHT}, {COL_XAXIS_CATEGORIES}, '
-               + '{COL_INPUT_FIELDS}, {COL_INPUT_FIELDS_ID}, {COL_EMPTY_FIELD}, {COL_EMPTY_FIELD_2}) '
-               + 'VALUES ("{PLOT_ID}", "{TITLE}", "{SUBTITLE}","{LEGENG_SHOW}", "{DATASET_ID_FOR_CHART}", "{DATASET_LABEL}","{CHART_TYPE}",'
-               + ' "{CHART_WIDTH}", "{CHART_HEIGHT}","{XAXIS_CATEGORIES}", "{INPUT_FIELDS}", "{INPUT_FIELDS_ID}", "{EMPTY_FIELD}", "{EMPTY_FIELD_2}");')
+    def insert_plots_values(self, plot_id, formdata, grouped, visualization_type, visualization_right, component_name):
+        sql = ('INSERT INTO {table} ({col_ID}, {COL_FORMDATA}, {COL_GROUPED}, {COL_VISUALIZATION_TYPE},'
+               + '{COL_VISUALIZATION_RIGHT}, {COL_COMPONENT_NAME}) '
+               + 'VALUES ("{PLOT_ID}",' + "'" + "{FORMDATA}" + "'" + ',"{GROUPED}","{VISUALIZATION_TYPE}","{VISUALIZATION_RIGHT}","{COMPONENT_NAME}");')
         sql = sql.format(table=st.TABLE_PLOTS, col_ID=st.TB_PLOTS_COL_ID,
-                         COL_TITLE=st.TB_PLOTS_COL_TITLE,
-                         COL_SUBTITLE=st.TB_PLOTS_COL_SUBTITLE,
-                         COL_LEGEND_SHOW=st.TB_PLOTS_COL_LEGEND_SHOW,
-                         COL_DATASET_ID_FOR_CHART=st.TB_PLOTS_COL_DATASET_ID_FOR_CHART,
-                         COL_DATASET_LABEL=st.TB_PLOTS_COL_DATASET_LABEL,
-                         COL_CHART_TYPE=st.TB_PLOTS_COL_CHART_TYPE,
-                         COL_CHART_WIDTH=st.TB_PLOTS_COL_CHART_WIDTH,
-                         COL_CHART_HEIGHT=st.TB_PLOTS_COL_CHART_HEIGHT,
-                         COL_XAXIS_CATEGORIES=st.TB_PLOTS_COL_XAXIS_CATEGORIES,
-                         COL_INPUT_FIELDS=st.TB_PLOTS_COL_INPUT_FIELDS,
-                         COL_INPUT_FIELDS_ID=st.TB_PLOTS_COL_INPUT_FIELDS_ID,
-                         COL_EMPTY_FIELD=st.TB_PLOTS_COL_EMPTY_FIELD,
-                         COL_EMPTY_FIELD_2=st.TB_PLOTS_COL_EMPTY_FIELD_2,
-                         PLOT_ID=plot_id, TITLE=plot_title,
-                         SUBTITLE=plot_subtitle, LEGENG_SHOW=plot_show_legend,
-                         DATASET_ID_FOR_CHART=plot_dataset_id_for_chart, DATASET_LABEL=plot_dataset_label,
-                         CHART_TYPE=plot_chart_type, CHART_WIDTH=plot_chart_width,
-                         CHART_HEIGHT=plot_chart_height, XAXIS_CATEGORIES=plot_xaxis_categories,
-                         INPUT_FIELDS=plot_input_fields, INPUT_FIELDS_ID=plot_input_fields_id,
-                         EMPTY_FIELD=plot_empty_field, EMPTY_FIELD_2=plot_empty_field_2)
+                         COL_FORMDATA=st.TB_PLOTS_COL_FORMDATA,
+                         COL_GROUPED=st.TB_PLOTS_COL_GROUPED,
+                         COL_VISUALIZATION_TYPE=st.TB_PLOTS_COL_VISUALIZATION_TYPE,
+                         COL_VISUALIZATION_RIGHT=st.TB_PLOTS_COL_VISUALIZATION_RIGHT,
+                         COL_COMPONENT_NAME=st.TB_PLOTS_COL_COMPONENT_NAME,
+                         PLOT_ID=plot_id, FORMDATA=formdata,
+                         GROUPED=grouped, VISUALIZATION_TYPE=visualization_type,
+                         VISUALIZATION_RIGHT=visualization_right, COMPONENT_NAME=component_name)
         return sql
 
     # Returns SQL statement for inserting a datasets in dataset table
     def insert_datasets_values(self, dataset_id, name, owner, hash_of_dataset, size,
-                               cleaned, access_user_list, access_business_unit_list, description, storage_type, label, archive=False):
+                               cleaned, access_user_list, access_business_unit_list, description, storage_type, label,
+                               archive=False, archive_uploads=False):
         if archive:
             table_name = st.TABLE_DATASET_ARCHIVE
+            col_dataset_id = st.ARCHIVE_ID_PREFIX + st.TB_DATASET_COL_DATASET_ID
+        elif archive_uploads:
+            table_name = st.TABLE_DATASET_UPLOAD_ARCHIVE
             col_dataset_id = st.ARCHIVE_ID_PREFIX + st.TB_DATASET_COL_DATASET_ID
         else:
             table_name = st.TABLE_DATASET
@@ -616,6 +623,7 @@ class DataBaseSQL:
 
     def insert_aspect_values(self, aspect_id, name, description, raw_components_from_dataset, skala_size,
                              weight, threshold, operation_type, formula, dataset_id, dataset_labels, kpi_family):
+        print(raw_components_from_dataset)
         sql = ('INSERT INTO {table} ({col_ASPECT_ID}, {col_NAME}, {col_DESCRIPTION}, {col_RAW_COMPONENTS_FROM_DATASET}, {col_SKALA_SIZE},'
                + '{col_WEIGHT}, {col_THRESHOLD}, {col_OPERATION_TYPE}, {col_FORMULA}, {col_DATASET_ID}, {col_DATASET_LABELS}, {col_KPI_FAMILY}) '
                + 'VALUES ("{ASPECT_ID}", "{NAME}", "{DESCRIPION}", "{RAW_COMPONENTS_FROM_DATASET}", "{SKALA_SIZE}",'
@@ -647,6 +655,22 @@ class DataBaseSQL:
         sql = sql.format(table=st.TABLE_KPI_CATEGORY_TYPE, col_KPI_CATEGORY_TYPE_ID=st.TB_KPI_CATEGORY_TYPE_COL_ID,
                          col_NAME=st.TB_KPI_CATEGORY_TYPE_COL_NAME,
                          KPI_CATEGORY_TYPE_ID=kpi_category_type_id, NAME=name)
+        return sql
+
+    def insert_dataset_choice_rules_values(self, dataset_choice_rule_id, name, description=""):
+        sql = ('INSERT INTO {table} ({col_DATASET_CHOICE_RULE_ID}, {col_NAME}, {col_DESCRIPTION}) '
+               + 'VALUES ("{DATASET_CHOICE_RULE_ID}", "{NAME}", "{DESCRIPTION}");')
+        sql = sql.format(table=st.TABLE_DATASET_CHOICE_RULE, col_DATASET_CHOICE_RULE_ID=st.TB_DATASET_CHOICE_RULE_COL_ID,
+                         col_NAME=st.TB_DATASET_CHOICE_RULE_COL_NAME, col_DESCRIPTION=st.TB_DATASET_CHOICE_RULE_COL_DESCRIPTION,
+                         DATASET_CHOICE_RULE_ID=dataset_choice_rule_id, NAME=name, DESCRIPTION=description)
+        return sql
+
+    def insert_visualization_right_values(self, visualization_right_id, name, description=""):
+        sql = ('INSERT INTO {table} ({col_VISUALIZATION_RIGHT_ID}, {col_NAME}, {col_DESCRIPTION}) '
+               + 'VALUES ("{VISUALIZATION_RIGHT_ID}", "{NAME}", "{DESCRIPTION}");')
+        sql = sql.format(table=st.TABLE_VISUALIZATION_RIGHT, col_VISUALIZATION_RIGHT_ID=st.TB_VISUALIZATION_RIGHT_COL_ID,
+                         col_NAME=st.TB_VISUALIZATION_RIGHT_COL_NAME, col_DESCRIPTION=st.TB_VISUALIZATION_RIGHT_COL_DESCRIPTION,
+                         VISUALIZATION_RIGHT_ID=visualization_right_id, NAME=name, DESCRIPTION=description)
         return sql
 
     def insert_result_values(self, result_id, result, table_name):
@@ -741,8 +765,15 @@ class DataBaseSQL:
         elif isinstance(value, list):
             value_as_string = ''
             for val in value:
-                value_as_string += val + ','
-            value = '"{}"'.format(value_as_string[:-1])
+                isString = isinstance(val, str)
+                if isString:
+                    value_as_string += val + ','
+                else:
+                    break
+            if isString:
+                value = '"{}"'.format(value_as_string[:-1])
+            else:
+                value = '"{}"'.format(value)
         if isinstance(condition_value, str):
             condition_value = '"{}"'.format(condition_value)
         if condition:

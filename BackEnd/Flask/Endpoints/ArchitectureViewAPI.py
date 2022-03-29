@@ -41,6 +41,25 @@ def create_architecture_view():
     return fl.jsonify(result), 200
 
 
+@blueprint.route('/update_architecture_view', methods=['POST', 'OPTIONS'])
+def update_architecture_view():
+    result = {}
+    architecture_view_id = fl.request.form['architecture_view_id']
+    name = fl.request.form['name']
+    description = fl.request.form['description']
+    components = fl.request.form['components']
+    architecture_view = avm.ArchitectureViewManager.get_architecture_view_by_id(
+        avm.ArchitectureViewManager, architecture_view_id=architecture_view_id)
+    architecture_view.set_name(name=name)
+    architecture_view.set_description(description=description)
+    architecture_view.set_components(components=components)
+    avm.ArchitectureViewManager.update_architecture_view(
+        avm.ArchitectureViewManager, architecture_view=architecture_view)
+    result = ArchitectureViewManagerEndpoints.architecture_view_to_dict(
+        ArchitectureViewManagerEndpoints, architecture_view=architecture_view)
+    return fl.jsonify(result), 200
+
+
 @blueprint.route('/get_architecture_views', methods=['GET', 'OPTIONS'])
 def get_architecture_views():
     result = {}
@@ -50,10 +69,6 @@ def get_architecture_views():
     for architecture_view in architecture_views:
         result['data'].append(ArchitectureViewManagerEndpoints.architecture_view_to_dict(
             ArchitectureViewManagerEndpoints, architecture_view=architecture_view))
-    return fl.jsonify(result), 200
-    if not result:
-        ArchitectureViewManagerEndpoints.endpoints_exception(ArchitectureViewManagerEndpoints,
-                                                             404, "ARCHITECTURE_VIEW_NOT_FOUND")
     return fl.jsonify(result), 200
 
 
@@ -65,10 +80,6 @@ def get_components(dataset_id):
         avm.ArchitectureViewManager, dataset_id)
     for department in departments:
         result['data'].append(department)
-    return fl.jsonify(result), 200
-    if not result:
-        ArchitectureViewManagerEndpoints.endpoints_exception(ArchitectureViewManagerEndpoints,
-                                                             404, "DEPARTMENTS_NOT_FOUND")
     return fl.jsonify(result), 200
 
 

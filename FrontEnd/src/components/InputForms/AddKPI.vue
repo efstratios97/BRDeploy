@@ -187,12 +187,14 @@
 </template>
 
 <script>
-import AddKPIHelper from "../HelperComponents/AddKPIHelper.vue";
+import AddKPIHelper from "./HelperComponents/AddKPIHelper.vue";
+
 export default {
   components: { "add-kpi-helper": AddKPIHelper },
-  props: ["selected_dataset_id", "selected_dataset_label"],
   data() {
     return {
+      selected_dataset_id: localStorage.selected_dataset_id,
+      selected_dataset_label: localStorage.selected_dataset_label,
       name: "",
       description: "",
       datasets: this.getDatasetOptions(),
@@ -207,7 +209,6 @@ export default {
       selected_formula: "",
       number_components: 1,
       formData: "",
-      id: "_gauge",
       submitted: false,
       selected_color_coding: "",
       color_codings: [
@@ -247,20 +248,8 @@ export default {
       }
     },
     add_further_aspect() {
-      if (
-        this.selected_aspects_weights.length === 0 &&
-        this.number_components !== 0
-      ) {
-        this.$toast.add({
-          severity: "warn",
-          summary: "No Component and/or Category chosen",
-          detail: "Please select first the Component & Category",
-          life: 4500,
-        });
-      } else {
-        this.number_components = this.number_components + 1;
-        this.id = this.id + this.number_components;
-      }
+      this.number_components = this.number_components + 1;
+      this.id = this.id + this.number_components;
     },
     remove_further_aspect() {
       if (this.number_components > 0) {
@@ -288,14 +277,14 @@ export default {
     getLabelsOptions() {
       this.$axios.get("/get_all_labels").then((res) => {
         var labels_tmp = [];
-        for (let index = 0; index < res.data.data.length; index++) {
+        for (let index = 0; index < res.data.length; index++) {
           labels_tmp.push({
             label:
               "NAME: " +
-              res.data.data[index]["name"] +
+              res.data[index]["name"] +
               "   |   " +
               "ID: " +
-              res.data.data[index]["label_id"],
+              res.data[index]["label_id"],
           });
         }
         this.labels = labels_tmp;
@@ -378,7 +367,6 @@ export default {
       ) {
         var str_tmp = this.selected_dataset_labels[index].label;
         str_tmp = str_tmp.split("ID: ")[1];
-        console.log(str_tmp);
         selected_dataset_labels_tmp.push(str_tmp);
       }
       this.selected_dataset_labels = selected_dataset_labels_tmp;

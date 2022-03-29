@@ -1,179 +1,150 @@
 <template>
   <div>
     <TabView class="tabview-custom" ref="tabview4" :key="componentKey">
-      <TabPanel :disabled="disabled">
+      <TabPanel>
         <template #header>
           <b-icon-gear-wide-connected style="font-size: 18px; margin: 3px" />
           <span><h4>KPIDashboardManager</h4></span>
         </template>
-        <span v-if="admin">
-          <div class="p-grid">
-            <div class="p-col">
-              <Card class="component-card">
-                <template v-slot:title> KPIs </template>
-                <template v-slot:subtitle> Manager here your KPIs </template>
-                <template v-slot:content>
-                  <table-kpi
-                    @delete="increaseComponentKey"
-                    :selected_dataset_id="selected_dataset_id"
-                    :selected_dataset_label="selected_dataset_label"
-                  ></table-kpi>
-                </template>
-              </Card>
-            </div>
-            <div class="p-col">
-              <Card class="component-card">
-                <template v-slot:title> Aspects </template>
-                <template v-slot:subtitle> Manager here your Aspects </template>
-                <template v-slot:content>
-                  <table-aspect
-                    @delete="increaseComponentKey"
-                    :selected_dataset_id="selected_dataset_id"
-                    :selected_dataset_label="selected_dataset_label"
-                  ></table-aspect>
-                </template>
-              </Card>
-            </div>
+        <div class="p-grid">
+          <div class="p-col overflow-auto">
+            <Card class="component-card">
+              <template v-slot:title> KPIs </template>
+              <template v-slot:subtitle> Manager here your KPIs </template>
+              <template v-slot:content>
+                <table-kpi
+                  @update="updateKPI($event)"
+                  @delete="increaseComponentKey"
+                  :selected_dataset_id="selected_dataset_id"
+                  :selected_dataset_label="selected_dataset_label"
+                ></table-kpi>
+              </template>
+            </Card>
           </div>
-          <Card class="component-card">
-            <template v-slot:content>
-              <Carousel
-                :value="operationsItems"
-                :numVisible="2"
-                :numScroll="2"
-                :responsiveOptions="responsiveOptions"
-              >
-                <template #header>
-                  <h1 style="text-align: center">Available Operations</h1>
-                </template>
-                <template #item="slotProps">
-                  <div class="operation-item">
-                    <div class="operation-item-content">
-                      <div class="p-mb-3">
-                        <span style="text-align: center">
-                          <span v-html="slotProps.data.operation_img"></span
-                        ></span>
-                      </div>
-                      <h4>{{ slotProps.data.operation_desc }}</h4>
-                      <div
-                        v-html="slotProps.data.operation_button"
-                        @click.capture="toggleShowAddKPI()"
-                        v-if="slotProps.data.operation === 'add_kpi'"
-                      ></div>
-                      <div
-                        v-html="slotProps.data.operation_button"
-                        @click.capture="toggleShowAddAspect()"
-                        v-if="slotProps.data.operation === 'add_aspect'"
-                      ></div>
+          <div class="p-col overflow-auto">
+            <Card class="component-card">
+              <template v-slot:title> Aspects </template>
+              <template v-slot:subtitle> Manager here your Aspects </template>
+              <template v-slot:content>
+                <table-aspect
+                  @update="updateAspect($event)"
+                  @delete="increaseComponentKey"
+                  :selected_dataset_id="selected_dataset_id"
+                  :selected_dataset_label="selected_dataset_label"
+                ></table-aspect>
+              </template>
+            </Card>
+          </div>
+        </div>
+        <Card class="component-card">
+          <template v-slot:content>
+            <Carousel
+              :value="operationsItems"
+              :numVisible="2"
+              :numScroll="2"
+              :responsiveOptions="responsiveOptions"
+            >
+              <template #header>
+                <h1 style="text-align: center">Available Operations</h1>
+              </template>
+              <template #item="slotProps">
+                <div class="operation-item">
+                  <div class="operation-item-content">
+                    <div class="p-mb-3">
+                      <span style="text-align: center">
+                        <span v-html="slotProps.data.operation_img"></span
+                      ></span>
                     </div>
+                    <h4>{{ slotProps.data.operation_desc }}</h4>
+                    <div
+                      v-html="slotProps.data.operation_button"
+                      @click.capture="toggleShowAddKPI()"
+                      v-if="slotProps.data.operation === 'add_kpi'"
+                    ></div>
+                    <div
+                      v-html="slotProps.data.operation_button"
+                      @click.capture="toggleShowAddAspect()"
+                      v-if="slotProps.data.operation === 'add_aspect'"
+                    ></div>
                   </div>
-                </template>
-              </Carousel>
-            </template>
-          </Card>
-        </span>
+                </div>
+              </template>
+            </Carousel>
+          </template>
+        </Card>
       </TabPanel>
       <TabPanel>
         <template #header>
           <b-icon-bar-chart-line style="font-size: 18px; margin: 3px" />
           <span><h4>Aspects Dashboard</h4></span>
         </template>
-        <render-aspects
+        <kpi-aspects
           :selected_dataset_id="selected_dataset_id"
           :selected_dataset_label="selected_dataset_label"
-          :apps="apps"
-          :departments="departments"
-          :domains="domains"
-          selected_apps_aspects=""
-          selected_aspects=""
-        ></render-aspects>
+        ></kpi-aspects>
       </TabPanel>
       <TabPanel>
         <template #header>
           <b-icon-speedometer style="font-size: 18px; margin: 3px" />
           <span><h4>KPI Dashboard</h4></span>
         </template>
-        <render-kpis
+        <kpis
           :selected_dataset_id="selected_dataset_id"
           :selected_dataset_label="selected_dataset_label"
-          :apps="apps"
-          :domains="domains"
-          :departments="departments"
-        ></render-kpis>
+        ></kpis>
       </TabPanel>
       <TabPanel>
         <template #header>
           <b-icon-columns style="font-size: 18px; margin: 3px" />
           <span><h4>KPI Landscape</h4></span>
         </template>
-        <render-app-landscape
+        <kpi-app-landscape
           :selected_dataset_id="selected_dataset_id"
           :selected_dataset_label="selected_dataset_label"
-          :apps="apps"
-          :domains="domains"
-          :departments="departments"
-        ></render-app-landscape>
+        ></kpi-app-landscape>
       </TabPanel>
       <TabPanel>
         <template #header>
           <b-icon-columns style="font-size: 18px; margin: 3px" />
           <span><h4>KPI Application Lifecyle</h4></span>
         </template>
-        <render-life-cycle-kpi
+        <kpi-life-cycle
           :selected_dataset_id="selected_dataset_id"
           :selected_dataset_label="selected_dataset_label"
-          :domains="domains"
-          :departments="departments"
-        ></render-life-cycle-kpi>
-      </TabPanel>
-      <TabPanel>
-        <template #header>
-          <b-icon-speedometer style="font-size: 18px; margin: 3px" />
-          <span><h4>DEMO</h4></span>
-        </template>
-        <demo-sankey> </demo-sankey>
-        <demo-sankey-vertical></demo-sankey-vertical>
-        <demo-drag-node></demo-drag-node>
+        ></kpi-life-cycle>
       </TabPanel>
     </TabView>
-    <div class="p-grid p-nogutter p-justify-between">
-      <Button label="Back" @click="prevPage()" icon="pi pi-angle-left" />
-    </div>
+    <customazible-button
+      @button-click="prevPage()"
+      altLabel="Back"
+      altStyle="margin-top: 10px; margin-bottom: 20px"
+    ></customazible-button>
   </div>
 </template>
 <script>
-import RenderKPIs from "../HelperComponents/RenderKPIs.vue";
-import RenderAspects from "../HelperComponents/RenderAspects.vue";
-import RenderAppLandscape from "../HelperComponents/RenderAppLandscape.vue";
-import RenderLifeCycleKPI from "../HelperComponents/RenderLifeCycleKPI.vue";
+import KPIAppLandscape from "../DashboardComponents/KPIAppLandscape.vue";
+import KPILifeCycle from "../DashboardComponents/KPILifeCycle.vue";
+import KPIAspects from "../DashboardComponents/KPIAspects.vue";
+import KPI from "../DashboardComponents/KPI.vue";
 import TableKPI from "../Tables/TableKPI.vue";
 import TableAspect from "../Tables/TableAspect.vue";
-//Demo
-import DemoSankey from "../Plots/DemoSankey.vue";
-import DemoSankeyVertical from "../Plots/DemoSankeyVertical.vue";
-import DemoDragNode from "../Plots/DemoDragNode.vue";
+import CustomazibleButton from "../HelperComponents/CustomazibleButton.vue";
 
 export default {
   components: {
-    "render-kpis": RenderKPIs,
-    "render-aspects": RenderAspects,
-    "render-app-landscape": RenderAppLandscape,
-    "render-life-cycle-kpi": RenderLifeCycleKPI,
+    kpis: KPI,
+    "kpi-aspects": KPIAspects,
+    "kpi-app-landscape": KPIAppLandscape,
+    "kpi-life-cycle": KPILifeCycle,
     "table-kpi": TableKPI,
     "table-aspect": TableAspect,
-    "demo-sankey": DemoSankey,
-    "demo-sankey-vertical": DemoSankeyVertical,
-    "demo-drag-node": DemoDragNode,
+    "customazible-button": CustomazibleButton,
   },
-  props: ["selected_dataset_id", "selected_dataset_label"],
   data() {
     return {
+      selected_dataset_id: localStorage.selected_dataset_id,
+      selected_dataset_label: localStorage.selected_dataset_label,
       componentKey: 0,
-      disabled: true,
-      admin: this.check_user_admin(),
-      apps: this.getApps(),
-      departments: this.getDatasetDepartmentOptions(),
-      domains: this.getDomainsOptions(),
       operationsItems: [
         {
           operation: "add_kpi",
@@ -199,48 +170,11 @@ export default {
     };
   },
   methods: {
-    getApps() {
-      this.$axios
-        .get("/get_applications/" + this.selected_dataset_id)
-        .then((res) => {
-          var apps_tmp = [];
-          for (let index = 0; index < res.data.length; index++) {
-            apps_tmp.push({ app: res.data[index] });
-          }
-          this.apps = apps_tmp;
-        });
+    updateAspect(aspect) {
+      this.$emit("update-aspect", aspect);
     },
-    getDatasetDepartmentOptions() {
-      this.$axios
-        .get(
-          "/get_departments_from_dataset/" +
-            this.selected_dataset_id +
-            "/" +
-            this.selected_dataset_label
-        )
-        .then((res) => {
-          var departments_tmp = [];
-          for (let index = 0; index < res.data.data.length; index++) {
-            departments_tmp.push({ dep: res.data.data[index] });
-          }
-          this.departments = departments_tmp;
-        });
-    },
-    getDomainsOptions() {
-      this.$axios
-        .get(
-          "/get_domains_from_dataset/" +
-            this.selected_dataset_id +
-            "/" +
-            this.selected_dataset_label
-        )
-        .then((res) => {
-          var domains_tmp = [];
-          for (let index = 0; index < res.data.data.length; index++) {
-            domains_tmp.push({ domain: res.data.data[index] });
-          }
-          this.domains = domains_tmp;
-        });
+    updateKPI(kpi) {
+      this.$emit("update-kpi", kpi);
     },
     toggleShowAddAspect() {
       this.increaseComponentKey();
@@ -249,18 +183,6 @@ export default {
     toggleShowAddKPI() {
       this.increaseComponentKey();
       this.$emit("add-kpi");
-    },
-    check_user_admin() {
-      this.$axios.get("/user/" + localStorage.loggedUser).then((res) => {
-        this.user = res.data;
-        if (res.data.admin == 1) {
-          this.admin = true;
-          this.disabled = false;
-        } else {
-          this.admin = false;
-          this.disabled = true;
-        }
-      });
     },
     prevPage() {
       this.$emit("prev-page", { pageIndex: 1 });
