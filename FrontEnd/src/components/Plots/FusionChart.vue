@@ -13,7 +13,10 @@
 </template>
 
 <script>
+import { FCComponent } from "vue-fusioncharts";
+
 export default {
+  components: { fusioncharts: FCComponent },
   props: ["data"],
   data() {
     return this.data;

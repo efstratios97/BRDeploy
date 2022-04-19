@@ -16,6 +16,7 @@ class DataPlotManagerEndpoints:
             dict_formatted['visualization_type'] = plot.get_visualization_type()
             dict_formatted['visualization_right'] = plot.get_visualization_right()
             dict_formatted['component_name'] = plot.get_component_name()
+            dict_formatted['separated_display'] = plot.get_separated_display()
             dict_formatted['dataset_id'] = plot.get_dataset_id()
             dict_formatted['dataset_label'] = plot.get_dataset_label()
         return dict_formatted
@@ -36,8 +37,9 @@ def post_plot(executive_dashboard_id):
     visualization_type = fl.request.form['visualization_type']
     visualization_right = fl.request.form['visualization_right']
     component_name = fl.request.form['component_name']
+    separated_display = fl.request.form['separated_display']
     plot = dpm.DataPlotManager.create_data_plot(dpm.DataPlotManager, formdata=formdata, grouped=grouped, visualization_type=visualization_type,
-                                                visualization_right=visualization_right, component_name=component_name, executive_dashboard_id=executive_dashboard_id)
+                                                visualization_right=visualization_right, component_name=component_name, separated_display=separated_display, executive_dashboard_id=executive_dashboard_id)
     result = DataPlotManagerEndpoints.plot_to_dict(
         DataPlotManagerEndpoints, plot=plot)
     return fl.jsonify(result), 200

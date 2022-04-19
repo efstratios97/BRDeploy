@@ -32,8 +32,10 @@ export default {
     };
   },
   created() {
-    this.selected_dataset_placeholder =
-      this.selected_dataset_specific[0]["dataset"][0].dataset_desc;
+    this.selected_dataset_specific === undefined
+      ? (this.selected_dataset_placeholder = "Select Dataset")
+      : (this.selected_dataset_placeholder =
+          this.selected_dataset_specific[0]["dataset"][0].dataset_desc);
   },
   methods: {
     send_dataset() {

@@ -9,13 +9,14 @@ Description: Defines a Plot Object
 class Plot:
 
     def __init__(self, plot_id, formdata, grouped, visualization_type,
-                 visualization_right, component_name, dataset_id="", dataset_label=""):
+                 visualization_right, component_name, separated_display, dataset_id="", dataset_label=""):
         self.__plot_id = plot_id
         self.__formdata = formdata
         self.__grouped = grouped
         self.__visualization_type = visualization_type
         self.__visualization_right = visualization_right
         self.__component_name = component_name
+        self.__separated_display = separated_display
         self.__dataset_id = dataset_id
         self.__dataset_label = dataset_label
 
@@ -45,6 +46,9 @@ class Plot:
     def get_dataset_label(self):
         return self.__dataset_label
 
+    def get_separated_display(self):
+        return self.__separated_display
+
     # Set Functions for Plot Objects
 
     def set_formdata(self, formdata):
@@ -67,3 +71,6 @@ class Plot:
 
     def set_dataset_label(self, dataset_label):
         self.__dataset_label = dataset_label
+
+    def set_separated_display(self, separated_display):
+        self.__separated_display = separated_display

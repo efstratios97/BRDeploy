@@ -1,133 +1,6 @@
 <template>
   <div>
-    <TabView class="tabview-custom" ref="tabview4">
-      <TabPanel>
-        <template #header>
-          <b-icon-pie-chart style="font-size: 18px; margin: 3px" />
-          <span><h4>Departments by # of Applications</h4></span>
-        </template>
-        <div class="container-...">
-          <div class="row row-cols-auto auto-cols-adj">
-            <Card class="component-card">
-              <template v-slot:title> Treemap </template>
-              <template v-slot:subtitle>
-                Departments by # of Applications as Treemap representation
-              </template>
-              <template v-slot:content>
-                <tree-map
-                  :selected_dataset_id="selected_dataset_id"
-                  :selected_dataset_label="selected_dataset_label"
-                  ref="myTreeMapChart"
-                  @plotDataAsForm="get_plot_data_as_form($event)"
-                ></tree-map>
-              </template>
-              <template v-slot:footer>
-                <div>
-                  <Button
-                    label="Assign Plot to Dashboard"
-                    icon="pi pi-tag"
-                    iconPos="center"
-                    @click="toggleShowAddPlotToExecutiveDashboards('treemap')"
-                  />
-                </div>
-              </template>
-            </Card>
-            <Card class="component-card">
-              <template v-slot:title> BarChart </template>
-              <template v-slot:subtitle>
-                Departments by # of Applications as BarChart representation
-              </template>
-              <template v-slot:content>
-                <bar-chart
-                  :selected_dataset_id="selected_dataset_id"
-                  :selected_dataset_label="selected_dataset_label"
-                  ref="myBarChart"
-                  @plotDataAsForm="get_plot_data_as_form($event)"
-                ></bar-chart>
-              </template>
-              <template v-slot:footer>
-                <div>
-                  <Button
-                    label="Assign Plot to Dashboard"
-                    icon="pi pi-tag"
-                    iconPos="center"
-                    @click="toggleShowAddPlotToExecutiveDashboards('bar')"
-                  />
-                </div>
-              </template>
-            </Card>
-            <Card class="component-card centered-chart">
-              <template v-slot:title> PieChart </template>
-              <template v-slot:subtitle>
-                Departments by # of Applications as PieChart representation
-              </template>
-              <template v-slot:content>
-                <pie-chart
-                  :selected_dataset_id="selected_dataset_id"
-                  :selected_dataset_label="selected_dataset_label"
-                  ref="myPieChart"
-                  @plotDataAsForm="get_plot_data_as_form($event)"
-                ></pie-chart>
-              </template>
-              <template v-slot:footer>
-                <div>
-                  <Button
-                    label="Assign Plot to Dashboard"
-                    icon="pi pi-tag"
-                    iconPos="center"
-                    @click="toggleShowAddPlotToExecutiveDashboards('pie')"
-                  />
-                </div>
-              </template>
-            </Card>
-          </div>
-        </div>
-      </TabPanel>
-      <TabPanel>
-        <template #header>
-          <b-icon-compass style="font-size: 18px; margin: 3px" />
-          <span><h4>Examine Application Status</h4></span>
-        </template>
-        <div class="container-...">
-          <div class="row row-cols-auto auto-cols-adj">
-            <Card class="component-card centered-chart">
-              <template v-slot:title> ApplicationRadar </template>
-              <template v-slot:subtitle>
-                # of Key Characteristics of multiple Apps
-              </template>
-              <template v-slot:content>
-                <application-radar
-                  :selected_dataset_id="selected_dataset_id"
-                  :selected_dataset_label="selected_dataset_label"
-                  ref="myApplicationRadar"
-                  @plotDataAsForm="get_plot_data_as_form($event)"
-                ></application-radar>
-              </template>
-              <template v-slot:footer>
-                <div>
-                  <Button
-                    label="Assign Plot to Dashboard"
-                    icon="pi pi-tag"
-                    iconPos="center"
-                    @click="toggleShowAddPlotToExecutiveDashboards('appradar')"
-                  />
-                </div>
-              </template>
-            </Card>
-          </div>
-        </div>
-      </TabPanel>
-      <TabPanel>
-        <template #header>
-          <b-icon-columns style="font-size: 18px; margin: 3px" />
-          <span><h4>Analyze Architecture Views Applicability</h4></span>
-        </template>
-        <architecture-views-applicability-analysis
-          :selected_dataset_id="selected_dataset_id"
-          :selected_dataset_label="selected_dataset_label"
-          :key="componentKey"
-        ></architecture-views-applicability-analysis>
-      </TabPanel>
+    <TabView class="tabview-custom" ref="tabview4" style="margin-bottom: 50px">
       <TabPanel>
         <template #header>
           <b-icon-upc style="font-size: 18px; margin: 3px" />
@@ -136,15 +9,42 @@
         <architecture-views
           :selected_dataset_id="selected_dataset_id"
           :selected_dataset_label="selected_dataset_label"
+          :key="componentKey"
           @close="increaseComponentKey"
           @update="update_architecture_view($event)"
         ></architecture-views>
+      </TabPanel>
+      <TabPanel>
+        <template #header>
+          <b-icon-compass style="font-size: 18px; margin: 3px" />
+          <span><h4>Examine Application Status</h4></span>
+        </template>
+        <application-status-radar
+          :selected_dataset_id="selected_dataset_id"
+          :selected_dataset_label="selected_dataset_label"
+        ></application-status-radar>
+      </TabPanel>
+      <TabPanel>
+        <template #header>
+          <b-icon-columns style="font-size: 18px; margin: 3px" />
+          <span><h4>Analyze Architecture Views Applicability</h4></span>
+        </template>
+        <architecture-view-analysis
+          :selected_dataset_label="selected_dataset_label"
+          :selected_datset_id="selected_dataset_id"
+        ></architecture-view-analysis>
       </TabPanel>
     </TabView>
     <customazible-button
       @button-click="prevPage()"
       altLabel="Back"
-      altStyle="margin-top: 10px; margin-bottom: 20px"
+      altButtonClass="p-button-rounded"
+      altClass=""
+      altStyle="position: fixed;
+                left: 50%;
+                bottom: 5px;
+                transform: translate(-50%, -50%);
+                margin-top: 20px;"
     ></customazible-button>
     <transition class="modal-animation">
       <modal-view
@@ -165,33 +65,25 @@
   </div>
 </template>
 <script>
-import PieChart from "../Plots/PieChart.vue";
-import TreeMap from "../Plots/TreeMap.vue";
-import BarChart from "../Plots/BarChart.vue";
-import ApplicationRadar from "../Plots/ApplicationRadar.vue";
+import AppplicationStatusRadar from "../DashboardComponents/AppplicationStatusRadar.vue";
 import ArchitectureViews from "../DashboardComponents/ArchitectureViews.vue";
-import ArchitectureViewApplicabilityAnalysis from "../Plots/ArchitectureViewApplicabilityAnalysis.vue";
+import ArchitectureViewAnalysis from "../DashboardComponents/ArchitectureViewAnalysis.vue";
 import AddPlotToExecutiveDashboards from "../InputForms/AddPlotToExecutiveDashboards.vue";
 import Modal from "../Modal.vue";
 import CustomazibleButton from "../HelperComponents/CustomazibleButton.vue";
 
 export default {
   components: {
-    "pie-chart": PieChart,
-    "tree-map": TreeMap,
-    "bar-chart": BarChart,
-    "application-radar": ApplicationRadar,
+    "application-status-radar": AppplicationStatusRadar,
     "architecture-views": ArchitectureViews,
-    "architecture-views-applicability-analysis":
-      ArchitectureViewApplicabilityAnalysis,
     "add-plot-to-executive-dashboards": AddPlotToExecutiveDashboards,
     "modal-view": Modal,
     "customazible-button": CustomazibleButton,
+    "architecture-view-analysis": ArchitectureViewAnalysis,
   },
   data() {
     return {
       componentKey: 0,
-      showAddPlotToExecutiveDashboards: false,
       formData: "",
       selected_dataset_id: localStorage.selected_dataset_id,
       selected_dataset_label: localStorage.selected_dataset_label,
@@ -199,26 +91,8 @@ export default {
   },
   methods: {
     update_architecture_view(architecture_view) {
+      this.increaseComponentKey();
       this.$emit("update", architecture_view);
-    },
-    get_plot_data_as_form(formData) {
-      this.formData = new FormData();
-      for (var key in formData) {
-        this.formData.append(key, formData[key]);
-      }
-    },
-    toggleShowAddPlotToExecutiveDashboards(chart_type) {
-      this.showAddPlotToExecutiveDashboards =
-        !this.showAddPlotToExecutiveDashboards;
-      if (chart_type === "bar") {
-        this.$refs.myBarChart.create_plot_and_save_to_executive_dashboard();
-      } else if (chart_type === "pie") {
-        this.$refs.myPieChart.create_plot_and_save_to_executive_dashboard();
-      } else if (chart_type === "treemap") {
-        this.$refs.myTreeMapChart.create_plot_and_save_to_executive_dashboard();
-      } else if (chart_type === "appradar") {
-        this.$refs.myApplicationRadar.create_plot_and_save_to_executive_dashboard();
-      }
     },
     create_plot_and_save_to_executive_dashboard(selected_executive_dashboards) {
       for (

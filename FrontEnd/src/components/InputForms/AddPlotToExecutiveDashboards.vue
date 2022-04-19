@@ -52,7 +52,13 @@
 
 <script>
 export default {
-  props: ["formdata", "visualization", "grouped", "component_name"],
+  props: [
+    "formdata",
+    "visualization",
+    "grouped",
+    "component_name",
+    "separated_display",
+  ],
   data() {
     return {
       executive_dashboards: this.getExecutiveDashboardOptions(),
@@ -99,6 +105,7 @@ export default {
           this.selected_visualization_right.visualization_right.name
         );
         formdata.append("component_name", this.component_name);
+        formdata.append("separated_display", this.separated_display);
         var executive_dashboard_id =
           this.selected_executive_dashboards[index].executive_dashboard
             .executive_dashboard_id;

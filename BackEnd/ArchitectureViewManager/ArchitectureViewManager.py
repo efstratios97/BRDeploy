@@ -10,7 +10,6 @@ import Utils.DataBaseSQL as sql_stmt
 import Utils.Settings as st
 import DataManager.DataManager as dm
 import ArchitectureViewManager.ArchitectureView as av
-import numpy as np
 
 
 class ArchitectureViewManager:
@@ -120,28 +119,3 @@ class ArchitectureViewManager:
                 architecture_view_id, name, description, components)
             return architecture_view
         pass
-
-    def analyze_applicability(self, dataset_id, department, architecture_view: av.ArchitectureView):
-        data = dm.DataManager.get_table_as_df(
-            dm.DataManager, table=dataset_id)
-        if department == st.NO_ENTRY_INPUT_FIELD:
-            data = data[data['Verantwortliche Organisationseinheit']
-                        == ""]
-        elif not department == st.ALL_VALUES_INPUT_FIELD:
-            data = data[data['Verantwortliche Organisationseinheit']
-                        == department]
-        architecture_view_components = architecture_view.get_components().split(",")
-        series = []
-        labels = []
-        for component in architecture_view_components:
-            if "Anzahl" in component or "kosten" in component:
-                data[component] = data[component].apply(
-                    lambda x: np.nan if x == 0 or x == "0" else x)
-            else:
-                data[component] = data[component].apply(
-                    lambda x: np.nan if x == "" or x == "Kein Eintrag" or x == "-" else x)
-            series.append(
-                {"data": [(1 - (data[component].isna().sum() / len(data[component])))*100],
-                 "name": component})
-            labels.append(component)
-        return series, labels

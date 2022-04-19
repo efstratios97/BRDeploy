@@ -7,7 +7,6 @@ Description: Various Helpermethods and Attributes specicific to Bayerischer Rund
 
 import re
 import numpy as np
-import DataManager.DataManager as dm
 import Utils.Settings as st
 import datetime
 import pandas as pd
@@ -71,11 +70,25 @@ def __get_departments_bayerischer_rundfunk_list_helper(_dict):
             yield v
 
 
-def get_apps_df_by_parameter(parameter, dataset_data, dataset_id, return_apps=True):
-    app = parameter["app"]
-    department = parameter["department"]
-    domain = parameter["domain"]
+def get_apps_df_by_parameter(parameter, dataset_data, dataset_id, return_apps=True, return_trimmed_dataset_based_app=True):
+    try:
+        app = parameter["app"]
+    except:
+        app = ""
+    try:
+        department = parameter["dep"]
+    except:
+        try:
+            department = parameter["department"]
+        except:
+            department = ""
+    try:
+        domain = parameter["domain"]
+    except:
+        domain = ""
     if not app == "":
+        if return_trimmed_dataset_based_app:
+            return dataset_data[dataset_data['Name'] == app]
         parameter = app
         dataset_data_app = dataset_data.copy()
         departments = gt_dt.GetData.get_departments_by_department_hierarchy_br(
@@ -122,6 +135,8 @@ def get_apps_df_by_parameter(parameter, dataset_data, dataset_id, return_apps=Tr
             apps = dataset_data_domain
     return apps
 
+#!!!Only to use if there is only one parameter expected!!!
+
 
 def get_parameters_from_input(parameters):
     for param in parameters:
@@ -140,14 +155,33 @@ def get_parameters_from_input(parameters):
 
 
 def get_parameter_as_string_from_parameter_dict(parameter):
-    if not parameter["department"] == "":
-        return parameter["department"]
-    elif not parameter["app"] == "":
-        return parameter["app"]
-    elif not parameter["domain"] == "":
-        return parameter["domain"]
-    else:
-        return "Undefined"
+    try:
+        if not parameter["department"] == "":
+            return parameter["department"]
+        elif not parameter["app"] == "":
+            return parameter["app"]
+        elif not parameter["domain"] == "":
+            return parameter["domain"]
+        else:
+            return "Undefined"
+    except:
+        try:
+            if not parameter["department"] == "":
+                return parameter["department"]
+        except:
+            try:
+                if not parameter["dep"] == "":
+                    return parameter["dep"]
+            except:
+                try:
+                    if not parameter["app"] == "":
+                        return parameter["app"]
+                except:
+                    try:
+                        if not parameter["domain"] == "":
+                            return parameter["domain"]
+                    except:
+                        return "Undefined"
 
 
 def date_handler(x):
@@ -252,3 +286,18 @@ def __operation_line_chart(category_quarters: list, quarter, label, data, day, m
                 (data[life_cycle_end] <= end)].index)
     category_quarters.append({"label": label, "value": value})
     return category_quarters
+
+
+def get_elegible_components_for_counting_based_on_condition(data: pd.DataFrame, components="", condition=",", condition_tie_braker=5):
+    if components == "":
+        components = data.columns.values.tolist()
+    elegible_components = [component
+                           for component in components if data[component].to_string().count(condition) > condition_tie_braker and
+                           (component != "Beschreibung" and component != "Hersteller" and component != "Begründung" and not component.startswith("Anmerkungen"))]
+    return elegible_components
+
+
+def is_elegible_components_for_counting_based_on_condition(data: pd.DataFrame, component, condition=",", condition_tie_braker=3):
+    elegible_components = get_elegible_components_for_counting_based_on_condition(
+        data=data, condition=condition, condition_tie_braker=condition_tie_braker)
+    return component in elegible_components

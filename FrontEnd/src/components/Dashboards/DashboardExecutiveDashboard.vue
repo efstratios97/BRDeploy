@@ -69,6 +69,7 @@
                     :formdata="plot.formdata"
                     :visualization="plot.visualization_type"
                     :grouped="plot.grouped"
+                    :separated_display="plot.separated_display"
                     :selected_dataset_id="
                       selected_dataset_id[
                         executive_dashboard.executive_dashboard_id

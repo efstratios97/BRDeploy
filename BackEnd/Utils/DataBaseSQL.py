@@ -6,7 +6,6 @@ Description: SQL Statements for creating the Database Architecture
 '''
 
 import Utils.Settings as st
-import json
 
 
 class DataBaseSQL:
@@ -141,6 +140,7 @@ class DataBaseSQL:
                + '{col_VISUALIZATION_TYPE} VARCHAR(512) NOT NULL,'
                + '{col_VISUALIZATION_RIGHT} VARCHAR(512) NOT NULL,'
                + '{col_COMPONENT_NAME} VARCHAR(255) NOT NULL,'
+               + '{col_SEPARATED_DISPLAY} VARCHAR(255) NOT NULL,'
                + '{col_CREATED_AT} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)')
         sql = sql.format(table=st.TABLE_PLOTS, col_PLOT_ID=st.TB_PLOTS_COL_ID,
                          col_FORMDATA=st.TB_PLOTS_COL_FORMDATA,
@@ -148,6 +148,7 @@ class DataBaseSQL:
                          col_VISUALIZATION_TYPE=st.TB_PLOTS_COL_VISUALIZATION_TYPE,
                          col_VISUALIZATION_RIGHT=st.TB_PLOTS_COL_VISUALIZATION_RIGHT,
                          col_COMPONENT_NAME=st.TB_PLOTS_COL_COMPONENT_NAME,
+                         col_SEPARATED_DISPLAY=st.TB_PLOTS_COL_SEPARATED_DISPLAY,
                          col_CREATED_AT=st.TB_PLOTS_COL_CREATED_AT)
         return sql
 
@@ -540,18 +541,19 @@ class DataBaseSQL:
         return sql
 
     # Returns SQL statement for inserting a executive_dashboard in executive_dashboard table
-    def insert_plots_values(self, plot_id, formdata, grouped, visualization_type, visualization_right, component_name):
+    def insert_plots_values(self, plot_id, formdata, grouped, visualization_type, visualization_right, component_name, separated_display):
         sql = ('INSERT INTO {table} ({col_ID}, {COL_FORMDATA}, {COL_GROUPED}, {COL_VISUALIZATION_TYPE},'
-               + '{COL_VISUALIZATION_RIGHT}, {COL_COMPONENT_NAME}) '
-               + 'VALUES ("{PLOT_ID}",' + "'" + "{FORMDATA}" + "'" + ',"{GROUPED}","{VISUALIZATION_TYPE}","{VISUALIZATION_RIGHT}","{COMPONENT_NAME}");')
+               + '{COL_VISUALIZATION_RIGHT}, {COL_COMPONENT_NAME}, {COL_SEPARATED_DISPLAY}) '
+               + 'VALUES ("{PLOT_ID}",' + "'" + "{FORMDATA}" + "'" + ',"{GROUPED}","{VISUALIZATION_TYPE}","{VISUALIZATION_RIGHT}","{COMPONENT_NAME}", "{SEPARATED_DISPLAY}");')
         sql = sql.format(table=st.TABLE_PLOTS, col_ID=st.TB_PLOTS_COL_ID,
                          COL_FORMDATA=st.TB_PLOTS_COL_FORMDATA,
                          COL_GROUPED=st.TB_PLOTS_COL_GROUPED,
                          COL_VISUALIZATION_TYPE=st.TB_PLOTS_COL_VISUALIZATION_TYPE,
                          COL_VISUALIZATION_RIGHT=st.TB_PLOTS_COL_VISUALIZATION_RIGHT,
                          COL_COMPONENT_NAME=st.TB_PLOTS_COL_COMPONENT_NAME,
+                         COL_SEPARATED_DISPLAY=st.TB_PLOTS_COL_SEPARATED_DISPLAY,
                          PLOT_ID=plot_id, FORMDATA=formdata,
-                         GROUPED=grouped, VISUALIZATION_TYPE=visualization_type,
+                         GROUPED=grouped, VISUALIZATION_TYPE=visualization_type, SEPARATED_DISPLAY=separated_display,
                          VISUALIZATION_RIGHT=visualization_right, COMPONENT_NAME=component_name)
         return sql
 

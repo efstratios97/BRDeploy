@@ -46,7 +46,7 @@
       <Card class="component-card">
         <template v-slot:title> Applications </template>
         <template v-slot:subtitle>
-          Select Applications to perform KPI Analysis
+          Select Applications to perform Analysis
         </template>
         <template v-slot:content>
           <form class="overflow-auto">
@@ -82,21 +82,17 @@
       <Card class="component-card">
         <template v-slot:title> Department </template>
         <template v-slot:subtitle>
-          Select Department to perform KPI Analysis
+          Select Department to perform Analysis
         </template>
         <template v-slot:content>
           <form>
             <div class="p-fluid p-formgrid p-grid">
               <div class="p-col">
-                <Dropdown
-                  v-model="selected_department"
-                  :options="departments"
-                  :filter="true"
-                  optionLabel="dep"
-                  placeholder="Select Department"
-                  filterPlaceholder="Find a Departmet"
-                  @change="send_departments"
-                />
+                <options-dep
+                  :departments="departments"
+                  :multiple_options="multiple_dep"
+                  @input-parameter="send_department_s($event)"
+                ></options-dep>
               </div>
               <div class="p-col">
                 <Button
@@ -155,20 +151,14 @@
     <div v-if="selected_domain_input_field">
       <Card class="component-card">
         <template v-slot:title> Domain </template>
-        <template v-slot:subtitle>
-          Select Domain to perform KPI Analysis
-        </template>
+        <template v-slot:subtitle> Select Domain to perform Analysis </template>
         <template v-slot:content>
           <form class="overflow-auto">
-            <Dropdown
-              v-model="selected_domain"
-              :options="domains"
-              :filter="true"
-              optionLabel="domain"
-              placeholder="Select Domain"
-              filterPlaceholder="Find a Domain"
-              @change="send_domain"
-            />
+            <options-domain
+              :domains="domains"
+              :multiple_options="multiple_dom"
+              @input-parameter="send_domain_s($event)"
+            ></options-domain>
           </form>
         </template>
         <template #footer>
@@ -190,13 +180,19 @@
   </div>
 </template>
 <script>
+import OptionsDep from "./InputFieldComponentsHelper/OptionsDep.vue";
+import OptionsDomain from "./InputFieldComponentsHelper/OptionsDomain.vue";
+
 export default {
+  components: { "options-dep": OptionsDep, "options-domain": OptionsDomain },
   props: [
     "apps",
     "departments",
     "domains",
     "selected_dataset_id",
     "selected_dataset_label",
+    "multiple_dep",
+    "multiple_dom",
   ],
   data() {
     return {
@@ -204,9 +200,7 @@ export default {
       selected_apps_input_field: false,
       selected_department_input_field: false,
       input_field_selected: false,
-      selected_domain: "",
       selected_apps: "",
-      selected_department: "",
       departments_by_hierarchy: "",
       depInfo: false,
       disabled_depInfo: true,
@@ -216,16 +210,17 @@ export default {
     send_apps() {
       this.$emit("input-parameter", this.selected_apps);
     },
-    send_departments() {
+    send_department_s(selected_department_s) {
+      console.log(selected_department_s);
       this.disabled_depInfo = false;
-      this.getDatasetDepartmentByHiearchy();
-      this.$emit("input-parameter", this.selected_department);
+      this.getDatasetDepartmentByHiearchy(selected_department_s);
+      this.$emit("input-parameter", selected_department_s);
     },
-    send_domain() {
-      this.$emit("input-parameter", this.selected_domain);
+    send_domain_s(selected_domain_s) {
+      this.$emit("input-parameter", selected_domain_s);
     },
     toggleDepInfo() {
-      if (this.selected_department === "") {
+      if (this.selected_department_s === "") {
         this.disabled_depInfo = true;
       } else {
         this.disabled_depInfo = false;
@@ -237,9 +232,9 @@ export default {
       this.selected_domain_input_field = false;
       this.selected_apps_input_field = false;
       this.selected_department_input_field = false;
-      this.selected_domain = "";
+      this.selected_domain_s = "";
       this.selected_apps = "";
-      this.selected_department = "";
+      this.selected_department_s = "";
     },
     toggleInputFieldApps() {
       this.selected_apps_input_field = !this.selected_apps_input_field;
@@ -254,7 +249,7 @@ export default {
       this.selected_domain_input_field = !this.selected_domain_input_field;
       this.input_field_selected = true;
     },
-    getDatasetDepartmentByHiearchy() {
+    getDatasetDepartmentByHiearchy(selected_department_s) {
       this.$axios
         .get(
           "/get_data_special_by_br_hierarchy/" +
@@ -263,7 +258,7 @@ export default {
             this.selected_dataset_label +
             "/" +
             "get_departments_by_br_hiararchy/" +
-            this.selected_department["dep"]
+            selected_department_s["dep"]
         )
         .then((res) => {
           var departments_tmp = [];

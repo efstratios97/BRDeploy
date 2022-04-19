@@ -27,8 +27,11 @@
             <add-architecture-view
               :selected_dataset_id="selected_dataset_id"
               :selected_dataset_label="selected_dataset_label"
-            ></add-architecture-view> </template
-        ></Card>
+              :key="componentKey"
+              @close="emitClose()"
+            ></add-architecture-view>
+          </template>
+        </Card>
       </div>
     </div>
   </div>

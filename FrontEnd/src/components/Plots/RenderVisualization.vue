@@ -11,7 +11,28 @@
         </div>
       </template>
     </Card>
-    <span v-if="data.length > 1">
+    <!-- grouped graphs will render correctly seperately -->
+    <span v-if="separated_display">
+      <div v-for="data_point in data" :key="data_point">
+        <div class="container-..." v-if="rendered_visualization">
+          <div class="row row-cols-auto auto-cols-adj">
+            <Card class="component-card">
+              <template v-slot:content>
+                <div class="p-fluid">
+                  <fusion-chart :data="data_point"></fusion-chart>
+                </div>
+              </template>
+              <template v-slot:footer v-if="executive_dashboard !== true">
+                <save-to-dashboard-button
+                  @show_add_to_dashboard="showAddToDashboard()"
+                ></save-to-dashboard-button>
+              </template>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </span>
+    <span v-else-if="data.length > 1">
       <span v-if="grouped === 'true' || grouped">
         <div class="container-..." v-if="rendered_visualization">
           <div class="row row-cols-auto auto-cols-adj">
@@ -82,6 +103,7 @@
             :visualization="visualization"
             :grouped="grouped"
             :component_name="component_name"
+            :separated_display="separated_display"
             @close="showAddToDashboard()"
           ></add-plot-to-executive-dashboard>
         </template>
@@ -110,7 +132,8 @@ export default {
     "visualization",
     "grouped",
     "component_name",
-    "executive_dashboard",
+    "executive_dashboard", //Is it called by executive dashboard --> no `Save to Dashboard´ else yes
+    "separated_display", //grouped graphs will render correctly seperately
   ],
   data() {
     return {

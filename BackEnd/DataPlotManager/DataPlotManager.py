@@ -16,10 +16,10 @@ import DataManager.DataManager as dm
 
 class DataPlotManager:
 
-    def create_data_plot(self, formdata, grouped, visualization_type, visualization_right, component_name, executive_dashboard_id=False):
+    def create_data_plot(self, formdata, grouped, visualization_type, visualization_right, component_name, separated_display, executive_dashboard_id=False):
         plot_id = "plot_" + st.create_id()
         plot = plt.Plot(plot_id=plot_id, formdata=formdata, grouped=grouped, visualization_type=visualization_type,
-                        visualization_right=visualization_right, component_name=component_name)
+                        visualization_right=visualization_right, component_name=component_name, separated_display=separated_display)
         self.insert_plot_db(
             DataPlotManager, plot=plot)
         if executive_dashboard_id:
@@ -38,7 +38,7 @@ class DataPlotManager:
                                                                                                   plot_id=plot.get_plotID(), formdata=plot.get_formdata(), grouped=plot.get_grouped(),
                                                                                                   visualization_type=plot.get_visualization_type(),
                                                                                                   visualization_right=plot.get_visualization_right(),
-                                                                                                  component_name=plot.get_component_name()), local=local)
+                                                                                                  component_name=plot.get_component_name(), separated_display=plot.get_separated_display()), local=local)
 
     def insert_executive_dashboard_plot_relation_db(self, executive_dashboard_id, plot_id, local=False):
         # Creates Table
@@ -140,8 +140,9 @@ class DataPlotManager:
             visualization_type = db_row[3]
             visualization_right = db_row[4]
             component_name = db_row[5]
+            separated_display = db_row[6]
             plot = plt.Plot(plot_id=plot_id, formdata=formdata, grouped=grouped, visualization_type=visualization_type,
-                            visualization_right=visualization_right, component_name=component_name)
+                            visualization_right=visualization_right, component_name=component_name, separated_display=separated_display)
             plot.set_dataset_id(dataset_id=dataset_id)
             plot.set_dataset_label(dataset_label=dataset_label)
             return plot

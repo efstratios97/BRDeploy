@@ -7,6 +7,7 @@ Description: Implements main functionality of the KPIManager
 
 
 import BRIndividual.IndividualVisualizations.KPIVisualizations as kpi_v
+import BRIndividual.IndividualVisualizations.DataHealthVisualizations as dt_ht_v
 import BRIndividual.IndividualVisualizations.ApplicabilityVisualizations as apl_v
 import KPIManager.KPIManager as kpi_m
 import KPIAspectManager.AspectManager as aspct_m
@@ -30,7 +31,11 @@ class IndividualVisualizationExecutor:
             'kpi_complete_view': self.__render_kpi_complete_view,
             'kpi_landscape': self.__render_application_landscape_kpi,
             'kpi_lifecycle': self.__render_app_life_cycle,
-            'kpi_lifecycle_development': self.__render_life_cycle_development, }
+            'kpi_lifecycle_development': self.__render_life_cycle_development,
+            'analyze_architecture_view': self.__analyze_architecture_view,
+            'architecture_view_analysis_complete_conditional': self.__analyze_architecture_view_complete_conditional,
+            'analyze_application_status_radar': self.__analyze_application_status_radar
+        }
 
     def execute_visualization(self, formdata, visualization, dataset_id="", dataset_label=""):
         self.__init__(IndividualVisualizationExecutor)
@@ -199,4 +204,66 @@ class IndividualVisualizationExecutor:
                                                                                           raw_component=raw_component,
                                                                                           dataset_id=dataset_id,
                                                                                           dataset_label=dataset_label)
+        return result
+
+    def __analyze_architecture_view(self, formdata, dataset_id, dataset_label):
+        if isinstance(formdata, list):
+            architecture_view = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'architecture_view'][0])
+        else:
+            architecture_view = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'architecture_view'])
+        try:
+            parameters = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'parameter'])
+        except:
+            parameters = formdata[
+                'parameter']
+        parameter = st_br.get_parameters_from_input(parameters)
+        result = dt_ht_v.DataHealthVisualizations.architecture_view_analysis(dt_ht_v.DataHealthVisualizations,
+                                                                             parameter=parameter,
+                                                                             architecture_view=architecture_view,
+                                                                             dataset_id=dataset_id,
+                                                                             dataset_label=dataset_label)
+        return result
+
+    def __analyze_architecture_view_complete_conditional(self, formdata, dataset_id, dataset_label):
+        if isinstance(formdata, list):
+            architecture_view = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'architecture_view'][0])
+        else:
+            architecture_view = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'architecture_view'])
+        try:
+            parameters = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'parameter'])
+        except:
+            parameters = formdata[
+                'parameter']
+        parameter = st_br.get_parameters_from_input(parameters)
+        result = dt_ht_v.DataHealthVisualizations.architecture_view_analysis_complete_conditional(dt_ht_v.DataHealthVisualizations,
+                                                                                                  parameter=parameter,
+                                                                                                  architecture_view=architecture_view,
+                                                                                                  dataset_id=dataset_id,
+                                                                                                  dataset_label=dataset_label)
+        return result
+
+    def __analyze_application_status_radar(self, formdata, dataset_id, dataset_label):
+        if isinstance(formdata, list):
+            architecture_view = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'architecture_view'][0])
+        else:
+            architecture_view = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'architecture_view'])
+        try:
+            parameters = st.string_list_with_nested_string_dict_into_list_dict(formdata[
+                'parameter'])
+        except:
+            parameters = formdata[
+                'parameter']
+        result = dt_ht_v.DataHealthVisualizations.application_status_radar(dt_ht_v.DataHealthVisualizations,
+                                                                           parameters=parameters,
+                                                                           architecture_view=architecture_view,
+                                                                           dataset_id=dataset_id,
+                                                                           dataset_label=dataset_label)
         return result

@@ -74,10 +74,11 @@ export default {
       this.formData.append("components", components_string);
       this.$axios
         .post("/create_architecture_view", this.formData)
-        .then(() => {
+        .then((res) => {
           this.$toast.add({
             severity: "success",
-            summary: "Architecture View Creation Successful",
+            summary:
+              "Architecture View " + res.data.name + "Creation Successful",
             detail: "The selected Architecture View was created",
             life: 3000,
           });

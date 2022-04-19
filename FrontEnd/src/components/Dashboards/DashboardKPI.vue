@@ -1,6 +1,11 @@
 <template>
   <div>
-    <TabView class="tabview-custom" ref="tabview4" :key="componentKey">
+    <TabView
+      class="tabview-custom"
+      ref="tabview4"
+      :key="componentKey"
+      style="margin-bottom: 50px"
+    >
       <TabPanel>
         <template #header>
           <b-icon-gear-wide-connected style="font-size: 18px; margin: 3px" />
@@ -117,7 +122,13 @@
     <customazible-button
       @button-click="prevPage()"
       altLabel="Back"
-      altStyle="margin-top: 10px; margin-bottom: 20px"
+      altButtonClass="p-button-rounded"
+      altClass=""
+      altStyle="position: fixed;
+                left: 50%;
+                bottom: 5px;
+                transform: translate(-50%, -50%);
+                margin-top: 20px;"
     ></customazible-button>
   </div>
 </template>

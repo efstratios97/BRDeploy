@@ -484,7 +484,7 @@ class KPIVisualizations:
                     },
                 ]
             result_fusion = {
-                "id": st_br.get_parameter_as_string_from_parameter_dict(parameter) + st.create_id(),
+                "id":  st.create_id(),
                 "type": "angulargauge",
                 "width": "616",
                 "height": "300",
@@ -594,7 +594,7 @@ class KPIVisualizations:
                     data.append({"label": data_to_add["aspect_name"],
                                  "value": data_to_add["result"]})
             result = {
-                "id": st_br.get_parameter_as_string_from_parameter_dict(parameter) + st.create_id(),
+                "id":  st.create_id(),
                 "type": "column2d",
                 "width": "616",
                 "height": "300",

@@ -19,8 +19,8 @@
       <customazible-button
         @button-click="nextPage()"
         altLabel="Next"
-        altClass="p-flex p-justify-content-center"
-        altButtonStyle="min-width: 100%"
+        altClass=""
+        altButtonClass="p-button-rounded"
         altIcon="pi pi-arrow-circle-right"
         altIconPos="right"
       ></customazible-button>

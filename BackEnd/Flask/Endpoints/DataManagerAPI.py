@@ -152,7 +152,8 @@ def get_dataset(dataset_id):
         result = DataManagerEndpoints.data_set_to_dict(
             DataManagerEndpoints, dataset=dataset)
     else:
-        DataManagerEndpoints(404, "DATASET_NOT_FOUND")
+        DataManagerEndpoints.endpoints_exception(
+            DataManagerEndpoints, 404, "DATASET_NOT_FOUND")
     return fl.jsonify(result), 200
 
 

@@ -42,6 +42,7 @@ import Sidebar from 'primevue/sidebar';
 import Dock from 'primevue/dock';
 import SpeedDial from 'primevue/speeddial';
 import Fieldset from 'primevue/fieldset';
+import Timeline from 'primevue/timeline'
 import SplitterPanel from 'primevue/splitterpanel';
 import VueFusionCharts from 'vue-fusioncharts';
 import FusionCharts from 'fusioncharts';
@@ -50,6 +51,7 @@ import TreeMap from 'fusioncharts/fusioncharts.treemap';
 import Widgets from 'fusioncharts/fusioncharts.widgets';
 import FusionTheme from 'fusioncharts/themes/fusioncharts.theme.fusion';
 import Column2D from 'fusioncharts/fusioncharts.charts';
+import ScrollColumn2D from 'fusioncharts/fusioncharts.charts';
 import PowerCharts from 'fusioncharts/fusioncharts.powercharts';
 import Gantt from "fusioncharts/fusioncharts.gantt";
 import ExcelExport from "fusioncharts/fusioncharts.excelexport";
@@ -148,6 +150,7 @@ app.component('Sidebar', Sidebar)
 app.component('Dock', Dock)
 app.component('Fieldset', Fieldset)
 app.component('SpeedDial', SpeedDial)
+app.component('Timeline', Timeline)
 app.directive('tooltip', Tooltip);
 app.use(VueApexCharts);
 app.use(store)
@@ -156,7 +159,7 @@ app.use(ToastService);
 app.use(BootstrapIconsPlugin);
 app.use(VueAxios, axios)
 app.use(VueFusionCharts, FusionCharts, Charts, TreeMap,
-    Widgets, FusionTheme, Column2D, PowerCharts, Gantt, ExcelExport);
+    Widgets, FusionTheme, Column2D, PowerCharts, Gantt, ExcelExport, ScrollColumn2D);
 app.config.globalProperties.$axios = instance;
 app.provide("axios-instance", instance)
 app.mount('#app')

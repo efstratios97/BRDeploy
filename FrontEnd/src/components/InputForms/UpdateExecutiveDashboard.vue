@@ -196,11 +196,10 @@ export default {
                 },
               ],
             });
-          })
-          .then(() => {
             this.show_dataset_options();
           })
           .catch(() => {
+            this.selected_dataset_specific = undefined;
             this.show_dataset_options();
           });
       });
